@@ -12,6 +12,15 @@ func gofumpt(fset *token.FileSet, file *ast.File) {
 	tfile := fset.File(file.Pos())
 	cmap := ast.NewCommentMap(fset, file, file.Comments)
 
+	removeEmpty := func(from, to token.Pos) {
+		fromLine := tfile.Position(from).Line
+		toLine := tfile.Position(to).Line
+		for fromLine+1 < toLine {
+			tfile.MergeLine(fromLine)
+			toLine--
+		}
+	}
+
 	ast.Inspect(file, func(node ast.Node) bool {
 		switch node := node.(type) {
 		case *ast.BlockStmt:
@@ -19,34 +28,14 @@ func gofumpt(fset *token.FileSet, file *ast.File) {
 				// for now, skip this case.
 				break
 			}
-			openLine := fset.Position(node.Lbrace).Line
-			closeLine := fset.Position(node.Rbrace).Line
+			switch len(node.List) {
+			case 0:
+				removeEmpty(node.Lbrace, node.Rbrace)
+			case 1:
+				stmt := node.List[0]
 
-			if len(node.List) == 0 {
-				for openLine+1 < closeLine {
-					tfile.MergeLine(openLine)
-					closeLine--
-				}
-				break
-			}
-
-			if len(node.List) != 1 {
-				// we want blocks with a single statement.
-				break
-			}
-			stmt := node.List[0]
-
-			posLine := fset.Position(stmt.Pos()).Line
-			for openLine+1 < posLine {
-				tfile.MergeLine(openLine)
-				posLine--
-				closeLine--
-			}
-
-			endLine := fset.Position(stmt.End()).Line
-			for endLine+1 < closeLine {
-				tfile.MergeLine(endLine)
-				closeLine--
+				removeEmpty(node.Lbrace, stmt.Pos())
+				removeEmpty(stmt.End(), node.Rbrace)
 			}
 		}
 		return true
