@@ -2,6 +2,21 @@
 
 `gofmt`, the way it should be pronounced.
 
+Enforce a stricter format than `gofmt`, while still being compatible with
+`gofmt`. That is, `gofumpt` is happy with a subset of the formats that `gofmt`
+is happy with.
+
+### Features
+
+No empty lines around a lone statement in a block:
+
+```
+if err != nil {
+
+	return err
+}
+```
+
 ### License
 
 Note that much of the code is copied from Go's `cmd/gofmt` command. You can tell

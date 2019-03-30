@@ -114,6 +114,9 @@ func processFile(filename string, in io.Reader, out io.Writer, stdin bool) error
 
 	ast.Inspect(file, normalizeNumbers)
 
+	// This is the only gofumpt change on gofmt's codebase.
+	gofumpt(fileSet, file)
+
 	res, err := format(fileSet, file, sourceAdj, indentAdj, src, printer.Config{Mode: printerMode, Tabwidth: tabWidth})
 	if err != nil {
 		return err
