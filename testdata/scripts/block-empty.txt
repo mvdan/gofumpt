@@ -1,0 +1,30 @@
+gofumpt -w foo.go .
+cmp foo.go foo.go.golden
+
+-- foo.go --
+package p
+
+func f() {
+	{
+
+	}
+
+	{
+
+		// lone comment
+
+	}
+}
+-- foo.go.golden --
+package p
+
+func f() {
+	{
+	}
+
+	{
+
+		// lone comment
+
+	}
+}

@@ -8,7 +8,7 @@ is happy with.
 
 ### Features
 
-No empty lines around a lone statement in a block:
+No empty lines around a lone statement (or comment) in a block:
 
 ```
 if err != nil {
