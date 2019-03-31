@@ -6,6 +6,9 @@ Enforce a stricter format than `gofmt`, while still being compatible with
 `gofmt`. That is, `gofumpt` is happy with a subset of the formats that `gofmt`
 is happy with.
 
+The tool is a modified fork of `gofmt`, so it can be used as a drop-in
+replacement.
+
 ### Features
 
 No empty lines around a lone statement (or comment) in a block:
@@ -15,6 +18,14 @@ if err != nil {
 
 	return err
 }
+```
+
+Multi-line composite literals should keep elements in their own lines:
+
+
+```
+var _ = []int{1, 2,
+        3, 4}
 ```
 
 ### License

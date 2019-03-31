@@ -1,0 +1,25 @@
+gofumpt -w foo.go .
+cmp foo.go foo.go.golden
+
+-- foo.go --
+package p
+
+var _ = []int{}
+
+var _ = []int{
+}
+
+var _ = []int{1, 2,
+	3, 4}
+
+-- foo.go.golden --
+package p
+
+var _ = []int{}
+
+var _ = []int{}
+
+var _ = []int{
+	1, 2,
+	3, 4,
+}
