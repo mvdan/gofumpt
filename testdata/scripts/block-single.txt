@@ -62,20 +62,16 @@ func f() {
 	}
 
 	{
-
 		// comment directly before
 		println()
 
 		// comment after
-
 	}
 
 	{
-
 		// comment before
 
 		println()
 		// comment directly after
-
 	}
 }

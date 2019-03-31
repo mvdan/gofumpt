@@ -92,11 +92,7 @@ func (f *fumpter) visit(node ast.Node) {
 	switch node := node.(type) {
 	case *ast.BlockStmt:
 		comments := f.commentsBetween(node.Lbrace, node.Rbrace)
-		if len(comments) > 0 {
-			// for now, skip this case.
-			break
-		}
-		if len(node.List) == 0 {
+		if len(node.List) == 0 && len(comments) == 0 {
 			f.removeLines(node.Lbrace, node.Rbrace)
 			break
 		}
@@ -114,11 +110,23 @@ func (f *fumpter) visit(node ast.Node) {
 			// it's a func body.
 			break
 		}
-		first := node.List[0]
-		last := node.List[len(node.List)-1]
+		var bodyPos, bodyEnd token.Pos
 
-		f.removeLines(node.Lbrace, first.Pos())
-		f.removeLines(last.End(), node.Rbrace)
+		if len(node.List) > 0 {
+			bodyPos = node.List[0].Pos()
+			bodyEnd = node.List[len(node.List)-1].End()
+		}
+		if len(comments) > 0 {
+			if pos := comments[0].Pos(); !bodyPos.IsValid() || pos < bodyPos {
+				bodyPos = pos
+			}
+			if pos := comments[len(comments)-1].End(); !bodyPos.IsValid() || pos > bodyEnd {
+				bodyEnd = pos
+			}
+		}
+
+		f.removeLines(node.Lbrace, bodyPos)
+		f.removeLines(bodyEnd, node.Rbrace)
 	case *ast.CompositeLit:
 		if len(node.Elts) == 0 {
 			// doesn't have elements

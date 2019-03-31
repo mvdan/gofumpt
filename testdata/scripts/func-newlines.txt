@@ -38,12 +38,10 @@ func f1() {
 }
 
 func f2() {
-
 	// comment directly before
 	println()
 
 	// comment after
-
 }
 
 func _() {
