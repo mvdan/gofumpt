@@ -12,6 +12,11 @@ var _ = []int{
 var _ = []int{1, 2,
 	3, 4}
 
+var _ = [][]string{{
+	"no need for more newlines",
+	"if wrapping a single expression",
+}}
+
 -- foo.go.golden --
 package p
 
@@ -23,3 +28,8 @@ var _ = []int{
 	1, 2,
 	3, 4,
 }
+
+var _ = [][]string{{
+	"no need for more newlines",
+	"if wrapping a single expression",
+}}

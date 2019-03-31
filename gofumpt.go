@@ -66,14 +66,23 @@ func gofumpt(fset *token.FileSet, file *ast.File) {
 			}
 		case *ast.CompositeLit:
 			if len(node.Elts) == 0 {
+				// doesn't have elements
 				break
 			}
 			openLine := tfile.Position(node.Lbrace).Line
 			closeLine := tfile.Position(node.Rbrace).Line
 			if openLine == closeLine {
+				// not multi-line
 				break
 			}
 			first := node.Elts[0]
+			if len(node.Elts) == 1 &&
+				tfile.Position(first.Pos()).Line == openLine &&
+				tfile.Position(first.End()).Line == closeLine {
+				// wrapping a single expression
+				break
+			}
+
 			if openLine == tfile.Position(first.Pos()).Line {
 				// We want the newline right after the brace.
 				addNewline(node.Lbrace, 1)
