@@ -44,6 +44,17 @@ var good = []int{
 }
 ```
 
+Multiline top-level declarations must be separated by empty lines:
+
+```
+func foo() {
+	println("multiline foo")
+}
+func bar() {
+	println("multiline bar")
+}
+```
+
 ### License
 
 Note that much of the code is copied from Go's `cmd/gofmt` command. You can tell

@@ -90,6 +90,25 @@ func (f *fumpter) removeLines(from, to token.Pos) {
 
 func (f *fumpter) visit(node ast.Node) {
 	switch node := node.(type) {
+	case *ast.File:
+		var lastMulti bool
+		var lastEnd token.Pos
+		for _, decl := range node.Decls {
+			pos := decl.Pos()
+			comments := f.commentsBetween(lastEnd, pos)
+			if len(comments) > 0 {
+				pos = comments[0].Pos()
+			}
+
+			multi := f.posLine(decl.Pos()) < f.posLine(decl.End())
+			if (multi && lastMulti) &&
+				f.posLine(lastEnd)+1 == f.posLine(pos) {
+				f.addNewline(lastEnd, 0)
+			}
+
+			lastMulti = multi
+			lastEnd = decl.End()
+		}
 	case *ast.BlockStmt:
 		comments := f.commentsBetween(node.Lbrace, node.Rbrace)
 		if len(node.List) == 0 && len(comments) == 0 {
