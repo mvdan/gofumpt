@@ -63,7 +63,12 @@ func gofumpt(fset *token.FileSet, file *ast.File) {
 		}
 	}
 
+	var stack []ast.Node
 	ast.Inspect(file, func(node ast.Node) bool {
+		if node == nil {
+			stack = stack[:len(stack)-1]
+			return true
+		}
 		switch node := node.(type) {
 		case *ast.BlockStmt:
 			comments := commentsBetween(node.Lbrace, node.Rbrace)
@@ -71,15 +76,29 @@ func gofumpt(fset *token.FileSet, file *ast.File) {
 				// for now, skip this case.
 				break
 			}
-			switch len(node.List) {
-			case 0:
+			if len(node.List) == 0 {
 				removeLines(node.Lbrace, node.Rbrace)
-			case 1:
-				stmt := node.List[0]
-
-				removeLines(node.Lbrace, stmt.Pos())
-				removeLines(stmt.End(), node.Rbrace)
+				break
 			}
+
+			isFuncBody := false
+			switch stack[len(stack)-1].(type) {
+			case *ast.FuncDecl:
+				isFuncBody = true
+			case *ast.FuncLit:
+				isFuncBody = true
+			}
+
+			if len(node.List) > 1 && !isFuncBody {
+				// only if we have a single statement, or if
+				// it's a func body.
+				break
+			}
+			first := node.List[0]
+			last := node.List[len(node.List)-1]
+
+			removeLines(node.Lbrace, first.Pos())
+			removeLines(last.End(), node.Rbrace)
 		case *ast.CompositeLit:
 			if len(node.Elts) == 0 {
 				// doesn't have elements
@@ -120,6 +139,7 @@ func gofumpt(fset *token.FileSet, file *ast.File) {
 				addNewline(last.End(), 0)
 			}
 		}
+		stack = append(stack, node)
 		return true
 	})
 }

@@ -12,6 +12,15 @@ replacement. Running `gofmt` after `gofumpt` should be a no-op.
 
 ### Features
 
+No empty lines at the beginning or end of a function:
+
+```
+func foo() {
+	println("bar")
+
+}
+```
+
 No empty lines around a lone statement (or comment) in a block:
 
 ```
