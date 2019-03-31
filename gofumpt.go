@@ -14,6 +14,8 @@ import (
 func gofumpt(fset *token.FileSet, file *ast.File) {
 	tfile := fset.File(file.Pos())
 
+	posLine := func(pos token.Pos) int { return tfile.Position(pos).Line }
+
 	commentsBetween := func(p1, p2 token.Pos) []*ast.CommentGroup {
 		comments := file.Comments
 		i1 := sort.Search(len(comments), func(i int) bool {
@@ -53,8 +55,8 @@ func gofumpt(fset *token.FileSet, file *ast.File) {
 	// removeLines joins all lines between two positions, for example to
 	// remove empty lines.
 	removeLines := func(from, to token.Pos) {
-		fromLine := tfile.Position(from).Line
-		toLine := tfile.Position(to).Line
+		fromLine := posLine(from)
+		toLine := posLine(to)
 		for fromLine+1 < toLine {
 			tfile.MergeLine(fromLine)
 			toLine--
@@ -83,26 +85,38 @@ func gofumpt(fset *token.FileSet, file *ast.File) {
 				// doesn't have elements
 				break
 			}
-			openLine := tfile.Position(node.Lbrace).Line
-			closeLine := tfile.Position(node.Rbrace).Line
+			openLine := posLine(node.Lbrace)
+			closeLine := posLine(node.Rbrace)
 			if openLine == closeLine {
-				// not multi-line
-				break
-			}
-			first := node.Elts[0]
-			if len(node.Elts) == 1 &&
-				tfile.Position(first.Pos()).Line == openLine &&
-				tfile.Position(first.End()).Line == closeLine {
-				// wrapping a single expression
+				// all in a single line
 				break
 			}
 
-			if openLine == tfile.Position(first.Pos()).Line {
+			newlineBetweenElems := false
+			lastLine := openLine
+			for _, elem := range node.Elts {
+				if posLine(elem.Pos()) > lastLine {
+					newlineBetweenElems = true
+				}
+				lastLine = posLine(elem.End())
+			}
+			if closeLine > lastLine {
+				newlineBetweenElems = true
+			}
+
+			if !newlineBetweenElems {
+				// no newlines between elements (and braces)
+				break
+			}
+
+			first := node.Elts[0]
+			if openLine == posLine(first.Pos()) {
 				// We want the newline right after the brace.
 				addNewline(node.Lbrace, 1)
+				closeLine = posLine(node.Rbrace)
 			}
 			last := node.Elts[len(node.Elts)-1]
-			if closeLine == tfile.Position(last.End()).Line {
+			if closeLine == posLine(last.End()) {
 				addNewline(last.End(), 0)
 			}
 		}

@@ -17,6 +17,12 @@ var _ = [][]string{{
 	"if wrapping a single expression",
 }}
 
+var _ = []string{`
+	no need for newlines
+	`, `
+	if no elements are surrounded by newlines
+`}
+
 -- foo.go.golden --
 package p
 
@@ -33,3 +39,9 @@ var _ = [][]string{{
 	"no need for more newlines",
 	"if wrapping a single expression",
 }}
+
+var _ = []string{`
+	no need for newlines
+	`, `
+	if no elements are surrounded by newlines
+`}

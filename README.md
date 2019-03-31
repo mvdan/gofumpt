@@ -20,12 +20,18 @@ if err != nil {
 }
 ```
 
-Multi-line composite literals should keep elements in their own lines:
+Composite literals with newlines between elements must also separate the opening
+and closing braces with newlines:
 
 
 ```
-var _ = []int{1, 2,
-        3, 4}
+var bad = []int{1, 2,
+	3, 4}
+
+var good = []int{
+	1, 2,
+	3, 4,
+}
 ```
 
 ### License
