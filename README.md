@@ -2,12 +2,13 @@
 
 `gofmt`, the way it should be pronounced.
 
-Enforce a stricter format than `gofmt`, while still being compatible with
-`gofmt`. That is, `gofumpt` is happy with a subset of the formats that `gofmt`
-is happy with.
+	cd $(mktemp -d); go mod init tmp; go get mvdan.cc/gofumpt
+
+Enforce a stricter format than `gofmt`, while being backwards compatible. That
+is, `gofumpt` is happy with a subset of the formats that `gofmt` is happy with.
 
 The tool is a modified fork of `gofmt`, so it can be used as a drop-in
-replacement.
+replacement. Running `gofmt` after `gofumpt` should be a no-op.
 
 ### Features
 
