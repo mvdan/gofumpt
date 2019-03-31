@@ -8,11 +8,24 @@ import (
 	"go/ast"
 	"go/token"
 	"reflect"
+	"sort"
 )
 
 func gofumpt(fset *token.FileSet, file *ast.File) {
 	tfile := fset.File(file.Pos())
-	cmap := ast.NewCommentMap(fset, file, file.Comments)
+
+	commentsBetween := func(p1, p2 token.Pos) []*ast.CommentGroup {
+		comments := file.Comments
+		i1 := sort.Search(len(comments), func(i int) bool {
+			return comments[i].Pos() >= p1
+		})
+		comments = comments[i1:]
+		i2 := sort.Search(len(comments), func(i int) bool {
+			return comments[i].Pos() >= p2
+		})
+		comments = comments[:i2]
+		return comments
+	}
 
 	// addNewline is a hack to let us force a newline at a certain position.
 	addNewline := func(at token.Pos, plus int) {
@@ -51,7 +64,8 @@ func gofumpt(fset *token.FileSet, file *ast.File) {
 	ast.Inspect(file, func(node ast.Node) bool {
 		switch node := node.(type) {
 		case *ast.BlockStmt:
-			if len(cmap.Filter(node).Comments()) > 0 {
+			comments := commentsBetween(node.Lbrace, node.Rbrace)
+			if len(comments) > 0 {
 				// for now, skip this case.
 				break
 			}

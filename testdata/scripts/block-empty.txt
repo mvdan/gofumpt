@@ -5,6 +5,9 @@ cmp foo.go foo.go.golden
 package p
 
 func f() {
+	if true {
+		// lone comment
+	}
 	{
 
 	}
@@ -19,6 +22,9 @@ func f() {
 package p
 
 func f() {
+	if true {
+		// lone comment
+	}
 	{
 	}
 
