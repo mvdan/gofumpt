@@ -25,7 +25,7 @@ import (
 
 var (
 	// main operation modes
-	list        = flag.Bool("l", false, "list files whose formatting differs from gofmt's")
+	list        = flag.Bool("l", false, "list files whose formatting differs from gofumpt's")
 	write       = flag.Bool("w", false, "write result to (source) file instead of stdout")
 	rewriteRule = flag.String("r", "", "rewrite rule (e.g., 'a[b:len(a)] -> a[b:]')")
 	simplifyAST = flag.Bool("s", false, "simplify code")
@@ -54,7 +54,7 @@ func report(err error) {
 }
 
 func usage() {
-	fmt.Fprintf(os.Stderr, "usage: gofmt [flags] [path ...]\n")
+	fmt.Fprintf(os.Stderr, "usage: gofumpt [flags] [path ...]\n")
 	flag.PrintDefaults()
 }
 
@@ -114,7 +114,8 @@ func processFile(filename string, in io.Reader, out io.Writer, stdin bool) error
 
 	ast.Inspect(file, normalizeNumbers)
 
-	// This is the only gofumpt change on gofmt's codebase.
+	// This is the only gofumpt change on gofmt's codebase, besides changing
+	// the name in the usage text.
 	gofumpt(fileSet, file)
 
 	res, err := format(fileSet, file, sourceAdj, indentAdj, src, printer.Config{Mode: printerMode, Tabwidth: tabWidth})
