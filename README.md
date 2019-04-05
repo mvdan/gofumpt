@@ -93,6 +93,28 @@ func bar() {
 
 </details>
 
+A single declaration spec must not be grouped with parentheses
+
+<details><summary>example</summary>
+
+```
+import (
+	"single"
+)
+
+var (
+	foo = "bar"
+)
+```
+
+```
+import "single"
+
+var foo = "bar"
+```
+
+</details>
+
 ### License
 
 Note that much of the code is copied from Go's `cmd/gofmt` command. You can tell

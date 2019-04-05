@@ -109,6 +109,13 @@ func (f *fumpter) visit(node ast.Node) {
 			lastMulti = multi
 			lastEnd = decl.End()
 		}
+
+	case *ast.GenDecl:
+		if len(node.Specs) == 1 {
+			node.Lparen = token.NoPos
+			node.Rparen = token.NoPos
+		}
+
 	case *ast.BlockStmt:
 		comments := f.commentsBetween(node.Lbrace, node.Rbrace)
 		if len(node.List) == 0 && len(comments) == 0 {
@@ -146,6 +153,7 @@ func (f *fumpter) visit(node ast.Node) {
 
 		f.removeLines(node.Lbrace, bodyPos)
 		f.removeLines(bodyEnd, node.Rbrace)
+
 	case *ast.CompositeLit:
 		if len(node.Elts) == 0 {
 			// doesn't have elements

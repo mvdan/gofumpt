@@ -1,0 +1,47 @@
+gofumpt -w foo.go .
+cmp foo.go foo.go.golden
+
+-- foo.go --
+package p
+
+import "single-line"
+
+import (
+	"too-verbose"
+)
+
+import (
+	"multiple-imports-1"
+	"multiple-imports-2"
+)
+
+var single = "foo"
+
+const (
+	verbose = "bar"
+)
+
+type (
+	multiple1 string
+	multiple2 string
+)
+-- foo.go.golden --
+package p
+
+import "single-line"
+
+import "too-verbose"
+
+import (
+	"multiple-imports-1"
+	"multiple-imports-2"
+)
+
+var single = "foo"
+
+const verbose = "bar"
+
+type (
+	multiple1 string
+	multiple2 string
+)
