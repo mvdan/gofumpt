@@ -12,7 +12,9 @@ replacement. Running `gofmt` after `gofumpt` should be a no-op.
 
 ### Features
 
-No empty lines at the beginning or end of a function:
+No empty lines at the beginning or end of a function
+
+<details><summary>example</summary>
 
 ```
 func foo() {
@@ -21,7 +23,17 @@ func foo() {
 }
 ```
 
-No empty lines around a lone statement (or comment) in a block:
+```
+func foo() {
+	println("bar")
+}
+```
+
+</details>
+
+No empty lines around a lone statement (or comment) in a block
+
+<details><summary>example</summary>
 
 ```
 if err != nil {
@@ -30,21 +42,35 @@ if err != nil {
 }
 ```
 
-Composite literals with newlines between elements must also separate the opening
-and closing braces with newlines:
+```
+if err != nil {
+	return err
+}
+```
 
+</details>
+
+Composite literals with elements in separate lines must also separate both braces
+
+<details><summary>example</summary>
 
 ```
-var bad = []int{1, 2,
+var ints = []int{1, 2,
 	3, 4}
+```
 
-var good = []int{
+```
+var ints = []int{
 	1, 2,
 	3, 4,
 }
 ```
 
-Multiline top-level declarations must be separated by empty lines:
+</details>
+
+Multiline top-level declarations must be separated by empty lines
+
+<details><summary>example</summary>
 
 ```
 func foo() {
@@ -54,6 +80,18 @@ func bar() {
 	println("multiline bar")
 }
 ```
+
+```
+func foo() {
+	println("multiline foo")
+}
+
+func bar() {
+	println("multiline bar")
+}
+```
+
+</details>
 
 ### License
 
