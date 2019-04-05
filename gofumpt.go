@@ -111,7 +111,13 @@ func (f *fumpter) visit(node ast.Node) {
 		}
 
 	case *ast.GenDecl:
-		if len(node.Specs) == 1 {
+		if len(node.Specs) == 1 && node.Lparen.IsValid() {
+			// If the single spec has any comment, it must go before
+			// the entire declaration now.
+			node.TokPos = node.Specs[0].Pos()
+
+			// Remove the parentheses. go/printer will automatically
+			// get rid of the newlines.
 			node.Lparen = token.NoPos
 			node.Rparen = token.NoPos
 		}
