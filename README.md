@@ -10,6 +10,10 @@ is, `gofumpt` is happy with a subset of the formats that `gofmt` is happy with.
 The tool is a modified fork of `gofmt`, so it can be used as a drop-in
 replacement. Running `gofmt` after `gofumpt` should be a no-op.
 
+A drop-in replacement for `goimports` is also available:
+
+	cd $(mktemp -d); go mod init tmp; go get mvdan.cc/gofumpt/gofumports
+
 ### Features
 
 No empty lines at the beginning or end of a function
@@ -137,9 +141,9 @@ func Foo() {}
 
 ### License
 
-Note that much of the code is copied from Go's `cmd/gofmt` command. You can tell
-which files originate from the Go repository from their copyright headers. Their
-license file is `LICENSE.google`.
+Note that much of the code is copied from Go's `gofmt` and `goimports` commands.
+You can tell which files originate from the Go repository from their copyright
+headers. Their license file is `LICENSE.google`.
 
 `gofumpt`'s original source files are also under the 3-clause BSD license, with
 the separate file `LICENSE`.

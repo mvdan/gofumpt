@@ -4,8 +4,11 @@
 package internal
 
 import (
+	"bytes"
 	"fmt"
 	"go/ast"
+	"go/format"
+	"go/parser"
 	"go/token"
 	"reflect"
 	"sort"
@@ -13,6 +16,22 @@ import (
 	"unicode"
 	"unicode/utf8"
 )
+
+func GofumptBytes(src []byte) ([]byte, error) {
+	fset := token.NewFileSet()
+	file, err := parser.ParseFile(fset, "", src, parser.ParseComments)
+	if err != nil {
+		return nil, err
+	}
+
+	Gofumpt(fset, file)
+
+	var buf bytes.Buffer
+	if err := format.Node(&buf, fset, file); err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
 
 func Gofumpt(fset *token.FileSet, file *ast.File) {
 	f := &fumpter{

@@ -25,10 +25,10 @@ func TestMain(m *testing.M) {
 func TestScripts(t *testing.T) {
 	t.Parallel()
 	testscript.Run(t, testscript.Params{
-		Dir: filepath.Join("testdata", "scripts"),
+		Dir: filepath.Join("..", "testdata", "scripts"),
 		Condition: func(cond string) (bool, error) {
 			switch cond {
-			case "gofumpt":
+			case "gofumports":
 				return true, nil
 			}
 			return false, nil

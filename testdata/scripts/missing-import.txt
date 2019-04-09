@@ -1,0 +1,18 @@
+gofumpt -w foo.go .
+[gofumpt] cmp foo.go foo.go.gofumpt
+[gofumports] cmp foo.go foo.go.gofumports
+
+-- foo.go --
+package p
+
+var _ bytes.Buffer
+-- foo.go.gofumpt --
+package p
+
+var _ bytes.Buffer
+-- foo.go.gofumports --
+package p
+
+import "bytes"
+
+var _ bytes.Buffer
