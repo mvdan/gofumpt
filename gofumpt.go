@@ -9,6 +9,9 @@ import (
 	"go/token"
 	"reflect"
 	"sort"
+	"strings"
+	"unicode"
+	"unicode/utf8"
 )
 
 func gofumpt(fset *token.FileSet, file *ast.File) {
@@ -108,6 +111,33 @@ func (f *fumpter) visit(node ast.Node) {
 
 			lastMulti = multi
 			lastEnd = decl.End()
+		}
+
+		// The unattached comments are ignored by ast.Walk.
+		// Don't bother with the stack.
+		for _, group := range node.Comments {
+			f.visit(group)
+			for _, comment := range group.List {
+				f.visit(comment)
+			}
+		}
+
+	case *ast.Comment:
+		body := strings.TrimPrefix(node.Text, "//")
+		if body == node.Text {
+			// /*-style comment
+			break
+		}
+		switch {
+		case strings.HasPrefix(body, "go:"):
+			// standard go:foobar directive
+		case strings.HasPrefix(body, "line "):
+			// cmd/compile line directive
+		default:
+			r, _ := utf8.DecodeRuneInString(body)
+			if r != utf8.RuneError && !unicode.IsSpace(r) {
+				node.Text = "// " + body
+			}
 		}
 
 	case *ast.GenDecl:

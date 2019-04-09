@@ -115,6 +115,26 @@ var foo = "bar"
 
 </details>
 
+Comments which aren't Go directives should start with a whitespace
+
+<details><summary>example</summary>
+
+```
+//go:noinline
+
+//Foo is awesome.
+func Foo() {}
+```
+
+```
+//go:noinline
+
+// Foo is awesome.
+func Foo() {}
+```
+
+</details>
+
 ### License
 
 Note that much of the code is copied from Go's `cmd/gofmt` command. You can tell
