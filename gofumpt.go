@@ -135,7 +135,7 @@ func (f *fumpter) visit(node ast.Node) {
 			// cmd/compile line directive
 		default:
 			r, _ := utf8.DecodeRuneInString(body)
-			if r != utf8.RuneError && !unicode.IsSpace(r) {
+			if unicode.IsLetter(r) || unicode.IsNumber(r) {
 				node.Text = "// " + body
 			}
 		}

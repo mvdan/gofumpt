@@ -2,10 +2,9 @@ gofumpt -w foo.go .
 cmp foo.go foo.go.golden
 
 -- foo.go --
-package p
-
 // +build tag
-//+build tag missing space
+
+package p
 
 //go:generate some command
 
@@ -20,15 +19,18 @@ type foo int
 
 //  comment with many spaces
 
-//multiple comments
-//missing spaces
+//comment group
+//123 numbers too
+
+////////////
+// ascii art
+//----------
 
 //
 -- foo.go.golden --
-package p
-
 // +build tag
-// +build tag missing space
+
+package p
 
 //go:generate some command
 
@@ -43,7 +45,11 @@ type foo int
 
 //  comment with many spaces
 
-// multiple comments
-// missing spaces
+// comment group
+// 123 numbers too
+
+////////////
+// ascii art
+//----------
 
 //
