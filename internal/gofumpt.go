@@ -1,7 +1,7 @@
 // Copyright (c) 2019, Daniel Martí <mvdan@mvdan.cc>
 // See LICENSE for licensing information
 
-package main
+package internal
 
 import (
 	"fmt"
@@ -14,7 +14,7 @@ import (
 	"unicode/utf8"
 )
 
-func gofumpt(fset *token.FileSet, file *ast.File) {
+func Gofumpt(fset *token.FileSet, file *ast.File) {
 	f := &fumpter{
 		fset:    fset,
 		file:    fset.File(file.Pos()),

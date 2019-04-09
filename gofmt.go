@@ -21,6 +21,8 @@ import (
 	"runtime"
 	"runtime/pprof"
 	"strings"
+
+	"mvdan.cc/gofumpt/internal"
 )
 
 var (
@@ -116,7 +118,7 @@ func processFile(filename string, in io.Reader, out io.Writer, stdin bool) error
 
 	// This is the only gofumpt change on gofmt's codebase, besides changing
 	// the name in the usage text.
-	gofumpt(fileSet, file)
+	internal.Gofumpt(fileSet, file)
 
 	res, err := format(fileSet, file, sourceAdj, indentAdj, src, printer.Config{Mode: printerMode, Tabwidth: tabWidth})
 	if err != nil {
