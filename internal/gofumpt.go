@@ -17,6 +17,12 @@ import (
 	"unicode/utf8"
 )
 
+// Multiline nodes which could fit on a single line under this many
+// bytes may be collapsed onto a single line.
+// TODO: Increase this to 60 once we take indentation into account. For now,
+// subtract two tabs.
+const shortLineLimit = 44
+
 func GofumptBytes(src []byte) ([]byte, error) {
 	fset := token.NewFileSet()
 	file, err := parser.ParseFile(fset, "", src, parser.ParseComments)
@@ -76,6 +82,23 @@ func (f *fumpter) commentsBetween(p1, p2 token.Pos) []*ast.CommentGroup {
 	return comments
 }
 
+func (f *fumpter) inlineComment(pos token.Pos) *ast.Comment {
+	comments := f.astFile.Comments
+	i := sort.Search(len(comments), func(i int) bool {
+		return comments[i].Pos() >= pos
+	})
+	if i >= len(comments) {
+		return nil
+	}
+	line := f.posLine(pos)
+	for _, comment := range comments[i].List {
+		if f.posLine(comment.Pos()) == line {
+			return comment
+		}
+	}
+	return nil
+}
+
 // addNewline is a hack to let us force a newline at a certain position.
 func (f *fumpter) addNewline(at token.Pos, plus int) {
 	offset := f.file.Position(at).Offset + plus
@@ -99,15 +122,37 @@ func (f *fumpter) addNewline(at token.Pos, plus int) {
 	}
 }
 
-// removeLines joins all lines between two positions, for example to
-// remove empty lines.
-func (f *fumpter) removeLines(from, to token.Pos) {
-	fromLine := f.posLine(from)
-	toLine := f.posLine(to)
-	for fromLine+1 < toLine {
+// removeNewlines removes all newlines between two positions, so that they end
+// up on the same line.
+func (f *fumpter) removeLines(fromLine, toLine int) {
+	for fromLine < toLine {
 		f.file.MergeLine(fromLine)
 		toLine--
 	}
+}
+
+// removeLinesBetween is like removeLines, but it leaves one newline between the
+// two positions.
+func (f *fumpter) removeLinesBetween(from, to token.Pos) {
+	f.removeLines(f.posLine(from)+1, f.posLine(to))
+}
+
+type byteCounter int
+
+func (b *byteCounter) Write(p []byte) (n int, err error) {
+	*b += byteCounter(len(p))
+	return len(p), nil
+}
+
+func (f *fumpter) printLength(node ast.Node) int {
+	var count byteCounter
+	if err := format.Node(&count, f.fset, node); err != nil {
+		panic(fmt.Sprintf("unexpected print error: %v", err))
+	}
+	if c := f.inlineComment(node.End()); c != nil {
+		fmt.Fprintf(&count, " %s", c.Text)
+	}
+	return int(count)
 }
 
 func (f *fumpter) visit(node ast.Node) {
@@ -174,7 +219,7 @@ func (f *fumpter) visit(node ast.Node) {
 	case *ast.BlockStmt:
 		comments := f.commentsBetween(node.Lbrace, node.Rbrace)
 		if len(node.List) == 0 && len(comments) == 0 {
-			f.removeLines(node.Lbrace, node.Rbrace)
+			f.removeLinesBetween(node.Lbrace, node.Rbrace)
 			break
 		}
 
@@ -206,8 +251,8 @@ func (f *fumpter) visit(node ast.Node) {
 			}
 		}
 
-		f.removeLines(node.Lbrace, bodyPos)
-		f.removeLines(bodyEnd, node.Rbrace)
+		f.removeLinesBetween(node.Lbrace, bodyPos)
+		f.removeLinesBetween(bodyEnd, node.Rbrace)
 
 	case *ast.CompositeLit:
 		if len(node.Elts) == 0 {
@@ -248,5 +293,22 @@ func (f *fumpter) visit(node ast.Node) {
 		if closeLine == f.posLine(last.End()) {
 			f.addNewline(last.End(), 0)
 		}
+
+	case *ast.CaseClause:
+		openLine := f.posLine(node.Case)
+		closeLine := f.posLine(node.Colon)
+		if openLine == closeLine {
+			// nothing to do
+			break
+		}
+		if len(f.commentsBetween(node.Case, node.Colon)) > 0 {
+			// don't move comments
+			break
+		}
+		if f.printLength(node) > shortLineLimit {
+			// too long to collapse
+			break
+		}
+		f.removeLines(openLine, closeLine)
 	}
 }
