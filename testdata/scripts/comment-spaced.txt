@@ -14,6 +14,8 @@ package p
 
 //not actually: a directive
 
+//TODO: do something
+
 //export CgoFunc
 
 //line 123
@@ -45,6 +47,8 @@ package p
 //lint:disablefoo
 
 // not actually: a directive
+
+// TODO: do something
 
 //export CgoFunc
 
