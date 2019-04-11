@@ -10,6 +10,12 @@ package p
 
 //go:unknowndirective
 
+//lint:disablefoo
+
+//not actually: a directive
+
+//export CgoFunc
+
 //line 123
 
 //foo is foo.
@@ -35,6 +41,12 @@ package p
 //go:generate some command
 
 //go:unknowndirective
+
+//lint:disablefoo
+
+// not actually: a directive
+
+//export CgoFunc
 
 //line 123
 

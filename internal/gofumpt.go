@@ -11,6 +11,7 @@ import (
 	"go/parser"
 	"go/token"
 	"reflect"
+	"regexp"
 	"sort"
 	"strings"
 	"unicode"
@@ -155,6 +156,14 @@ func (f *fumpter) printLength(node ast.Node) int {
 	return int(count)
 }
 
+// rxCommentDirective covers all common Go comment directives:
+//
+//   //go:        | standard Go directives, like go:noinline
+//   //someword:  | similar to the syntax above, like lint:ignore
+//   //line       | inserted line information for cmd/compile
+//   //export     | to mark cgo funcs for exporting
+var rxCommentDirective = regexp.MustCompile(`^([a-z]+:|line\b|export\b)`)
+
 func (f *fumpter) visit(node ast.Node) {
 	switch node := node.(type) {
 	case *ast.File:
@@ -192,16 +201,13 @@ func (f *fumpter) visit(node ast.Node) {
 			// /*-style comment
 			break
 		}
-		switch {
-		case strings.HasPrefix(body, "go:"):
-			// standard go:foobar directive
-		case strings.HasPrefix(body, "line "):
-			// cmd/compile line directive
-		default:
-			r, _ := utf8.DecodeRuneInString(body)
-			if unicode.IsLetter(r) || unicode.IsNumber(r) {
-				node.Text = "// " + body
-			}
+		if rxCommentDirective.MatchString(body) {
+			// this comment is a directive
+			break
+		}
+		r, _ := utf8.DecodeRuneInString(body)
+		if unicode.IsLetter(r) || unicode.IsNumber(r) {
+			node.Text = "// " + body
 		}
 
 	case *ast.GenDecl:
