@@ -32,6 +32,20 @@ func f(r rune) {
 	case 'a', 'b', 'c',
 		'd': // short comment
 	}
+	{
+		{
+			{
+				{
+					{
+						switch r {
+						case 'i', 'n', 'd', 'e',
+							'n', 't', 'e', 'd':
+						}
+					}
+				}
+			}
+		}
+	}
 }
 -- foo.go.golden --
 package p
@@ -58,5 +72,19 @@ func f(r rune) {
 		'g': // very very long inline comment at the end
 
 	case 'a', 'b', 'c', 'd': // short comment
+	}
+	{
+		{
+			{
+				{
+					{
+						switch r {
+						case 'i', 'n', 'd', 'e',
+							'n', 't', 'e', 'd':
+						}
+					}
+				}
+			}
+		}
 	}
 }

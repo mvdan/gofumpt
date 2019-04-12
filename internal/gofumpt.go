@@ -20,9 +20,7 @@ import (
 
 // Multiline nodes which could fit on a single line under this many
 // bytes may be collapsed onto a single line.
-// TODO: Increase this to 60 once we take indentation into account. For now,
-// subtract two tabs.
-const shortLineLimit = 44
+const shortLineLimit = 60
 
 func GofumptBytes(src []byte) ([]byte, error) {
 	fset := token.NewFileSet()
@@ -150,8 +148,20 @@ func (f *fumpter) printLength(node ast.Node) int {
 	if err := format.Node(&count, f.fset, node); err != nil {
 		panic(fmt.Sprintf("unexpected print error: %v", err))
 	}
+
+	// Add the space taken by an inline comment.
 	if c := f.inlineComment(node.End()); c != nil {
 		fmt.Fprintf(&count, " %s", c.Text)
+	}
+
+	// Add an approximation of the indentation level. We can't know the
+	// number of tabs go/printer will add ahead of time. Trying to print the
+	// entire top-level declaration would tell us that, but then it's near
+	// impossible to reliably find our node again.
+	for _, parent := range f.stack {
+		if _, ok := parent.(*ast.BlockStmt); ok {
+			count += 8
+		}
 	}
 	return int(count)
 }
