@@ -99,8 +99,8 @@ func (f *fumpter) inlineComment(pos token.Pos) *ast.Comment {
 }
 
 // addNewline is a hack to let us force a newline at a certain position.
-func (f *fumpter) addNewline(at token.Pos, plus int) {
-	offset := f.file.Position(at).Offset + plus
+func (f *fumpter) addNewline(at token.Pos) {
+	offset := f.file.Position(at).Offset
 
 	field := reflect.ValueOf(f.file).Elem().FieldByName("lines")
 	n := field.Len()
@@ -189,7 +189,7 @@ func (f *fumpter) visit(node ast.Node) {
 			multi := f.posLine(decl.Pos()) < f.posLine(decl.End())
 			if (multi && lastMulti) &&
 				f.posLine(lastEnd)+1 == f.posLine(pos) {
-				f.addNewline(lastEnd, 0)
+				f.addNewline(lastEnd)
 			}
 
 			lastMulti = multi
@@ -302,12 +302,12 @@ func (f *fumpter) visit(node ast.Node) {
 		first := node.Elts[0]
 		if openLine == f.posLine(first.Pos()) {
 			// We want the newline right after the brace.
-			f.addNewline(node.Lbrace, 1)
+			f.addNewline(node.Lbrace + 1)
 			closeLine = f.posLine(node.Rbrace)
 		}
 		last := node.Elts[len(node.Elts)-1]
 		if closeLine == f.posLine(last.End()) {
-			f.addNewline(last.End(), 0)
+			f.addNewline(last.End())
 		}
 
 	case *ast.CaseClause:
