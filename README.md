@@ -72,6 +72,25 @@ var ints = []int{
 
 </details>
 
+Short case clauses should take a single line
+
+<details><summary>example</summary>
+
+```
+switch c {
+case 'a', 'b',
+	'c', 'd':
+}
+```
+
+```
+switch c {
+case 'a', 'b', 'c', 'd':
+}
+```
+
+</details>
+
 Multiline top-level declarations must be separated by empty lines
 
 <details><summary>example</summary>
