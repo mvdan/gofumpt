@@ -158,6 +158,10 @@ func Foo() {}
 
 </details>
 
+### Installation
+
+In order to use the tool with VS Code refer to [this issue](https://github.com/Microsoft/vscode-go/issues/2438#issuecomment-482337120).
+
 ### License
 
 Note that much of the code is copied from Go's `gofmt` and `goimports` commands.
