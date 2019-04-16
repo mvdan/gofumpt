@@ -172,7 +172,8 @@ func (f *fumpter) printLength(node ast.Node) int {
 //   //someword:  | similar to the syntax above, like lint:ignore
 //   //line       | inserted line information for cmd/compile
 //   //export     | to mark cgo funcs for exporting
-var rxCommentDirective = regexp.MustCompile(`^([a-z]+:|line\b|export\b)`)
+//   //sys(nb)?   | syscall function wrapper prototypes
+var rxCommentDirective = regexp.MustCompile(`^([a-z]+:|line\b|export\b|sys(nb)?\b)`)
 
 func (f *fumpter) visit(node ast.Node) {
 	switch node := node.(type) {
