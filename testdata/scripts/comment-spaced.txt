@@ -20,6 +20,10 @@ package p
 
 //line 123
 
+//sys   Unlink(path string) (err error)
+
+//sysnb	Getpid() (pid int)
+
 //foo is foo.
 type foo int
 
@@ -53,6 +57,10 @@ package p
 //export CgoFunc
 
 //line 123
+
+//sys   Unlink(path string) (err error)
+
+//sysnb	Getpid() (pid int)
 
 // foo is foo.
 type foo int
