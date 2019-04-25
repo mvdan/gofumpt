@@ -187,6 +187,7 @@ func (f *fumpter) visit(node ast.Node) {
 				pos = comments[0].Pos()
 			}
 
+			// multiline top-level declarations should be separated
 			multi := f.posLine(decl.Pos()) < f.posLine(decl.End())
 			if (multi && lastMulti) &&
 				f.posLine(lastEnd)+1 == f.posLine(pos) {
@@ -222,6 +223,9 @@ func (f *fumpter) visit(node ast.Node) {
 		}
 
 	case *ast.GenDecl:
+		if node.Tok == token.IMPORT && node.Lparen.IsValid() {
+			f.joinStdImports(node)
+		}
 		if len(node.Specs) == 1 && node.Lparen.IsValid() {
 			// If the single spec has any comment, it must go before
 			// the entire declaration now.
@@ -327,5 +331,47 @@ func (f *fumpter) visit(node ast.Node) {
 			break
 		}
 		f.removeLines(openLine, closeLine)
+	}
+}
+
+// joinStdImports ensures that all standard library imports are together and at
+// the top of the imports list.
+func (f *fumpter) joinStdImports(d *ast.GenDecl) {
+	var std, other []ast.Spec
+	for _, spec := range d.Specs {
+		spec := spec.(*ast.ImportSpec)
+		// First, separate the non-std imports.
+		if strings.Contains(spec.Path.Value, ".") {
+			other = append(other, spec)
+			continue
+		}
+		if len(other) > 0 {
+			// If we're moving this std import further up, reset its
+			// position, to avoid breaking comments.
+			setPos(reflect.ValueOf(spec), d.Pos())
+		}
+		std = append(std, spec)
+	}
+	// Finally, join the imports, keeping std at the top.
+	d.Specs = append(std, other...)
+}
+
+var posType = reflect.TypeOf(token.NoPos)
+
+// setPos recursively sets all position fields in the node v to pos.
+func setPos(v reflect.Value, pos token.Pos) {
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
+	if !v.IsValid() {
+		return
+	}
+	if v.Type() == posType {
+		v.Set(reflect.ValueOf(pos))
+	}
+	if v.Kind() == reflect.Struct {
+		for i := 0; i < v.NumField(); i++ {
+			setPos(v.Field(i), pos)
+		}
 	}
 }

@@ -1,0 +1,39 @@
+[gofumports] skip 'don''t add or remove imports'
+
+gofumpt -w foo.go .
+cmp foo.go foo.go.golden
+
+-- foo.go --
+package p
+
+import (
+	"io"
+
+	_ "bufio" // for a side effect
+)
+
+import (
+	"os"
+
+	"foo.localhost/other"
+
+	bytes_ "bytes"
+
+	"io"
+)
+-- foo.go.golden --
+package p
+
+import (
+	"io"
+
+	_ "bufio" // for a side effect
+)
+
+import (
+	bytes_ "bytes"
+	"io"
+	"os"
+
+	"foo.localhost/other"
+)
