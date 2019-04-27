@@ -54,6 +54,27 @@ if err != nil {
 
 </details>
 
+No empty lines before a simple error check
+
+<details><summary>example</summary>
+
+```
+foo, err := processFoo()
+
+if err != nil {
+	return err
+}
+```
+
+```
+foo, err := processFoo()
+if err != nil {
+	return err
+}
+```
+
+</details>
+
 Composite literals with elements in separate lines must also separate both braces
 
 <details><summary>example</summary>

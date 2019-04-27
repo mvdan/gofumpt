@@ -51,6 +51,14 @@ func Gofumpt(fset *token.FileSet, file *ast.File) {
 		}
 		f.visit(node)
 		f.stack = append(f.stack, node)
+		switch node := node.(type) {
+		case *ast.BlockStmt:
+			f.visit(node.List)
+		case *ast.CaseClause:
+			f.visit(node.Body)
+		case *ast.CommClause:
+			f.visit(node.Body)
+		}
 		return true
 	})
 }
@@ -175,7 +183,8 @@ func (f *fumpter) printLength(node ast.Node) int {
 //   //sys(nb)?   | syscall function wrapper prototypes
 var rxCommentDirective = regexp.MustCompile(`^([a-z]+:|line\b|export\b|sys(nb)?\b)`)
 
-func (f *fumpter) visit(node ast.Node) {
+// visit takes either an ast.Node or a []ast.Stmt.
+func (f *fumpter) visit(node interface{}) {
 	switch node := node.(type) {
 	case *ast.File:
 		var lastMulti bool
@@ -275,6 +284,28 @@ func (f *fumpter) visit(node ast.Node) {
 		f.removeLinesBetween(node.Lbrace, bodyPos)
 		f.removeLinesBetween(bodyEnd, node.Rbrace)
 
+	case []ast.Stmt:
+		for i, stmt := range node {
+			ifs, ok := stmt.(*ast.IfStmt)
+			if !ok || i < 1 {
+				continue // not an if following another statement
+			}
+			as, ok := node[i-1].(*ast.AssignStmt)
+			if !ok || as.Tok != token.DEFINE ||
+				!identEqual(as.Lhs[len(as.Lhs)-1], "err") {
+				continue // not "..., err := ..."
+			}
+			be, ok := ifs.Cond.(*ast.BinaryExpr)
+			if !ok || ifs.Init != nil || ifs.Else != nil {
+				continue // complex if
+			}
+			if be.Op != token.NEQ || !identEqual(be.X, "err") ||
+				!identEqual(be.Y, "nil") {
+				continue // not "err != nil"
+			}
+			f.removeLinesBetween(as.End(), ifs.Pos())
+		}
+
 	case *ast.CompositeLit:
 		if len(node.Elts) == 0 {
 			// doesn't have elements
@@ -332,6 +363,11 @@ func (f *fumpter) visit(node ast.Node) {
 		}
 		f.removeLines(openLine, closeLine)
 	}
+}
+
+func identEqual(expr ast.Expr, name string) bool {
+	id, ok := expr.(*ast.Ident)
+	return ok && id.Name == name
 }
 
 // joinStdImports ensures that all standard library imports are together and at
