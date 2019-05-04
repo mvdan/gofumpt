@@ -159,6 +159,20 @@ var foo = "bar"
 
 </details>
 
+Simple var-declaration statements should use short assignments
+
+<details><summary>example</summary>
+
+```
+var s = "somestring"
+```
+
+```
+s := "somestring"
+```
+
+</details>
+
 Comments which aren't Go directives should start with a whitespace
 
 <details><summary>example</summary>

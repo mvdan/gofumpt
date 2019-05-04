@@ -220,6 +220,25 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 			}
 		}
 
+	case *ast.DeclStmt:
+		decl, ok := node.Decl.(*ast.GenDecl)
+		if !ok || decl.Tok != token.VAR || len(decl.Specs) != 1 {
+			break // e.g. const name = "value"
+		}
+		spec := decl.Specs[0].(*ast.ValueSpec)
+		if spec.Type != nil {
+			break // e.g. var name Type
+		}
+		names := make([]ast.Expr, len(spec.Names))
+		for i, name := range spec.Names {
+			names[i] = name
+		}
+		c.Replace(&ast.AssignStmt{
+			Lhs: names,
+			Tok: token.DEFINE,
+			Rhs: spec.Values,
+		})
+
 	case *ast.GenDecl:
 		if node.Tok == token.IMPORT && node.Lparen.IsValid() {
 			f.joinStdImports(node)
