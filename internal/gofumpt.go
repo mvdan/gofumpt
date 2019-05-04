@@ -16,6 +16,8 @@ import (
 	"strings"
 	"unicode"
 	"unicode/utf8"
+
+	"golang.org/x/tools/go/ast/astutil"
 )
 
 // Multiline nodes which could fit on a single line under this many
@@ -44,23 +46,20 @@ func Gofumpt(fset *token.FileSet, file *ast.File) {
 		file:    fset.File(file.Pos()),
 		astFile: file,
 	}
-	ast.Inspect(file, func(node ast.Node) bool {
-		if node == nil {
-			f.stack = f.stack[:len(f.stack)-1]
-			return true
-		}
-		f.visit(node)
-		f.stack = append(f.stack, node)
-		switch node := node.(type) {
-		case *ast.BlockStmt:
-			f.visit(node.List)
-		case *ast.CaseClause:
-			f.visit(node.Body)
-		case *ast.CommClause:
-			f.visit(node.Body)
+	pre := func(c *astutil.Cursor) bool {
+		f.applyPre(c)
+		if _, ok := c.Node().(*ast.BlockStmt); ok {
+			f.blockLevel++
 		}
 		return true
-	})
+	}
+	post := func(c *astutil.Cursor) bool {
+		if _, ok := c.Node().(*ast.BlockStmt); ok {
+			f.blockLevel--
+		}
+		return true
+	}
+	astutil.Apply(file, pre, post)
 }
 
 type fumpter struct {
@@ -69,7 +68,7 @@ type fumpter struct {
 
 	astFile *ast.File
 
-	stack []ast.Node
+	blockLevel int
 }
 
 func (f *fumpter) posLine(pos token.Pos) int {
@@ -166,12 +165,7 @@ func (f *fumpter) printLength(node ast.Node) int {
 	// number of tabs go/printer will add ahead of time. Trying to print the
 	// entire top-level declaration would tell us that, but then it's near
 	// impossible to reliably find our node again.
-	for _, parent := range f.stack {
-		if _, ok := parent.(*ast.BlockStmt); ok {
-			count += 8
-		}
-	}
-	return int(count)
+	return int(count) + (f.blockLevel * 8)
 }
 
 // rxCommentDirective covers all common Go comment directives:
@@ -184,8 +178,8 @@ func (f *fumpter) printLength(node ast.Node) int {
 var rxCommentDirective = regexp.MustCompile(`^([a-z]+:|line\b|export\b|sys(nb)?\b)`)
 
 // visit takes either an ast.Node or a []ast.Stmt.
-func (f *fumpter) visit(node interface{}) {
-	switch node := node.(type) {
+func (f *fumpter) applyPre(c *astutil.Cursor) {
+	switch node := c.Node().(type) {
 	case *ast.File:
 		var lastMulti bool
 		var lastEnd token.Pos
@@ -207,28 +201,23 @@ func (f *fumpter) visit(node interface{}) {
 			lastEnd = decl.End()
 		}
 
-		// The unattached comments are ignored by ast.Walk.
-		// Don't bother with the stack.
+		// Comments aren't nodes, so they're not walked by default.
 		for _, group := range node.Comments {
-			f.visit(group)
 			for _, comment := range group.List {
-				f.visit(comment)
+				body := strings.TrimPrefix(comment.Text, "//")
+				if body == comment.Text {
+					// /*-style comment
+					break
+				}
+				if rxCommentDirective.MatchString(body) {
+					// this comment is a directive
+					break
+				}
+				r, _ := utf8.DecodeRuneInString(body)
+				if unicode.IsLetter(r) || unicode.IsNumber(r) {
+					comment.Text = "// " + body
+				}
 			}
-		}
-
-	case *ast.Comment:
-		body := strings.TrimPrefix(node.Text, "//")
-		if body == node.Text {
-			// /*-style comment
-			break
-		}
-		if rxCommentDirective.MatchString(body) {
-			// this comment is a directive
-			break
-		}
-		r, _ := utf8.DecodeRuneInString(body)
-		if unicode.IsLetter(r) || unicode.IsNumber(r) {
-			node.Text = "// " + body
 		}
 
 	case *ast.GenDecl:
@@ -247,6 +236,7 @@ func (f *fumpter) visit(node interface{}) {
 		}
 
 	case *ast.BlockStmt:
+		f.stmts(node.List)
 		comments := f.commentsBetween(node.Lbrace, node.Rbrace)
 		if len(node.List) == 0 && len(comments) == 0 {
 			f.removeLinesBetween(node.Lbrace, node.Rbrace)
@@ -254,7 +244,7 @@ func (f *fumpter) visit(node interface{}) {
 		}
 
 		isFuncBody := false
-		switch f.stack[len(f.stack)-1].(type) {
+		switch c.Parent().(type) {
 		case *ast.FuncDecl:
 			isFuncBody = true
 		case *ast.FuncLit:
@@ -283,28 +273,6 @@ func (f *fumpter) visit(node interface{}) {
 
 		f.removeLinesBetween(node.Lbrace, bodyPos)
 		f.removeLinesBetween(bodyEnd, node.Rbrace)
-
-	case []ast.Stmt:
-		for i, stmt := range node {
-			ifs, ok := stmt.(*ast.IfStmt)
-			if !ok || i < 1 {
-				continue // not an if following another statement
-			}
-			as, ok := node[i-1].(*ast.AssignStmt)
-			if !ok || as.Tok != token.DEFINE ||
-				!identEqual(as.Lhs[len(as.Lhs)-1], "err") {
-				continue // not "..., err := ..."
-			}
-			be, ok := ifs.Cond.(*ast.BinaryExpr)
-			if !ok || ifs.Init != nil || ifs.Else != nil {
-				continue // complex if
-			}
-			if be.Op != token.NEQ || !identEqual(be.X, "err") ||
-				!identEqual(be.Y, "nil") {
-				continue // not "err != nil"
-			}
-			f.removeLinesBetween(as.End(), ifs.Pos())
-		}
 
 	case *ast.CompositeLit:
 		if len(node.Elts) == 0 {
@@ -347,6 +315,7 @@ func (f *fumpter) visit(node interface{}) {
 		}
 
 	case *ast.CaseClause:
+		f.stmts(node.Body)
 		openLine := f.posLine(node.Case)
 		closeLine := f.posLine(node.Colon)
 		if openLine == closeLine {
@@ -362,6 +331,32 @@ func (f *fumpter) visit(node interface{}) {
 			break
 		}
 		f.removeLines(openLine, closeLine)
+
+	case *ast.CommClause:
+		f.stmts(node.Body)
+	}
+}
+
+func (f *fumpter) stmts(list []ast.Stmt) {
+	for i, stmt := range list {
+		ifs, ok := stmt.(*ast.IfStmt)
+		if !ok || i < 1 {
+			continue // not an if following another statement
+		}
+		as, ok := list[i-1].(*ast.AssignStmt)
+		if !ok || as.Tok != token.DEFINE ||
+			!identEqual(as.Lhs[len(as.Lhs)-1], "err") {
+			continue // not "..., err := ..."
+		}
+		be, ok := ifs.Cond.(*ast.BinaryExpr)
+		if !ok || ifs.Init != nil || ifs.Else != nil {
+			continue // complex if
+		}
+		if be.Op != token.NEQ || !identEqual(be.X, "err") ||
+			!identEqual(be.Y, "nil") {
+			continue // not "err != nil"
+		}
+		f.removeLinesBetween(as.End(), ifs.Pos())
 	}
 }
 
