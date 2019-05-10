@@ -195,7 +195,10 @@ func Foo() {}
 
 ### Installation
 
-In order to use the tool with VS Code refer to [this issue](https://github.com/Microsoft/vscode-go/issues/2438#issuecomment-482337120).
+`gofumpt` is a replacement for `gofmt`, so you can simply `go get` it as
+described at the top of this README and use it.
+
+Alternatively, to use the tool with VS Code, refer to [this issue](https://github.com/Microsoft/vscode-go/issues/2438#issuecomment-482337120).
 
 ### License
 
