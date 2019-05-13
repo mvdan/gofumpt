@@ -18,6 +18,9 @@ package p
 
 //export CgoFunc
 
+//extern open
+func c_open(name *byte, mode int, perm int) int
+
 //line 123
 
 //sys   Unlink(path string) (err error)
@@ -55,6 +58,9 @@ package p
 // TODO: do something
 
 //export CgoFunc
+
+//extern open
+func c_open(name *byte, mode int, perm int) int
 
 //line 123
 
