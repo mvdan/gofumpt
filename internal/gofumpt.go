@@ -174,8 +174,9 @@ func (f *fumpter) printLength(node ast.Node) int {
 //   //someword:  | similar to the syntax above, like lint:ignore
 //   //line       | inserted line information for cmd/compile
 //   //export     | to mark cgo funcs for exporting
+//   //extern     | C function declarations for gccgo
 //   //sys(nb)?   | syscall function wrapper prototypes
-var rxCommentDirective = regexp.MustCompile(`^([a-z]+:|line\b|export\b|sys(nb)?\b)`)
+var rxCommentDirective = regexp.MustCompile(`^([a-z]+:|line\b|export\b|extern\b|sys(nb)?\b)`)
 
 // visit takes either an ast.Node or a []ast.Stmt.
 func (f *fumpter) applyPre(c *astutil.Cursor) {
