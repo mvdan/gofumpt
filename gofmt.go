@@ -116,7 +116,7 @@ func processFile(filename string, in io.Reader, out io.Writer, stdin bool) error
 
 	ast.Inspect(file, normalizeNumbers)
 
-	// This is the only gofumpt change on gofmt's codebase, besides changing
+	// This is the only gofumpt change on gofumpt's codebase, besides changing
 	// the name in the usage text.
 	internal.Gofumpt(fileSet, file)
 
@@ -168,7 +168,7 @@ func visitFile(path string, f os.FileInfo, err error) error {
 		err = processFile(path, nil, os.Stdout, false)
 	}
 	// Don't complain if a file was deleted in the meantime (i.e.
-	// the directory changed concurrently while running gofmt).
+	// the directory changed concurrently while running gofumpt).
 	if err != nil && !os.IsNotExist(err) {
 		report(err)
 	}
@@ -180,14 +180,14 @@ func walkDir(path string) {
 }
 
 func main() {
-	// call gofmtMain in a separate function
+	// call gofumptMain in a separate function
 	// so that it can use defer and have them
 	// run before the exit.
-	gofmtMain()
+	gofumptMain()
 	os.Exit(exitCode)
 }
 
-func gofmtMain() {
+func gofumptMain() {
 	flag.Usage = usage
 	flag.Parse()
 
@@ -250,13 +250,13 @@ func writeTempFile(dir, prefix string, data []byte) (string, error) {
 }
 
 func diff(b1, b2 []byte, filename string) (data []byte, err error) {
-	f1, err := writeTempFile("", "gofmt", b1)
+	f1, err := writeTempFile("", "gofumpt", b1)
 	if err != nil {
 		return
 	}
 	defer os.Remove(f1)
 
-	f2, err := writeTempFile("", "gofmt", b2)
+	f2, err := writeTempFile("", "gofumpt", b2)
 	if err != nil {
 		return
 	}
@@ -278,8 +278,8 @@ func diff(b1, b2 []byte, filename string) (data []byte, err error) {
 
 // replaceTempFilename replaces temporary filenames in diff with actual one.
 //
-// --- /tmp/gofmt316145376	2017-02-03 19:13:00.280468375 -0500
-// +++ /tmp/gofmt617882815	2017-02-03 19:13:00.280468375 -0500
+// --- /tmp/gofumpt316145376	2017-02-03 19:13:00.280468375 -0500
+// +++ /tmp/gofumpt617882815	2017-02-03 19:13:00.280468375 -0500
 // ...
 // ->
 // --- path/to/file.go.orig	2017-02-03 19:13:00.280468375 -0500
@@ -341,66 +341,49 @@ func backupFile(filename string, data []byte, perm os.FileMode) (string, error) 
 // alone.
 func normalizeNumbers(n ast.Node) bool {
 	lit, _ := n.(*ast.BasicLit)
-	if lit == nil {
+	if lit == nil || (lit.Kind != token.INT && lit.Kind != token.FLOAT && lit.Kind != token.IMAG) {
 		return true
 	}
 	if len(lit.Value) < 2 {
-		return false // only one digit - nothing to do
+		return false // only one digit (common case) - nothing to do
 	}
 	// len(lit.Value) >= 2
 
+	// We ignore lit.Kind because for lit.Kind == token.IMAG the literal may be an integer
+	// or floating-point value, decimal or not. Instead, just consider the literal pattern.
 	x := lit.Value
-	switch lit.Kind {
-	case token.INT:
-		switch x[:2] {
-		case "0X":
-			lit.Value = "0x" + x[2:]
-		case "0O":
-			lit.Value = "0o" + x[2:]
-		case "0B":
-			lit.Value = "0b" + x[2:]
+	switch x[:2] {
+	default:
+		// 0-prefix octal, decimal int, or float (possibly with 'i' suffix)
+		if i := strings.LastIndexByte(x, 'E'); i >= 0 {
+			x = x[:i] + "e" + x[i+1:]
+			break
 		}
-
-	case token.FLOAT:
-		switch lit.Value[:2] {
-		default:
-			if i := strings.LastIndexByte(x, 'E'); i >= 0 {
-				lit.Value = x[:i] + "e" + x[i+1:]
-			}
-		case "0x":
-			if i := strings.LastIndexByte(x, 'P'); i >= 0 {
-				lit.Value = x[:i] + "p" + x[i+1:]
-			}
-		case "0X":
-			if i := strings.LastIndexByte(x, 'P'); i >= 0 {
-				lit.Value = "0x" + x[2:i] + "p" + x[i+1:]
-			} else {
-				lit.Value = "0x" + x[2:]
-			}
-		}
-
-	case token.IMAG:
-		// Note that integer imaginary literals may contain
-		// any decimal digit even if they start with zero.
-		// Imaginary literals should always end in 'i' but be
-		// conservative and check anyway before proceeding.
-		if x[0] == '0' && x[len(x)-1] == 'i' && isDecimals(x[1:len(x)-1]) {
+		// remove leading 0's from integer (but not floating-point) imaginary literals
+		if x[len(x)-1] == 'i' && strings.IndexByte(x, '.') < 0 && strings.IndexByte(x, 'e') < 0 {
 			x = strings.TrimLeft(x, "0_")
 			if x == "i" {
 				x = "0i"
 			}
-			lit.Value = x
 		}
+	case "0X":
+		x = "0x" + x[2:]
+		fallthrough
+	case "0x":
+		// possibly a hexadecimal float
+		if i := strings.LastIndexByte(x, 'P'); i >= 0 {
+			x = x[:i] + "p" + x[i+1:]
+		}
+	case "0O":
+		x = "0o" + x[2:]
+	case "0o":
+		// nothing to do
+	case "0B":
+		x = "0b" + x[2:]
+	case "0b":
+		// nothing to do
 	}
 
+	lit.Value = x
 	return false
-}
-
-// isDecimals reports whether x consists entirely of decimal digits and underscores.
-func isDecimals(x string) bool {
-	i := 0
-	for i < len(x) && ('0' <= x[i] && x[i] <= '9' || x[i] == '_') {
-		i++
-	}
-	return i == len(x)
 }

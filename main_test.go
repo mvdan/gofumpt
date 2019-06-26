@@ -14,9 +14,7 @@ import (
 func TestMain(m *testing.M) {
 	os.Exit(testscript.RunMain(m, map[string]func() int{
 		"gofumpt": func() int {
-			// Don't change gofmtMain, to keep changes to the gofmt
-			// codebase to a minimum.
-			gofmtMain()
+			gofumptMain()
 			return exitCode
 		},
 	}))
