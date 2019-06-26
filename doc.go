@@ -4,4 +4,4 @@
 package main
 
 //go:generate go run gen.go
-//go:generate goimports -w gofmt.go
+//go:generate goimports -w .

@@ -69,19 +69,19 @@ func isGoFile(f os.FileInfo) bool {
 	return !f.IsDir() && !strings.HasPrefix(name, ".") && strings.HasSuffix(name, ".go")
 }
 
-// argumentType is which mode goimports was invoked as.
+// argumentType is which mode gofumports was invoked as.
 type argumentType int
 
 const (
-	// fromStdin means the user is piping their source into goimports.
+	// fromStdin means the user is piping their source into gofumports.
 	fromStdin argumentType = iota
 
-	// singleArg is the common case from editors, when goimports is run on
+	// singleArg is the common case from editors, when gofumports is run on
 	// a single file.
 	singleArg
 
-	// multipleArg is when the user ran "goimports file1.go file2.go"
-	// or ran goimports on a directory tree.
+	// multipleArg is when the user ran "gofumports file1.go file2.go"
+	// or ran gofumports on a directory tree.
 	multipleArg
 )
 
@@ -121,10 +121,10 @@ func processFile(filename string, in io.Reader, out io.Writer, argType argumentT
 		} else if argType == singleArg && strings.HasSuffix(*srcdir, ".go") && !isDir(*srcdir) {
 			// For a file which doesn't exist on disk yet, but might shortly.
 			// e.g. user in editor opens $DIR/newfile.go and newfile.go doesn't yet exist on disk.
-			// The goimports on-save hook writes the buffer to a temp file
-			// first and runs goimports before the actual save to newfile.go.
-			// The editor's buffer is named "newfile.go" so that is passed to goimports as:
-			//      goimports -srcdir=/gopath/src/pkg/newfile.go /tmp/gofmtXXXXXXXX.go
+			// The gofumports on-save hook writes the buffer to a temp file
+			// first and runs gofumports before the actual save to newfile.go.
+			// The editor's buffer is named "newfile.go" so that is passed to gofumports as:
+			//      gofumports -srcdir=/gopath/src/pkg/newfile.go /tmp/gofmtXXXXXXXX.go
 			// and then the editor reloads the result from the tmp file and writes
 			// it to newfile.go.
 			target = *srcdir
@@ -140,7 +140,7 @@ func processFile(filename string, in io.Reader, out io.Writer, argType argumentT
 		return err
 	}
 
-	// This is the only gofumpt change on goimports's codebase, besides
+	// This is the only gofumpt change on gofumports's codebase, besides
 	// changing the name in the usage text.
 	res, err = internal.GofumptBytes(res)
 	if err != nil {
@@ -242,7 +242,7 @@ func gofmtMain() {
 		defer pprof.StopCPUProfile()
 	}
 	// doTrace is a conditionally compiled wrapper around runtime/trace. It is
-	// used to allow goimports to compile under gccgo, which does not support
+	// used to allow gofumports to compile under gccgo, which does not support
 	// runtime/trace. See https://golang.org/issue/15544.
 	defer doTrace()()
 	if *memProfileRate > 0 {
