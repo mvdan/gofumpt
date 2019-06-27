@@ -95,6 +95,31 @@ var ints = []int{
 
 </details>
 
+`std` imports must be in a separate group at the top
+
+<details><summary>example</summary>
+
+```
+import (
+	"foo.com/bar"
+
+	"io"
+
+	"io/ioutil"
+)
+```
+
+```
+import (
+	"io"
+	"io/ioutil"
+
+	"foo.com/bar"
+)
+```
+
+</details>
+
 Short case clauses should take a single line
 
 <details><summary>example</summary>
