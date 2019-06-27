@@ -6,6 +6,7 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -30,18 +31,37 @@ func run() error {
 	pkgs, err := packages.Load(cfg,
 		"cmd/gofmt",
 		"golang.org/x/tools/cmd/goimports",
+
+		// These are internal goimports dependencies. Copy them.
+		"golang.org/x/tools/internal/imports",
+		"golang.org/x/tools/internal/gopathwalk",
+		"golang.org/x/tools/internal/module",
+		"golang.org/x/tools/internal/fastwalk",
+		"golang.org/x/tools/internal/semver",
 	)
 	if err != nil {
 		return err
 	}
 	for _, pkg := range pkgs {
+		var err error
 		switch pkg.PkgPath {
 		case "cmd/gofmt":
-			copyGofmt(pkg.GoFiles)
+			err = copyGofmt(pkg.GoFiles)
 		case "golang.org/x/tools/cmd/goimports":
-			copyGoimports(pkg.GoFiles)
+			err = copyGoimports(pkg.GoFiles)
+		case "golang.org/x/tools/internal/imports",
+			"golang.org/x/tools/internal/gopathwalk",
+			"golang.org/x/tools/internal/module",
+			"golang.org/x/tools/internal/fastwalk",
+			"golang.org/x/tools/internal/semver":
+			parts := strings.Split(pkg.PkgPath, "/")
+			dir := filepath.Join(append([]string{"gofumports"}, parts[3:]...)...)
+			err = copyInternal(pkg.GoFiles, dir)
 		default:
 			return fmt.Errorf("unexpected package path %s", pkg.PkgPath)
+		}
+		if err != nil {
+			return err
 		}
 	}
 	return nil
@@ -54,13 +74,13 @@ func copyGofmt(files []string) error {
 		internal.Gofumpt(fileSet, file)
 		`
 
-	for _, path := range files {
-		bodyBytes, err := ioutil.ReadFile(path)
+	for _, fpath := range files {
+		bodyBytes, err := ioutil.ReadFile(fpath)
 		if err != nil {
 			return err
 		}
 		body := string(bodyBytes) // to simplify operations later
-		name := filepath.Base(path)
+		name := filepath.Base(fpath)
 		switch name {
 		case "doc.go":
 			continue // we have our own
@@ -89,13 +109,14 @@ func copyGoimports(files []string) error {
 		}
 		`
 
-	for _, path := range files {
-		bodyBytes, err := ioutil.ReadFile(path)
+	for _, fpath := range files {
+		bodyBytes, err := ioutil.ReadFile(fpath)
 		if err != nil {
 			return err
 		}
+		bodyBytes = fixImports(bodyBytes)
 		body := string(bodyBytes) // to simplify operations later
-		name := filepath.Base(path)
+		name := filepath.Base(fpath)
 		switch name {
 		case "doc.go":
 			continue // we have our own
@@ -114,4 +135,31 @@ func copyGoimports(files []string) error {
 		}
 	}
 	return nil
+}
+
+func copyInternal(files []string, dir string) error {
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return err
+	}
+	for _, fpath := range files {
+		body, err := ioutil.ReadFile(fpath)
+		if err != nil {
+			return err
+		}
+		body = fixImports(body)
+
+		name := filepath.Base(fpath)
+		dst := filepath.Join(dir, name)
+		if err := ioutil.WriteFile(dst, []byte(body), 0644); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func fixImports(body []byte) []byte {
+	return bytes.Replace(body,
+		[]byte("golang.org/x/tools/internal/"),
+		[]byte("mvdan.cc/gofumpt/gofumports/internal/"),
+		-1)
 }
