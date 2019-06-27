@@ -200,6 +200,14 @@ described at the top of this README and use it.
 
 Alternatively, to use the tool with VS Code, refer to [this issue](https://github.com/Microsoft/vscode-go/issues/2438#issuecomment-482337120).
 
+### Roadmap
+
+This tool is a place to experiment. In the long term, the features that work
+well might be proposed for `gofmt` itself.
+
+The tool is also compatible with `gofmt` and is aimed to be stable, so you can
+rely on it for your code as long as you pin a version of it.
+
 ### License
 
 Note that much of the code is copied from Go's `gofmt` and `goimports` commands.
