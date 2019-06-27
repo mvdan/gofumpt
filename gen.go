@@ -49,16 +49,10 @@ func run() error {
 			err = copyGofmt(pkg.GoFiles)
 		case "golang.org/x/tools/cmd/goimports":
 			err = copyGoimports(pkg.GoFiles)
-		case "golang.org/x/tools/internal/imports",
-			"golang.org/x/tools/internal/gopathwalk",
-			"golang.org/x/tools/internal/module",
-			"golang.org/x/tools/internal/fastwalk",
-			"golang.org/x/tools/internal/semver":
+		default:
 			parts := strings.Split(pkg.PkgPath, "/")
 			dir := filepath.Join(append([]string{"gofumports"}, parts[3:]...)...)
 			err = copyInternal(pkg.GoFiles, dir)
-		default:
-			return fmt.Errorf("unexpected package path %s", pkg.PkgPath)
 		}
 		if err != nil {
 			return err
