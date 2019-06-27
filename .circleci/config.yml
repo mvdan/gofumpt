@@ -1,0 +1,11 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: golang:1.12
+    steps:
+      - checkout
+      - run: go version
+      - run: go test -v ./...
+      - run: GOOS=darwin go build ./...
+      - run: GOOS=windows go build ./...
