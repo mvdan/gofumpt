@@ -1,0 +1,39 @@
+gofumpt -w foo.go .
+cmp foo.go foo.go.golden
+
+-- foo.go --
+package p
+
+import (
+	"golang.org/x/xerrors"
+
+	errors2 "github.com/pkg/errors"
+
+	"fmt"
+	"errors"
+)
+
+func Func() {
+	err := errors2.New("error")
+	err = errors.Wrap(err, "failure")
+	err = xerrors.Errorf("exception: %x", err)
+	fmt.Println(err.Error())
+}
+-- foo.go.golden --
+package p
+
+import (
+	"errors"
+	"fmt"
+
+	"golang.org/x/xerrors"
+
+	errors2 "github.com/pkg/errors"
+)
+
+func Func() {
+	err := errors2.New("error")
+	err = errors.Wrap(err, "failure")
+	err = xerrors.Errorf("exception: %x", err)
+	fmt.Println(err.Error())
+}
