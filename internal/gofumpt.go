@@ -244,7 +244,9 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 		if node.Tok == token.IMPORT && node.Lparen.IsValid() {
 			f.joinStdImports(node)
 		}
-		if len(node.Specs) == 1 && node.Lparen.IsValid() {
+		if len(node.Specs) == 1 && node.Lparen.IsValid() &&
+			// Ignore decl groups with a comment at the top.
+			node.Doc == nil {
 			// If the single spec has any comment, it must go before
 			// the entire declaration now.
 			node.TokPos = node.Specs[0].Pos()

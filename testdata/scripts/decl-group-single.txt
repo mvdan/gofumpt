@@ -28,6 +28,11 @@ type (
 	multiple1 string
 	multiple2 string
 )
+
+// This entire block has a comment.
+const (
+	groupComment = "bar"
+)
 -- foo.go.golden --
 package p
 
@@ -48,4 +53,9 @@ const verbose = "bar"
 type (
 	multiple1 string
 	multiple2 string
+)
+
+// This entire block has a comment.
+const (
+	groupComment = "bar"
 )
