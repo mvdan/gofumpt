@@ -42,8 +42,8 @@ func GofumptBytes(src []byte) ([]byte, error) {
 
 func Gofumpt(fset *token.FileSet, file *ast.File) {
 	f := &fumpter{
+		File:    fset.File(file.Pos()),
 		fset:    fset,
-		file:    fset.File(file.Pos()),
 		astFile: file,
 	}
 	pre := func(c *astutil.Cursor) bool {
@@ -63,16 +63,12 @@ func Gofumpt(fset *token.FileSet, file *ast.File) {
 }
 
 type fumpter struct {
+	*token.File
 	fset *token.FileSet
-	file *token.File
 
 	astFile *ast.File
 
 	blockLevel int
-}
-
-func (f *fumpter) posLine(pos token.Pos) int {
-	return f.file.Position(pos).Line
 }
 
 func (f *fumpter) commentsBetween(p1, p2 token.Pos) []*ast.CommentGroup {
@@ -96,9 +92,9 @@ func (f *fumpter) inlineComment(pos token.Pos) *ast.Comment {
 	if i >= len(comments) {
 		return nil
 	}
-	line := f.posLine(pos)
+	line := f.Line(pos)
 	for _, comment := range comments[i].List {
-		if f.posLine(comment.Pos()) == line {
+		if f.Line(comment.Pos()) == line {
 			return comment
 		}
 	}
@@ -107,9 +103,9 @@ func (f *fumpter) inlineComment(pos token.Pos) *ast.Comment {
 
 // addNewline is a hack to let us force a newline at a certain position.
 func (f *fumpter) addNewline(at token.Pos) {
-	offset := f.file.Position(at).Offset
+	offset := f.Offset(at)
 
-	field := reflect.ValueOf(f.file).Elem().FieldByName("lines")
+	field := reflect.ValueOf(f.File).Elem().FieldByName("lines")
 	n := field.Len()
 	lines := make([]int, 0, n+1)
 	for i := 0; i < n; i++ {
@@ -123,7 +119,7 @@ func (f *fumpter) addNewline(at token.Pos) {
 	if offset >= 0 {
 		lines = append(lines, offset)
 	}
-	if !f.file.SetLines(lines) {
+	if !f.SetLines(lines) {
 		panic(fmt.Sprintf("could not set lines to %v", lines))
 	}
 }
@@ -132,7 +128,7 @@ func (f *fumpter) addNewline(at token.Pos) {
 // up on the same line.
 func (f *fumpter) removeLines(fromLine, toLine int) {
 	for fromLine < toLine {
-		f.file.MergeLine(fromLine)
+		f.MergeLine(fromLine)
 		toLine--
 	}
 }
@@ -140,7 +136,7 @@ func (f *fumpter) removeLines(fromLine, toLine int) {
 // removeLinesBetween is like removeLines, but it leaves one newline between the
 // two positions.
 func (f *fumpter) removeLinesBetween(from, to token.Pos) {
-	f.removeLines(f.posLine(from)+1, f.posLine(to))
+	f.removeLines(f.Line(from)+1, f.Line(to))
 }
 
 type byteCounter int
@@ -192,9 +188,9 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 			}
 
 			// multiline top-level declarations should be separated
-			multi := f.posLine(decl.Pos()) < f.posLine(decl.End())
+			multi := f.Line(decl.Pos()) < f.Line(decl.End())
 			if (multi && lastMulti) &&
-				f.posLine(lastEnd)+1 == f.posLine(pos) {
+				f.Line(lastEnd)+1 == f.Line(pos) {
 				f.addNewline(lastEnd)
 			}
 
@@ -301,8 +297,8 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 			// doesn't have elements
 			break
 		}
-		openLine := f.posLine(node.Lbrace)
-		closeLine := f.posLine(node.Rbrace)
+		openLine := f.Line(node.Lbrace)
+		closeLine := f.Line(node.Rbrace)
 		if openLine == closeLine {
 			// all in a single line
 			break
@@ -311,10 +307,10 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 		newlineBetweenElems := false
 		lastLine := openLine
 		for _, elem := range node.Elts {
-			if f.posLine(elem.Pos()) > lastLine {
+			if f.Line(elem.Pos()) > lastLine {
 				newlineBetweenElems = true
 			}
-			lastLine = f.posLine(elem.End())
+			lastLine = f.Line(elem.End())
 		}
 		if closeLine > lastLine {
 			newlineBetweenElems = true
@@ -326,20 +322,20 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 		}
 
 		first := node.Elts[0]
-		if openLine == f.posLine(first.Pos()) {
+		if openLine == f.Line(first.Pos()) {
 			// We want the newline right after the brace.
 			f.addNewline(node.Lbrace + 1)
-			closeLine = f.posLine(node.Rbrace)
+			closeLine = f.Line(node.Rbrace)
 		}
 		last := node.Elts[len(node.Elts)-1]
-		if closeLine == f.posLine(last.End()) {
+		if closeLine == f.Line(last.End()) {
 			f.addNewline(last.End())
 		}
 
 	case *ast.CaseClause:
 		f.stmts(node.Body)
-		openLine := f.posLine(node.Case)
-		closeLine := f.posLine(node.Colon)
+		openLine := f.Line(node.Case)
+		closeLine := f.Line(node.Colon)
 		if openLine == closeLine {
 			// nothing to do
 			break
@@ -405,8 +401,8 @@ func (f *fumpter) joinStdImports(d *ast.GenDecl) {
 		}
 		std = append(std, spec)
 	}
-	// Ensure there is an empty line between std imports and other imports
-	if std != nil && other != nil && f.file.Line(std[len(std)-1].End()) + 1 == f.file.Line(other[0].Pos()) {
+	// Ensure there is an empty line between std imports and other imports.
+	if len(std) > 0 && len(other) > 0 && f.Line(std[len(std)-1].End()) + 1 >= f.Line(other[0].Pos()) {
 		f.addNewline(other[0].Pos())
 	}
 	// Finally, join the imports, keeping std at the top.

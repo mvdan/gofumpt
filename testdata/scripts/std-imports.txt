@@ -15,11 +15,17 @@ import (
 import (
 	"os"
 
-	"foo.localhost/other"
+	"foo.local/one"
 
 	bytes_ "bytes"
 
 	"io"
+)
+
+import (
+	"foo.local/two"
+
+	"fmt"
 )
 -- foo.go.golden --
 package p
@@ -35,5 +41,11 @@ import (
 	"io"
 	"os"
 
-	"foo.localhost/other"
+	"foo.local/one"
+)
+
+import (
+	"fmt"
+
+	"foo.local/two"
 )
