@@ -6,56 +6,56 @@ cmp foo.go foo.go.golden
 -- foo.go --
 package p
 
-import "single-line"
+import "non-grouped"
 
 import (
-	"too-verbose"
-)
-
-import (
-	"multiple-imports-1"
-	"multiple-imports-2"
+	"grouped"
 )
 
 var single = "foo"
 
-const (
+var (
 	// verbose is verbose.
 	verbose = "bar"
 )
 
-type (
+// This entire block has a comment.
+var (
+	groupComment = "bar"
+)
+
+var (
 	multiple1 string
 	multiple2 string
 )
 
-// This entire block has a comment.
 const (
-	groupComment = "bar"
+	first = iota
 )
 -- foo.go.golden --
 package p
 
-import "single-line"
-
-import "too-verbose"
+import "non-grouped"
 
 import (
-	"multiple-imports-1"
-	"multiple-imports-2"
+	"grouped"
 )
 
 var single = "foo"
 
 // verbose is verbose.
-const verbose = "bar"
+var verbose = "bar"
 
-type (
+// This entire block has a comment.
+var (
+	groupComment = "bar"
+)
+
+var (
 	multiple1 string
 	multiple2 string
 )
 
-// This entire block has a comment.
 const (
-	groupComment = "bar"
+	first = iota
 )

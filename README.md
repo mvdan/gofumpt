@@ -164,23 +164,17 @@ func bar() {
 
 </details>
 
-A single declaration spec must not be grouped with parentheses
+Single var declarations should not be grouped with parentheses
 
 <details><summary>example</summary>
 
 ```
-import (
-	"single"
-)
-
 var (
 	foo = "bar"
 )
 ```
 
 ```
-import "single"
-
 var foo = "bar"
 ```
 
