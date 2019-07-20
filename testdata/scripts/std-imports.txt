@@ -27,6 +27,12 @@ import (
 
 	"fmt"
 )
+
+// This used to crash gofumpt, as there's no space to insert an extra newline.
+import (
+"std"
+"non.std/pkg"
+)
 -- foo.go.golden --
 package p
 
@@ -48,4 +54,11 @@ import (
 	"fmt"
 
 	"foo.local/two"
+)
+
+// This used to crash gofumpt, as there's no space to insert an extra newline.
+import (
+	"std"
+
+	"non.std/pkg"
 )

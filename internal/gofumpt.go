@@ -109,12 +109,17 @@ func (f *fumpter) addNewline(at token.Pos) {
 	n := field.Len()
 	lines := make([]int, 0, n+1)
 	for i := 0; i < n; i++ {
-		prev := int(field.Index(i).Int())
-		if offset >= 0 && offset < prev {
+		cur := int(field.Index(i).Int())
+		if offset == cur {
+			// This newline already exists; do nothing. Duplicate
+			// newlines can't exist.
+			return
+		}
+		if offset >= 0 && offset < cur {
 			lines = append(lines, offset)
 			offset = -1
 		}
-		lines = append(lines, prev)
+		lines = append(lines, cur)
 	}
 	if offset >= 0 {
 		lines = append(lines, offset)
