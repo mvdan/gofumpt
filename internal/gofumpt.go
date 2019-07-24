@@ -410,7 +410,7 @@ func (f *fumpter) joinStdImports(d *ast.GenDecl) {
 		std = append(std, spec)
 	}
 	// Ensure there is an empty line between std imports and other imports.
-	if len(std) > 0 && len(other) > 0 && f.Line(std[len(std)-1].End()) + 1 >= f.Line(other[0].Pos()) {
+	if len(std) > 0 && len(other) > 0 && f.Line(std[len(std)-1].End())+1 >= f.Line(other[0].Pos()) {
 		f.addNewline(other[0].Pos())
 	}
 	// Finally, join the imports, keeping std at the top.
