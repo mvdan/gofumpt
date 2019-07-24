@@ -377,7 +377,7 @@ func (p *pass) fix() bool {
 			if imp.Name != nil {
 				continue
 			}
-			path := strings.Trim(imp.Path.Value, `""`)
+			path := strings.Trim(imp.Path.Value, `"`)
 			ident := p.importIdentifier(&importInfo{importPath: path})
 			if ident != importPathToAssumedName(path) {
 				imp.Name = &ast.Ident{Name: ident, NamePos: imp.Pos()}
