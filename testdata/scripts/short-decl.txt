@@ -14,6 +14,8 @@ func f() {
 
 	var typeAndVar T = x
 
+	var _ = unused
+
 	var (
 		aligned = x
 		vars    = y
@@ -32,6 +34,8 @@ func f() {
 	var onlyType T
 
 	var typeAndVar T = x
+
+	_ = unused
 
 	var (
 		aligned = x

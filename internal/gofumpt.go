@@ -231,13 +231,17 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 		if spec.Type != nil {
 			break // e.g. var name Type
 		}
+		tok := token.ASSIGN
 		names := make([]ast.Expr, len(spec.Names))
 		for i, name := range spec.Names {
 			names[i] = name
+			if name.Name != "_" {
+				tok = token.DEFINE
+			}
 		}
 		c.Replace(&ast.AssignStmt{
 			Lhs: names,
-			Tok: token.DEFINE,
+			Tok: tok,
 			Rhs: spec.Values,
 		})
 
