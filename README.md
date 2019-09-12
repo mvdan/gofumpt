@@ -1,7 +1,5 @@
 # gofumpt
 
-[![CircleCI](https://circleci.com/gh/mvdan/gofumpt.svg?style=svg)](https://circleci.com/gh/mvdan/gofumpt)
-
 `gofmt`, the way it should be pronounced.
 
 	cd $(mktemp -d); go mod init tmp; go get mvdan.cc/gofumpt
