@@ -16,13 +16,13 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"runtime"
 	"runtime/pprof"
 	"strings"
 
 	"mvdan.cc/gofumpt/internal"
+	"mvdan.cc/gofumpt/internal/diff"
 )
 
 var (
@@ -147,7 +147,7 @@ func processFile(filename string, in io.Reader, out io.Writer, stdin bool) error
 			}
 		}
 		if *doDiff {
-			data, err := diff(src, res, filename)
+			data, err := diffWithReplaceTempFile(src, res, filename)
 			if err != nil {
 				return fmt.Errorf("computing diff: %s", err)
 			}
@@ -233,47 +233,12 @@ func gofumptMain() {
 	}
 }
 
-func writeTempFile(dir, prefix string, data []byte) (string, error) {
-	file, err := ioutil.TempFile(dir, prefix)
-	if err != nil {
-		return "", err
-	}
-	_, err = file.Write(data)
-	if err1 := file.Close(); err == nil {
-		err = err1
-	}
-	if err != nil {
-		os.Remove(file.Name())
-		return "", err
-	}
-	return file.Name(), nil
-}
-
-func diff(b1, b2 []byte, filename string) (data []byte, err error) {
-	f1, err := writeTempFile("", "gofumpt", b1)
-	if err != nil {
-		return
-	}
-	defer os.Remove(f1)
-
-	f2, err := writeTempFile("", "gofumpt", b2)
-	if err != nil {
-		return
-	}
-	defer os.Remove(f2)
-
-	cmd := "diff"
-	if runtime.GOOS == "plan9" {
-		cmd = "/bin/ape/diff"
-	}
-
-	data, err = exec.Command(cmd, "-u", f1, f2).CombinedOutput()
+func diffWithReplaceTempFile(b1, b2 []byte, filename string) ([]byte, error) {
+	data, err := diff.Diff("gofumpt", b1, b2)
 	if len(data) > 0 {
-		// diff exits with a non-zero status when the files don't match.
-		// Ignore that failure as long as we get output.
 		return replaceTempFilename(data, filename)
 	}
-	return
+	return data, err
 }
 
 // replaceTempFilename replaces temporary filenames in diff with actual one.

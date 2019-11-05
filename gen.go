@@ -18,6 +18,10 @@ func main() {
 	cfg := &packages.Config{Mode: packages.NeedName | packages.NeedFiles}
 	pkgs, err := packages.Load(cfg,
 		"cmd/gofmt",
+
+		// These are internal cmd dependencies. Copy them.
+		"cmd/internal/diff",
+
 		"golang.org/x/tools/cmd/goimports",
 
 		// These are internal goimports dependencies. Copy them.
@@ -38,8 +42,12 @@ func main() {
 			copyGoimports(pkg.GoFiles)
 		default:
 			parts := strings.Split(pkg.PkgPath, "/")
-			dir := filepath.Join(append([]string{"gofumports"}, parts[3:]...)...)
-			copyInternal(pkg.GoFiles, dir)
+			if parts[0] == "cmd" {
+				copyInternal(pkg.GoFiles, filepath.Join(parts[1:]...))
+			} else {
+				dir := filepath.Join(append([]string{"gofumports"}, parts[3:]...)...)
+				copyInternal(pkg.GoFiles, dir)
+			}
 		}
 	}
 }
@@ -69,6 +77,7 @@ func copyGofmt(files []string) {
 		`
 	for _, path := range files {
 		body := readFile(path)
+		body = fixImports(body)
 		name := filepath.Base(path)
 		switch name {
 		case "doc.go":
@@ -124,8 +133,13 @@ func copyInternal(files []string, dir string) {
 }
 
 func fixImports(body string) string {
-	return strings.Replace(body,
+	body = strings.Replace(body,
 		"golang.org/x/tools/internal/",
 		"mvdan.cc/gofumpt/gofumports/internal/",
 		-1)
+	body = strings.Replace(body,
+		"cmd/internal/",
+		"mvdan.cc/gofumpt/internal/",
+		-1)
+	return body
 }
