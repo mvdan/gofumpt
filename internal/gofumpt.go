@@ -193,15 +193,38 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 			}
 
 			// multiline top-level declarations should be separated
-			multi := f.Line(decl.Pos()) < f.Line(decl.End())
-			if (multi && lastMulti) &&
-				f.Line(lastEnd)+1 == f.Line(pos) {
+			multi := f.Line(pos) < f.Line(decl.End())
+			if multi && lastMulti && f.Line(lastEnd)+1 == f.Line(pos) {
 				f.addNewline(lastEnd)
 			}
 
 			lastMulti = multi
 			lastEnd = decl.End()
 		}
+
+		// Join contiguous lone var/const/import lines; abort if there
+		// are empty lines or comments in between.
+		newDecls := make([]ast.Decl, 0, len(node.Decls))
+		for i := 0; i < len(node.Decls); {
+			newDecls = append(newDecls, node.Decls[i])
+			start, ok := node.Decls[i].(*ast.GenDecl)
+			if !ok {
+				i++
+				continue
+			}
+			lastPos := start.Pos()
+			for i++; i < len(node.Decls); {
+				cont, ok := node.Decls[i].(*ast.GenDecl)
+				if !ok || cont.Tok != start.Tok || cont.Lparen != token.NoPos ||
+					f.Line(lastPos) < f.Line(cont.Pos())-1 {
+					break
+				}
+				start.Specs = append(start.Specs, cont.Specs...)
+				lastPos = cont.Pos()
+				i++
+			}
+		}
+		node.Decls = newDecls
 
 		// Comments aren't nodes, so they're not walked by default.
 		for _, group := range node.Comments {

@@ -178,6 +178,26 @@ var foo = "bar"
 
 </details>
 
+Contiguous top-level declarations should be grouped together
+
+<details><summary>example</summary>
+
+```
+var nicer = "x"
+var with = "y"
+var alignment = "z"
+```
+
+```
+var (
+	nicer     = "x"
+	with      = "y"
+	alignment = "z"
+```
+
+</details>
+
+
 Simple var-declaration statements should use short assignments
 
 <details><summary>example</summary>

@@ -1,0 +1,45 @@
+[gofumports] skip 'would remove the unused imports'
+
+gofumpt -w foo.go .
+cmp foo.go foo.go.golden
+
+-- foo.go --
+package p
+
+var single = "foo"
+var another = "bar"
+
+const one = 'q'
+const two = 'w'
+const three = 'e'
+const four = 'r'
+
+var not = 'a'
+
+var to = 's'
+// comment
+var be = 'd'
+const joined = 'f'
+-- foo.go.golden --
+package p
+
+var (
+	single  = "foo"
+	another = "bar"
+)
+
+const (
+	one   = 'q'
+	two   = 'w'
+	three = 'e'
+	four  = 'r'
+)
+
+var not = 'a'
+
+var to = 's'
+
+// comment
+var be = 'd'
+
+const joined = 'f'
