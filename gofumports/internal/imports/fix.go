@@ -643,6 +643,13 @@ func getCandidatePkgs(pkgName, filename string, env *ProcessEnv) ([]*pkg, error)
 	return result, nil
 }
 
+func candidateImportName(pkg *pkg) string {
+	if importPathToAssumedName(pkg.importPathShort) != pkg.packageName {
+		return pkg.packageName
+	}
+	return ""
+}
+
 // getAllCandidates gets all of the candidates to be imported, regardless of if they are needed.
 func getAllCandidates(filename string, env *ProcessEnv) ([]ImportFix, error) {
 	pkgs, err := getCandidatePkgs("", filename, env)
@@ -654,6 +661,7 @@ func getAllCandidates(filename string, env *ProcessEnv) ([]ImportFix, error) {
 		result = append(result, ImportFix{
 			StmtInfo: ImportInfo{
 				ImportPath: pkg.importPathShort,
+				Name:       candidateImportName(pkg),
 			},
 			IdentName: pkg.packageName,
 			FixType:   AddImport,
@@ -679,6 +687,7 @@ func getPackageExports(completePackage, filename string, env *ProcessEnv) ([]Pac
 		fix := &ImportFix{
 			StmtInfo: ImportInfo{
 				ImportPath: pkg.importPathShort,
+				Name:       candidateImportName(pkg),
 			},
 			IdentName: pkg.packageName,
 			FixType:   AddImport,
@@ -878,7 +887,6 @@ func (r *goPackagesResolver) loadPackageNames(importPaths []string, srcDir strin
 		names[path] = importPathToAssumedName(path)
 	}
 	return names, nil
-
 }
 
 func (r *goPackagesResolver) scan(refs references, _ bool, _ []gopathwalk.RootType) ([]*pkg, error) {
@@ -954,7 +962,6 @@ func addExternalCandidates(pass *pass, refs references, filename string) error {
 			defer wg.Done()
 
 			found, err := findImport(ctx, pass, dirScan, pkgName, symbols, filename)
-
 			if err != nil {
 				firstErrOnce.Do(func() {
 					firstErr = err
