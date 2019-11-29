@@ -237,7 +237,19 @@ func Foo() {}
 `gofumpt` is a replacement for `gofmt`, so you can simply `go get` it as
 described at the top of this README and use it.
 
-Alternatively, to use the tool with VS Code, refer to [this issue](https://github.com/Microsoft/vscode-go/issues/2438#issuecomment-482337120).
+Alternatively, to use the tool with VS Code, add these settings:
+
+```
+"go.formatTool": "goimports",
+"go.alternateTools": {
+    "goimports": "gofumports",
+},
+"go.languageServerExperimentalFeatures": {
+    "format": false
+}
+```
+
+You can use `gofmt` instead of `goimports` and `gofumpt` instead of `gofumports` if you don't need auto-importing on-save.
 
 ### Roadmap
 
