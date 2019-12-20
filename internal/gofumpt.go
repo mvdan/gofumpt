@@ -277,10 +277,16 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 		// there's a comment on the grouped declaration.
 		if node.Tok == token.VAR && len(node.Specs) == 1 &&
 			node.Lparen.IsValid() && node.Doc == nil {
+			specPos := node.Specs[0].Pos()
 
-			// If the single spec has any comment, it must go before
-			// the entire declaration now.
-			node.TokPos = node.Specs[0].Pos()
+			if len(f.commentsBetween(node.TokPos, specPos)) > 0 {
+				// If the single spec has any comment, it must
+				// go before the entire declaration now.
+				node.TokPos = specPos
+			} else {
+				f.removeLines(f.Line(node.TokPos), f.Line(specPos))
+			}
+			f.removeLines(f.Line(specPos), f.Line(node.Rparen))
 
 			// Remove the parentheses. go/printer will automatically
 			// get rid of the newlines.

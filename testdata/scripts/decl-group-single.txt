@@ -1,9 +1,11 @@
 [gofumports] skip 'would remove the unused imports'
 
-gofumpt -w foo.go .
-cmp foo.go foo.go.golden
+gofumpt -w .
 
--- foo.go --
+cmp f1.go f1.go.golden
+cmp f2.go f2.go.golden
+
+-- f1.go --
 package p
 
 import "non-grouped"
@@ -32,7 +34,7 @@ var (
 const (
 	first = iota
 )
--- foo.go.golden --
+-- f1.go.golden --
 package p
 
 import "non-grouped"
@@ -59,3 +61,17 @@ var (
 const (
 	first = iota
 )
+-- f2.go --
+package p
+
+func _() {
+	var (
+		_ int
+	)
+}
+-- f2.go.golden --
+package p
+
+func _() {
+	var _ int
+}
