@@ -220,6 +220,10 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 					break
 				}
 				start.Specs = append(start.Specs, cont.Specs...)
+				if c := f.inlineComment(cont.End()); c != nil {
+					// don't move an inline comment outside
+					start.Rparen = c.End()
+				}
 				lastPos = cont.Pos()
 				i++
 			}

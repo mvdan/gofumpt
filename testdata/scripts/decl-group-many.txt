@@ -20,6 +20,10 @@ var to = 's'
 // comment
 var be = 'd'
 const joined = 'f'
+
+const inline1 = "s1" // c1
+const inline2 = "s2" // c2
+const inline3 = "s3" // c3
 -- foo.go.golden --
 package p
 
@@ -43,3 +47,9 @@ var to = 's'
 var be = 'd'
 
 const joined = 'f'
+
+const (
+	inline1 = "s1" // c1
+	inline2 = "s2" // c2
+	inline3 = "s3" // c3
+)
