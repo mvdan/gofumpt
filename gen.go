@@ -6,17 +6,20 @@
 package main
 
 import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
-
-	"golang.org/x/tools/go/packages"
+	"time"
 )
 
 func main() {
-	cfg := &packages.Config{Mode: packages.NeedName | packages.NeedFiles}
-	pkgs, err := packages.Load(cfg,
+	pkgs, err := listPackages(context.TODO(), nil,
 		"cmd/gofmt",
 
 		// These are internal cmd dependencies. Copy them.
@@ -35,21 +38,162 @@ func main() {
 		panic(err)
 	}
 	for _, pkg := range pkgs {
-		switch pkg.PkgPath {
+		switch pkg.ImportPath {
 		case "cmd/gofmt":
-			copyGofmt(pkg.GoFiles)
+			copyGofmt(pkg)
 		case "golang.org/x/tools/cmd/goimports":
-			copyGoimports(pkg.GoFiles)
+			copyGoimports(pkg)
 		default:
-			parts := strings.Split(pkg.PkgPath, "/")
+			parts := strings.Split(pkg.ImportPath, "/")
 			if parts[0] == "cmd" {
-				copyInternal(pkg.GoFiles, filepath.Join(parts[1:]...))
+				copyInternal(pkg, filepath.Join(parts[1:]...))
 			} else {
 				dir := filepath.Join(append([]string{"gofumports"}, parts[3:]...)...)
-				copyInternal(pkg.GoFiles, dir)
+				copyInternal(pkg, dir)
 			}
 		}
 	}
+}
+
+type Module struct {
+	Path      string       // module path
+	Version   string       // module version
+	Versions  []string     // available module versions (with -versions)
+	Replace   *Module      // replaced by this module
+	Time      *time.Time   // time version was created
+	Update    *Module      // available update, if any (with -u)
+	Main      bool         // is this the main module?
+	Indirect  bool         // is this module only an indirect dependency of main module?
+	Dir       string       // directory holding files for this module, if any
+	GoMod     string       // path to go.mod file used when loading this module, if any
+	GoVersion string       // go version used in module
+	Error     *ModuleError // error loading module
+}
+
+type ModuleError struct {
+	Err string // the error itself
+}
+
+type Package struct {
+	Dir           string   // directory containing package sources
+	ImportPath    string   // import path of package in dir
+	ImportComment string   // path in import comment on package statement
+	Name          string   // package name
+	Doc           string   // package documentation string
+	Target        string   // install path
+	Shlib         string   // the shared library that contains this package (only set when -linkshared)
+	Goroot        bool     // is this package in the Go root?
+	Standard      bool     // is this package part of the standard Go library?
+	Stale         bool     // would 'go install' do anything for this package?
+	StaleReason   string   // explanation for Stale==true
+	Root          string   // Go root or Go path dir containing this package
+	ConflictDir   string   // this directory shadows Dir in $GOPATH
+	BinaryOnly    bool     // binary-only package (no longer supported)
+	ForTest       string   // package is only for use in named test
+	Export        string   // file containing export data (when using -export)
+	Module        *Module  // info about package's containing module, if any (can be nil)
+	Match         []string // command-line patterns matching this package
+	DepOnly       bool     // package is only a dependency, not explicitly listed
+
+	// Source files
+	GoFiles         []string // .go source files (excluding CgoFiles, TestGoFiles, XTestGoFiles)
+	CgoFiles        []string // .go source files that import "C"
+	CompiledGoFiles []string // .go files presented to compiler (when using -compiled)
+	IgnoredGoFiles  []string // .go source files ignored due to build constraints
+	CFiles          []string // .c source files
+	CXXFiles        []string // .cc, .cxx and .cpp source files
+	MFiles          []string // .m source files
+	HFiles          []string // .h, .hh, .hpp and .hxx source files
+	FFiles          []string // .f, .F, .for and .f90 Fortran source files
+	SFiles          []string // .s source files
+	SwigFiles       []string // .swig files
+	SwigCXXFiles    []string // .swigcxx files
+	SysoFiles       []string // .syso object files to add to archive
+	TestGoFiles     []string // _test.go files in package
+	XTestGoFiles    []string // _test.go files outside package
+
+	// Cgo directives
+	CgoCFLAGS    []string // cgo: flags for C compiler
+	CgoCPPFLAGS  []string // cgo: flags for C preprocessor
+	CgoCXXFLAGS  []string // cgo: flags for C++ compiler
+	CgoFFLAGS    []string // cgo: flags for Fortran compiler
+	CgoLDFLAGS   []string // cgo: flags for linker
+	CgoPkgConfig []string // cgo: pkg-config names
+
+	// Dependency information
+	Imports      []string          // import paths used by this package
+	ImportMap    map[string]string // map from source import to ImportPath (identity entries omitted)
+	Deps         []string          // all (recursively) imported dependencies
+	TestImports  []string          // imports from TestGoFiles
+	XTestImports []string          // imports from XTestGoFiles
+
+	// Error information
+	Incomplete bool            // this package or a dependency has an error
+	Error      *PackageError   // error loading package
+	DepsErrors []*PackageError // errors loading dependencies
+}
+
+type PackageError struct {
+	ImportStack []string // shortest path from package named on command line to this one
+	Pos         string   // position of error (if present, file:line:col)
+	Err         string   // the error itself
+}
+
+func getEnv(env []string, name string) string {
+	for _, kv := range env {
+		if i := strings.IndexByte(kv, '='); i > 0 && name == kv[:i] {
+			return kv[i+1:]
+		}
+	}
+	return ""
+}
+
+// listPackages is a wrapper for 'go list -json -e', which can take arbitrary
+// environment variables and arguments as input. The working directory can be
+// fed by adding $PWD to env; otherwise, it will default to the current
+// directory.
+//
+// Since -e is used, the returned error will only be non-nil if a JSON result
+// could not be obtained. Such examples are if the Go command is not installed,
+// or if invalid flags are used as arguments.
+//
+// Errors encountered when loading packages will be returned for each package,
+// in the form of PackageError. See 'go help list'.
+func listPackages(ctx context.Context, env []string, args ...string) (pkgs []*Package, finalErr error) {
+	goArgs := append([]string{"list", "-json", "-e"}, args...)
+	cmd := exec.CommandContext(ctx, "go", goArgs...)
+	cmd.Env = env
+	cmd.Dir = getEnv(env, "PWD")
+
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return nil, err
+	}
+	var stderrBuf bytes.Buffer
+	cmd.Stderr = &stderrBuf
+	defer func() {
+		if stderrBuf.Len() > 0 {
+			// TODO: wrap? but the format is backwards, given that
+			// stderr is likely multi-line
+			finalErr = fmt.Errorf("%v\n%s", finalErr, stderrBuf.Bytes())
+		}
+	}()
+
+	if err := cmd.Start(); err != nil {
+		return nil, err
+	}
+	dec := json.NewDecoder(stdout)
+	for dec.More() {
+		var pkg Package
+		if err := dec.Decode(&pkg); err != nil {
+			return nil, err
+		}
+		pkgs = append(pkgs, &pkg)
+	}
+	if err := cmd.Wait(); err != nil {
+		return nil, err
+	}
+	return pkgs, nil
 }
 
 func readFile(path string) string {
@@ -69,13 +213,26 @@ func writeFile(path, body string) {
 	}
 }
 
-func copyGofmt(files []string) {
+func sourceFiles(pkg *Package) (paths []string) {
+	var combined []string
+	for _, list := range [...][]string{
+		pkg.GoFiles,
+		pkg.IgnoredGoFiles,
+	} {
+		for _, name := range list {
+			combined = append(combined, filepath.Join(pkg.Dir, name))
+		}
+	}
+	return combined
+}
+
+func copyGofmt(pkg *Package) {
 	const extraSrc = `
 		// This is the only gofumpt change on gofmt's codebase, besides changing
 		// the name in the usage text.
 		internal.Gofumpt(fileSet, file)
 		`
-	for _, path := range files {
+	for _, path := range sourceFiles(pkg) {
 		body := readFile(path)
 		body = fixImports(body)
 		name := filepath.Base(path)
@@ -94,7 +251,7 @@ func copyGofmt(files []string) {
 	}
 }
 
-func copyGoimports(files []string) {
+func copyGoimports(pkg *Package) {
 	const extraSrc = `
 		// This is the only gofumpt change on goimports's codebase, besides
 		// changing the name in the usage text.
@@ -103,7 +260,7 @@ func copyGoimports(files []string) {
 			return err
 		}
 		`
-	for _, path := range files {
+	for _, path := range sourceFiles(pkg) {
 		body := readFile(path)
 		body = fixImports(body)
 		name := filepath.Base(path)
@@ -123,8 +280,8 @@ func copyGoimports(files []string) {
 	}
 }
 
-func copyInternal(files []string, dir string) {
-	for _, path := range files {
+func copyInternal(pkg *Package, dir string) {
+	for _, path := range sourceFiles(pkg) {
 		body := readFile(path)
 		body = fixImports(body)
 		name := filepath.Base(path)
