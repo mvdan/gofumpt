@@ -220,6 +220,10 @@ func sourceFiles(pkg *Package) (paths []string) {
 		pkg.IgnoredGoFiles,
 	} {
 		for _, name := range list {
+			if strings.HasSuffix(name, "_test.go") {
+				// IgnoredGoFiles can contain test files too.
+				continue
+			}
 			combined = append(combined, filepath.Join(pkg.Dir, name))
 		}
 	}
