@@ -1,6 +1,6 @@
 module mvdan.cc/gofumpt
 
-go 1.12
+go 1.14
 
 require (
 	github.com/rogpeppe/go-internal v1.5.2
