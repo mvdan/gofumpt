@@ -172,7 +172,7 @@ func listPackages(ctx context.Context, env []string, args ...string) (pkgs []*Pa
 	var stderrBuf bytes.Buffer
 	cmd.Stderr = &stderrBuf
 	defer func() {
-		if stderrBuf.Len() > 0 {
+		if finalErr != nil && stderrBuf.Len() > 0 {
 			// TODO: wrap? but the format is backwards, given that
 			// stderr is likely multi-line
 			finalErr = fmt.Errorf("%v\n%s", finalErr, stderrBuf.Bytes())
