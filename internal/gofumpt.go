@@ -372,6 +372,25 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 			f.addNewline(node.Lbrace + 1)
 			closeLine = f.Line(node.Rbrace)
 		}
+		for i1, elem1 := range node.Elts {
+			i2 := i1 + 1
+			if i2 >= len(node.Elts) {
+				break
+			}
+			elem2 := node.Elts[i2]
+			// TODO: do we care about &{}?
+			_, ok1 := elem1.(*ast.CompositeLit)
+			_, ok2 := elem2.(*ast.CompositeLit)
+			if !ok1 && !ok2 {
+				continue
+			}
+			// If there's a newline between any consecutive
+			// elements, there must be a newline between all
+			// composite literal elements.
+			if f.Line(elem1.End()) == f.Line(elem2.Pos()) {
+				f.addNewline(elem1.End())
+			}
+		}
 		last := node.Elts[len(node.Elts)-1]
 		if closeLine == f.Line(last.End()) {
 			f.addNewline(last.End())

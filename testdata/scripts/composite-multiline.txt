@@ -23,6 +23,17 @@ var _ = []string{`
 	if no elements are surrounded by newlines
 `}
 
+var _ = []struct{ a int }{
+	{ // consistent
+		a: 1,
+	},
+	{
+		a: 2,
+	}, { // inconsistent
+		a: 3,
+	},
+}
+
 -- foo.go.golden --
 package p
 
@@ -45,3 +56,15 @@ var _ = []string{`
 	`, `
 	if no elements are surrounded by newlines
 `}
+
+var _ = []struct{ a int }{
+	{ // consistent
+		a: 1,
+	},
+	{
+		a: 2,
+	},
+	{ // inconsistent
+		a: 3,
+	},
+}
