@@ -9,7 +9,9 @@ package p
 import (
 	"io"
 
-	_ "bufio" // for a side effect
+	_ "image/png"
+
+	"bufio" // the above is for a side effect; this one has a comment
 )
 
 import (
@@ -26,6 +28,13 @@ import (
 	"foo.local/two"
 
 	"fmt"
+)
+
+// If they are in order, but with extra newlines, join them.
+import (
+	"more"
+
+	"std"
 )
 
 // This used to crash gofumpt, as there's no space to insert an extra newline.
@@ -39,21 +48,30 @@ package p
 import (
 	"io"
 
-	_ "bufio" // for a side effect
+	_ "image/png"
+
+	"bufio" // the above is for a side effect; this one has a comment
 )
 
 import (
-	bytes_ "bytes"
 	"io"
 	"os"
 
 	"foo.local/one"
+
+	bytes_ "bytes"
 )
 
 import (
 	"fmt"
 
 	"foo.local/two"
+)
+
+// If they are in order, but with extra newlines, join them.
+import (
+	"more"
+	"std"
 )
 
 // This used to crash gofumpt, as there's no space to insert an extra newline.
