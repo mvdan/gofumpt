@@ -451,20 +451,37 @@ func identEqual(expr ast.Expr, name string) bool {
 // the top of the imports list.
 func (f *fumpter) joinStdImports(d *ast.GenDecl) {
 	var std, other []ast.Spec
-	for _, spec := range d.Specs {
+	firstGroup := true
+	lastLine := 0
+	for i, spec := range d.Specs {
 		spec := spec.(*ast.ImportSpec)
-		// First, separate the non-std imports. To be conservative, any
-		// import which is named or has a comment is treated as special,
-		// and we don't force grouping it with std.
-		switch {
-		case strings.Contains(spec.Path.Value, "."),
-			spec.Name != nil, spec.Comment != nil:
+		if i > 0 && firstGroup && f.Line(spec.Pos()) > lastLine+1 {
+			firstGroup = false
+		} else {
+			// We're still in the first group. Update the last line.
+			lastLine = f.Line(spec.Pos())
+		}
+
+		// First, separate the non-std imports.
+		if strings.Contains(spec.Path.Value, ".") {
+			// Once we reach a non-std import, we've broken the
+			// first group.
+			firstGroup = false
 			other = append(other, spec)
 			continue
 		}
+		// To be conservative, if an import has a name or an inline
+		// comment, and isn't part of the top group, treat it as non-std.
+		if !firstGroup && (spec.Name != nil || spec.Comment != nil) {
+			other = append(other, spec)
+			continue
+		}
+
 		// If we're moving this std import further up, reset its
 		// position, to avoid breaking comments.
-		setPos(reflect.ValueOf(spec), d.Pos())
+		if !firstGroup {
+			setPos(reflect.ValueOf(spec), d.Pos())
+		}
 		std = append(std, spec)
 	}
 	// Ensure there is an empty line between std imports and other imports.

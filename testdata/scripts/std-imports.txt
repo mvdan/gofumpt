@@ -8,6 +8,8 @@ package p
 
 import (
 	"io"
+	"io/ioutil" // if the user keeps them in the top group, obey that
+	_ "io/ioutil"
 
 	_ "image/png"
 
@@ -47,6 +49,8 @@ package p
 
 import (
 	"io"
+	"io/ioutil" // if the user keeps them in the top group, obey that
+	_ "io/ioutil"
 
 	_ "image/png"
 
