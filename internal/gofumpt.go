@@ -231,21 +231,29 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 		node.Decls = newDecls
 
 		// Comments aren't nodes, so they're not walked by default.
+	groupLoop:
 		for _, group := range node.Comments {
 			for _, comment := range group.List {
 				body := strings.TrimPrefix(comment.Text, "//")
 				if body == comment.Text {
 					// /*-style comment
-					break
+					continue groupLoop
 				}
 				if rxCommentDirective.MatchString(body) {
-					// this comment is a directive
-					break
+					// this line is a directive
+					continue groupLoop
 				}
 				r, _ := utf8.DecodeRuneInString(body)
-				if unicode.IsLetter(r) || unicode.IsNumber(r) {
-					comment.Text = "// " + body
+				if !unicode.IsLetter(r) && !unicode.IsNumber(r) {
+					// this line could be code like "//{",
+					// or be already spaced.
+					continue groupLoop
 				}
+			}
+			// If none of the comment group's lines look like a
+			// directive or code, nor are spaced, add spaces.
+			for _, comment := range group.List {
+				comment.Text = "// " + strings.TrimPrefix(comment.Text, "//")
 			}
 		}
 

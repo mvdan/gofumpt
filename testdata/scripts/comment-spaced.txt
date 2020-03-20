@@ -37,6 +37,10 @@ type foo int
 //comment group
 //123 numbers too
 
+//{
+//this is probably code
+//}
+
 ////////////
 // ascii art
 //----------
@@ -77,6 +81,10 @@ type foo int
 
 // comment group
 // 123 numbers too
+
+//{
+//this is probably code
+//}
 
 ////////////
 // ascii art
