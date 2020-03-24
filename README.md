@@ -193,6 +193,7 @@ var (
 	nicer     = "x"
 	with      = "y"
 	alignment = "z"
+)
 ```
 
 </details>
