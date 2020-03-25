@@ -69,7 +69,7 @@ func report(err error) {
 }
 
 func usage() {
-	fmt.Fprintf(os.Stderr, "usage: gofumports [flags] [path ...]\n")
+	fmt.Fprintf(os.Stderr, "usage: %s [flags] [path ...]\n", filepath.Base(os.Args[0]))
 	flag.PrintDefaults()
 	os.Exit(2)
 }

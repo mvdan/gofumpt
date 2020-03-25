@@ -56,7 +56,7 @@ func report(err error) {
 }
 
 func usage() {
-	fmt.Fprintf(os.Stderr, "usage: gofumpt [flags] [path ...]\n")
+	fmt.Fprintf(os.Stderr, "usage: %s [flags] [path ...]\n", filepath.Base(os.Args[0]))
 	flag.PrintDefaults()
 }
 
