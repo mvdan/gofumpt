@@ -244,16 +244,19 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 					continue groupLoop
 				}
 				r, _ := utf8.DecodeRuneInString(body)
-				if !unicode.IsLetter(r) && !unicode.IsNumber(r) {
-					// this line could be code like "//{",
-					// or be already spaced.
+				if !unicode.IsLetter(r) && !unicode.IsNumber(r) && !unicode.IsSpace(r) {
+					// this line could be code like "//{"
 					continue groupLoop
 				}
 			}
 			// If none of the comment group's lines look like a
-			// directive or code, nor are spaced, add spaces.
+			// directive or code, add spaces, if needed.
 			for _, comment := range group.List {
-				comment.Text = "// " + strings.TrimPrefix(comment.Text, "//")
+				body := strings.TrimPrefix(comment.Text, "//")
+				r, _ := utf8.DecodeRuneInString(body)
+				if !unicode.IsSpace(r) {
+					comment.Text = "// " + strings.TrimPrefix(comment.Text, "//")
+				}
 			}
 		}
 
