@@ -37,6 +37,9 @@ type foo int
 //comment group
 //123 numbers too
 
+// comment group
+//123 numbers too
+
 //{
 //this is probably code
 //}
@@ -78,6 +81,9 @@ type foo int
 //	comment with a tab.
 
 //  comment with many spaces
+
+// comment group
+// 123 numbers too
 
 // comment group
 // 123 numbers too
