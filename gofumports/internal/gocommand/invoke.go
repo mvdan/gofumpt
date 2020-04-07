@@ -1,3 +1,7 @@
+// Copyright 2020 The Go Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 // Package gocommand is a helper for calling the go command.
 package gocommand
 
@@ -5,6 +9,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"strings"
@@ -28,9 +33,27 @@ func (i *Invocation) Run(ctx context.Context) (*bytes.Buffer, error) {
 	return stdout, friendly
 }
 
-// RunRaw is like Run, but also returns the raw stderr and error for callers
+// RunRaw is like RunPiped, but also returns the raw stderr and error for callers
 // that want to do low-level error handling/recovery.
 func (i *Invocation) RunRaw(ctx context.Context) (stdout *bytes.Buffer, stderr *bytes.Buffer, friendlyError error, rawError error) {
+	stdout = &bytes.Buffer{}
+	stderr = &bytes.Buffer{}
+	rawError = i.RunPiped(ctx, stdout, stderr)
+	if rawError != nil {
+		// Check for 'go' executable not being found.
+		if ee, ok := rawError.(*exec.Error); ok && ee.Err == exec.ErrNotFound {
+			friendlyError = fmt.Errorf("go command required, not found: %v", ee)
+		}
+		if ctx.Err() != nil {
+			friendlyError = ctx.Err()
+		}
+		friendlyError = fmt.Errorf("err: %v: stderr: %s", rawError, stderr)
+	}
+	return
+}
+
+// RunPiped is like Run, but relies on the given stdout/stderr
+func (i *Invocation) RunPiped(ctx context.Context, stdout, stderr io.Writer) error {
 	log := i.Logf
 	if log == nil {
 		log = func(string, ...interface{}) {}
@@ -51,8 +74,6 @@ func (i *Invocation) RunRaw(ctx context.Context) (stdout *bytes.Buffer, stderr *
 		goArgs = append(goArgs, i.Args...)
 	}
 	cmd := exec.Command("go", goArgs...)
-	stdout = &bytes.Buffer{}
-	stderr = &bytes.Buffer{}
 	cmd.Stdout = stdout
 	cmd.Stderr = stderr
 	// On darwin the cwd gets resolved to the real path, which breaks anything that
@@ -61,24 +82,15 @@ func (i *Invocation) RunRaw(ctx context.Context) (stdout *bytes.Buffer, stderr *
 	// The Go stdlib has a special feature where if the cwd and the PWD are the
 	// same node then it trusts the PWD, so by setting it in the env for the child
 	// process we fix up all the paths returned by the go command.
-	cmd.Env = append(append([]string{}, i.Env...), "PWD="+i.WorkingDir)
-	cmd.Dir = i.WorkingDir
+	cmd.Env = append(os.Environ(), i.Env...)
+	if i.WorkingDir != "" {
+		cmd.Env = append(cmd.Env, "PWD="+i.WorkingDir)
+		cmd.Dir = i.WorkingDir
+	}
 
 	defer func(start time.Time) { log("%s for %v", time.Since(start), cmdDebugStr(cmd)) }(time.Now())
 
-	rawError = runCmdContext(ctx, cmd)
-	friendlyError = rawError
-	if rawError != nil {
-		// Check for 'go' executable not being found.
-		if ee, ok := rawError.(*exec.Error); ok && ee.Err == exec.ErrNotFound {
-			friendlyError = fmt.Errorf("go command required, not found: %v", ee)
-		}
-		if ctx.Err() != nil {
-			friendlyError = ctx.Err()
-		}
-		friendlyError = fmt.Errorf("err: %v: stderr: %s", rawError, stderr)
-	}
-	return
+	return runCmdContext(ctx, cmd)
 }
 
 // runCmdContext is like exec.CommandContext except it sends os.Interrupt
