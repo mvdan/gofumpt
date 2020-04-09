@@ -24,14 +24,14 @@ import (
 // bytes may be collapsed onto a single line.
 const shortLineLimit = 60
 
-func GofumptBytes(src []byte) ([]byte, error) {
+func GofumptBytes(src []byte, stdForceGrouping bool) ([]byte, error) {
 	fset := token.NewFileSet()
 	file, err := parser.ParseFile(fset, "", src, parser.ParseComments)
 	if err != nil {
 		return nil, err
 	}
 
-	Gofumpt(fset, file)
+	Gofumpt(fset, file, stdForceGrouping)
 
 	var buf bytes.Buffer
 	if err := format.Node(&buf, fset, file); err != nil {
@@ -40,11 +40,13 @@ func GofumptBytes(src []byte) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func Gofumpt(fset *token.FileSet, file *ast.File) {
+func Gofumpt(fset *token.FileSet, file *ast.File, stdForceGrouping bool) {
 	f := &fumpter{
 		File:    fset.File(file.Pos()),
 		fset:    fset,
 		astFile: file,
+
+		stdForceGrouping: stdForceGrouping,
 	}
 	pre := func(c *astutil.Cursor) bool {
 		f.applyPre(c)
@@ -69,6 +71,8 @@ type fumpter struct {
 	astFile *ast.File
 
 	blockLevel int
+
+	stdForceGrouping bool
 }
 
 func (f *fumpter) commentsBetween(p1, p2 token.Pos) []*ast.CommentGroup {
@@ -483,7 +487,7 @@ func (f *fumpter) joinStdImports(d *ast.GenDecl) {
 		}
 		// To be conservative, if an import has a name or an inline
 		// comment, and isn't part of the top group, treat it as non-std.
-		if !firstGroup && (spec.Name != nil || spec.Comment != nil) {
+		if !firstGroup && !f.stdForceGrouping && (spec.Name != nil || spec.Comment != nil) {
 			other = append(other, spec)
 			continue
 		}

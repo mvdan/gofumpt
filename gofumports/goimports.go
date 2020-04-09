@@ -153,7 +153,7 @@ func processFile(filename string, in io.Reader, out io.Writer, argType argumentT
 
 	// This is the only gofumpt change on gofumports's codebase, besides
 	// changing the name in the usage text.
-	res, err = internal.GofumptBytes(res)
+	res, err = internal.GofumptBytes(res, false)
 	if err != nil {
 		return err
 	}

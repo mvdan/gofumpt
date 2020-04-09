@@ -27,12 +27,13 @@ import (
 
 var (
 	// main operation modes
-	list        = flag.Bool("l", false, "list files whose formatting differs from gofumpt's")
-	write       = flag.Bool("w", false, "write result to (source) file instead of stdout")
-	rewriteRule = flag.String("r", "", "rewrite rule (e.g., 'a[b:len(a)] -> a[b:]')")
-	simplifyAST = flag.Bool("s", false, "simplify code")
-	doDiff      = flag.Bool("d", false, "display diffs instead of rewriting files")
-	allErrors   = flag.Bool("e", false, "report all errors (not just the first 10 on different lines)")
+	list             = flag.Bool("l", false, "list files whose formatting differs from gofumpt's")
+	write            = flag.Bool("w", false, "write result to (source) file instead of stdout")
+	rewriteRule      = flag.String("r", "", "rewrite rule (e.g., 'a[b:len(a)] -> a[b:]')")
+	simplifyAST      = flag.Bool("s", false, "simplify code")
+	doDiff           = flag.Bool("d", false, "display diffs instead of rewriting files")
+	allErrors        = flag.Bool("e", false, "report all errors (not just the first 10 on different lines)")
+	stdForceGrouping = flag.Bool("g", false, "more aggressive standard library grouping")
 
 	// debugging
 	cpuprofile = flag.String("cpuprofile", "", "write cpu profile to this file")
@@ -118,7 +119,7 @@ func processFile(filename string, in io.Reader, out io.Writer, stdin bool) error
 
 	// This is the only gofumpt change on gofumpt's codebase, besides changing
 	// the name in the usage text.
-	internal.Gofumpt(fileSet, file)
+	internal.Gofumpt(fileSet, file, *stdForceGrouping)
 
 	res, err := format(fileSet, file, sourceAdj, indentAdj, src, printer.Config{Mode: printerMode, Tabwidth: tabWidth})
 	if err != nil {
