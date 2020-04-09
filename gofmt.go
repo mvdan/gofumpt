@@ -108,8 +108,6 @@ func processFile(filename string, in io.Reader, out io.Writer, stdin bool) error
 		}
 	}
 
-	ast.SortImports(fileSet, file)
-
 	if *simplifyAST {
 		simplify(file)
 	}
@@ -119,6 +117,7 @@ func processFile(filename string, in io.Reader, out io.Writer, stdin bool) error
 	// This is the only gofumpt change on gofumpt's codebase, besides changing
 	// the name in the usage text.
 	internal.Gofumpt(fileSet, file)
+	ast.SortImports(fileSet, file)
 
 	res, err := format(fileSet, file, sourceAdj, indentAdj, src, printer.Config{Mode: printerMode, Tabwidth: tabWidth})
 	if err != nil {

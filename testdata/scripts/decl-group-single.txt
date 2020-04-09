@@ -5,6 +5,11 @@ gofumpt -w .
 cmp f1.go f1.go.golden
 cmp f2.go f2.go.golden
 
+gofumpt -w .
+
+cmp f1.go f1.go.golden
+cmp f2.go f2.go.golden
+
 -- f1.go --
 package p
 

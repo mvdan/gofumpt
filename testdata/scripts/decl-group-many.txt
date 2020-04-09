@@ -1,6 +1,8 @@
 [gofumports] skip 'would remove the unused imports'
 
-gofumpt -w foo.go .
+gofumpt -w foo.go
+cmp foo.go foo.go.golden
+gofumpt -w foo.go
 cmp foo.go foo.go.golden
 
 -- foo.go --
