@@ -1,4 +1,4 @@
-gofumpt -w foo.go .
+gofumpt -w .
 cmp foo.go foo.go.golden
 
 -- foo.go --

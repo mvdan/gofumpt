@@ -464,6 +464,7 @@ func (f *fumpter) joinStdImports(d *ast.GenDecl) {
 	var std, other []ast.Spec
 	firstGroup := true
 	lastLine := 0
+	needsSort := false
 	for i, spec := range d.Specs {
 		spec := spec.(*ast.ImportSpec)
 		if i > 0 && firstGroup && f.Line(spec.Pos()) > lastLine+1 {
@@ -492,15 +493,27 @@ func (f *fumpter) joinStdImports(d *ast.GenDecl) {
 		// position, to avoid breaking comments.
 		if !firstGroup {
 			setPos(reflect.ValueOf(spec), d.Pos())
+			needsSort = true
 		}
 		std = append(std, spec)
 	}
 	// Ensure there is an empty line between std imports and other imports.
 	if len(std) > 0 && len(other) > 0 && f.Line(std[len(std)-1].End())+1 >= f.Line(other[0].Pos()) {
+		// We add two newlines, as that's necessary in some edge cases.
+		// For example, if the std and non-std imports were together and
+		// without indentation, adding one newline isn't enough. Two
+		// empty lines will be printed as one by go/printer, anyway.
+		f.addNewline(other[0].Pos() - 1)
 		f.addNewline(other[0].Pos())
 	}
 	// Finally, join the imports, keeping std at the top.
 	d.Specs = append(std, other...)
+
+	// If we moved any std imports to the first group, we need to sort them
+	// again.
+	if needsSort {
+		ast.SortImports(f.fset, f.astFile)
+	}
 }
 
 var posType = reflect.TypeOf(token.NoPos)
