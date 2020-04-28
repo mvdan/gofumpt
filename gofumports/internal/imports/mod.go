@@ -330,7 +330,7 @@ func (r *ModuleResolver) dirIsNestedModule(dir string, mod *ModuleJSON) bool {
 	return modDir != mod.Dir
 }
 
-func (r *ModuleResolver) modInfo(dir string) (modDir string, modName string) {
+func (r *ModuleResolver) modInfo(dir string) (modDir, modName string) {
 	readModName := func(modFile string) string {
 		modBytes, err := ioutil.ReadFile(modFile)
 		if err != nil {

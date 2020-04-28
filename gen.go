@@ -28,12 +28,17 @@ func main() {
 		"golang.org/x/tools/cmd/goimports",
 
 		// These are internal goimports dependencies. Copy them.
+		"golang.org/x/tools/internal/event",
+		"golang.org/x/tools/internal/event/core",
+		"golang.org/x/tools/internal/event/keys",
+		"golang.org/x/tools/internal/event/label",
 		"golang.org/x/tools/internal/fastwalk",
 		"golang.org/x/tools/internal/gocommand",
 		"golang.org/x/tools/internal/gopathwalk",
 		"golang.org/x/tools/internal/imports",
 		"golang.org/x/tools/internal/module",
 		"golang.org/x/tools/internal/semver",
+		"golang.org/x/tools/internal/telemetry/event",
 	)
 	if err != nil {
 		panic(err)
