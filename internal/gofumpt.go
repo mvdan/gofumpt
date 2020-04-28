@@ -427,6 +427,15 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 
 	case *ast.CommClause:
 		f.stmts(node.Body)
+
+	case *ast.FieldList:
+		switch c.Parent().(type) {
+		case *ast.FuncDecl, *ast.FuncType, *ast.InterfaceType:
+			node.List = f.mergeAdjacentFields(node.List)
+			c.Replace(node)
+		case *ast.StructType:
+			// Do not merge adjacent fields in structs.
+		}
 	}
 }
 
@@ -514,6 +523,59 @@ func (f *fumpter) joinStdImports(d *ast.GenDecl) {
 	if needsSort {
 		ast.SortImports(f.fset, f.astFile)
 	}
+}
+
+// mergeAdjacentFields mutates fieldList to merge adjacent fields if possible
+// and returns fieldList.
+func (f *fumpter) mergeAdjacentFields(fields []*ast.Field) []*ast.Field {
+	// If there are less than two fields then there is nothing to merge.
+	if len(fields) < 2 {
+		return fields
+	}
+
+	// Otherwise, iterate over adjacent pairs of fields, merging if possible,
+	// and building a new list. Elements of fieldList.List may be mutated (if
+	// merged with following fields), discarded (if merged with a preceeding
+	// field), or left unchanged.
+	lastField := fields[0]
+	newFields := []*ast.Field{lastField}
+	for i := 1; i < len(fields); i++ {
+		field := fields[i]
+		if f.shouldMergeAdjacentFields(field, lastField) {
+			lastField.Names = append(lastField.Names, field.Names...)
+		} else {
+			newFields = append(newFields, field)
+			lastField = field
+		}
+	}
+	return newFields
+}
+
+func (f *fumpter) shouldMergeAdjacentFields(f1, f2 *ast.Field) bool {
+	// Do not merge if either field has doc, comments, no names, or the fields
+	// are not on the same line.
+	if f1.Doc != nil || f2.Doc != nil ||
+		f1.Comment != nil || f2.Comment != nil ||
+		len(f1.Names) == 0 || len(f2.Names) == 0 ||
+		f.Line(f1.Pos()) != f.Line(f2.Pos()) {
+		return false
+	}
+
+	// Only merge if the types are equal.
+	return typeEqual(f1.Type, f2.Type)
+}
+
+func typeEqual(t1, t2 ast.Expr) bool {
+	// FIXME the following only works for identified types, extend it to work for anonymous types
+	ident1, ok := t1.(*ast.Ident)
+	if !ok {
+		return false
+	}
+	ident2, ok := t2.(*ast.Ident)
+	if !ok {
+		return false
+	}
+	return ident1.Name == ident2.Name
 }
 
 var posType = reflect.TypeOf(token.NoPos)
