@@ -525,8 +525,7 @@ func (f *fumpter) joinStdImports(d *ast.GenDecl) {
 	}
 }
 
-// mergeAdjacentFields mutates fieldList to merge adjacent fields if possible
-// and returns fieldList.
+// mergeAdjacentFields returns fields with adjacent fields merged if possible.
 func (f *fumpter) mergeAdjacentFields(fields []*ast.Field) []*ast.Field {
 	// If there are less than two fields then there is nothing to merge.
 	if len(fields) < 2 {
@@ -534,21 +533,19 @@ func (f *fumpter) mergeAdjacentFields(fields []*ast.Field) []*ast.Field {
 	}
 
 	// Otherwise, iterate over adjacent pairs of fields, merging if possible,
-	// and building a new list. Elements of fieldList.List may be mutated (if
-	// merged with following fields), discarded (if merged with a preceeding
-	// field), or left unchanged.
-	lastField := fields[0]
-	newFields := []*ast.Field{lastField}
-	for i := 1; i < len(fields); i++ {
-		field := fields[i]
-		if f.shouldMergeAdjacentFields(field, lastField) {
-			lastField.Names = append(lastField.Names, field.Names...)
+	// and mutating fields. Elements of fields may be mutated (if merged with
+	// following fields), discarded (if merged with a preceeding field), or left
+	// unchanged.
+	i := 0
+	for j := 1; j < len(fields); j++ {
+		if f.shouldMergeAdjacentFields(fields[i], fields[j]) {
+			fields[i].Names = append(fields[i].Names, fields[j].Names...)
 		} else {
-			newFields = append(newFields, field)
-			lastField = field
+			i++
+			fields[i] = fields[j]
 		}
 	}
-	return newFields
+	return fields[:i+1]
 }
 
 func (f *fumpter) shouldMergeAdjacentFields(f1, f2 *ast.Field) bool {
