@@ -437,6 +437,11 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 		case *ast.StructType:
 			// Do not merge adjacent fields in structs.
 		}
+
+	case *ast.BasicLit:
+		if node, replace := replaceBasicLit(node); replace {
+			c.Replace(node)
+		}
 	}
 }
 

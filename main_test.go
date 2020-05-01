@@ -5,10 +5,10 @@ package main
 
 import (
 	"os"
-	"path/filepath"
 	"testing"
 
 	"github.com/rogpeppe/go-internal/testscript"
+	"mvdan.cc/gofumpt/internal"
 )
 
 func TestMain(m *testing.M) {
@@ -22,14 +22,16 @@ func TestMain(m *testing.M) {
 
 func TestScripts(t *testing.T) {
 	t.Parallel()
-	testscript.Run(t, testscript.Params{
-		Dir: filepath.Join("testdata", "scripts"),
-		Condition: func(cond string) (bool, error) {
-			switch cond {
-			case "gofumpt":
-				return true, nil
-			}
-			return false, nil
-		},
-	})
+	for _, dir := range internal.TestscriptDirs {
+		testscript.Run(t, testscript.Params{
+			Dir: dir,
+			Condition: func(cond string) (bool, error) {
+				switch cond {
+				case "gofumpt":
+					return true, nil
+				}
+				return false, nil
+			},
+		})
+	}
 }
