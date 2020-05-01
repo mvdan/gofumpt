@@ -228,6 +228,18 @@ s := "somestring"
 
 </details>
 
+Octal integer literals should use the `0o` prefix
+
+<details><summary>example</summary>
+
+```
+const perm = 0755
+```
+
+```
+const perm = 0o755
+```
+
 Comments which aren't Go directives should start with a whitespace
 
 <details><summary>example</summary>

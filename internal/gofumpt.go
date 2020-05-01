@@ -25,6 +25,8 @@ import (
 // bytes may be collapsed onto a single line.
 const shortLineLimit = 60
 
+var octalIntegerLiteralRegexp = regexp.MustCompile(`\A0[0-7_]+\z`)
+
 func GofumptBytes(src []byte) ([]byte, error) {
 	fset := token.NewFileSet()
 	file, err := parser.ParseFile(fset, "", src, parser.ParseComments)
@@ -436,6 +438,12 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 			c.Replace(node)
 		case *ast.StructType:
 			// Do not merge adjacent fields in structs.
+		}
+
+	case *ast.BasicLit:
+		if node.Kind == token.INT && octalIntegerLiteralRegexp.MatchString(node.Value) {
+			node.Value = "0o" + node.Value[1:]
+			c.Replace(node)
 		}
 	}
 }
