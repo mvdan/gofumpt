@@ -17,6 +17,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/google/go-cmp/cmp"
 	"golang.org/x/tools/go/ast/astutil"
 )
 
@@ -549,30 +550,18 @@ func (f *fumpter) mergeAdjacentFields(fields []*ast.Field) []*ast.Field {
 }
 
 func (f *fumpter) shouldMergeAdjacentFields(f1, f2 *ast.Field) bool {
-	// Do not merge if either field has doc, comments, no names, or the fields
-	// are not on the same line.
-	if f1.Doc != nil || f2.Doc != nil ||
-		f1.Comment != nil || f2.Comment != nil ||
-		len(f1.Names) == 0 || len(f2.Names) == 0 ||
-		f.Line(f1.Pos()) != f.Line(f2.Pos()) {
+	if len(f1.Names) == 0 || len(f2.Names) == 0 {
+		// Both must have names for the merge to work.
+		return false
+	}
+	if f.Line(f1.Pos()) != f.Line(f2.Pos()) {
+		// Trust the user if they used separate lines.
 		return false
 	}
 
 	// Only merge if the types are equal.
-	return typeEqual(f1.Type, f2.Type)
-}
-
-func typeEqual(t1, t2 ast.Expr) bool {
-	// FIXME the following only works for identified types, extend it to work for anonymous types
-	ident1, ok := t1.(*ast.Ident)
-	if !ok {
-		return false
-	}
-	ident2, ok := t2.(*ast.Ident)
-	if !ok {
-		return false
-	}
-	return ident1.Name == ident2.Name
+	opt := cmp.Comparer(func(x, y token.Pos) bool { return true })
+	return cmp.Equal(f1.Type, f2.Type, opt)
 }
 
 var posType = reflect.TypeOf(token.NoPos)

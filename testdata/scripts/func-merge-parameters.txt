@@ -27,9 +27,9 @@ func mergeWithComment(
 	x int, y int, // comment
 )
 
-func dontMergeAnonymousParams(int, int) {}
+func mergeAllSyntax(x chan []*foo.Bar, y chan []*foo.Bar) {}
 
-func dontMergeComplexTypes(x struct{ V int }, y struct{ V int }) {}
+func dontMergeAnonymousParams(int, int) {}
 
 func dontMergeMultipleLines(
 	x int,
@@ -69,9 +69,9 @@ func mergeWithComment(
 	x, y int, // comment
 )
 
-func dontMergeAnonymousParams(int, int) {}
+func mergeAllSyntax(x, y chan []*foo.Bar) {}
 
-func dontMergeComplexTypes(x struct{ V int }, y struct{ V int }) {}
+func dontMergeAnonymousParams(int, int) {}
 
 func dontMergeMultipleLines(
 	x int,
