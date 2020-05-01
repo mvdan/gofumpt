@@ -199,6 +199,21 @@ var (
 </details>
 
 
+Adjacent parameters with the same type should be grouped together
+
+<details><summary>example</summary>
+
+```
+func Foo(bar string, baz string) {}
+```
+
+```
+func Foo(bar, baz string) {}
+```
+
+</details>
+
+
 Simple var-declaration statements should use short assignments
 
 <details><summary>example</summary>
