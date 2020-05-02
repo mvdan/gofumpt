@@ -228,7 +228,7 @@ s := "somestring"
 
 </details>
 
-Octal integer literals should use the `0o` prefix
+Octal integer literals should use the `0o` prefix on modules using Go 1.13 and later
 
 <details><summary>example</summary>
 
