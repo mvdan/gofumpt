@@ -2,7 +2,7 @@
 
 `gofmt`, the way it should be pronounced.
 
-	cd $(mktemp -d); go mod init tmp; go get mvdan.cc/gofumpt
+	GO111MODULE=on go get mvdan.cc/gofumpt
 
 Enforce a stricter format than `gofmt`, while being backwards compatible. That
 is, `gofumpt` is happy with a subset of the formats that `gofmt` is happy with.
@@ -12,7 +12,7 @@ replacement. Running `gofmt` after `gofumpt` should be a no-op.
 
 A drop-in replacement for `goimports` is also available:
 
-	cd $(mktemp -d); go mod init tmp; go get mvdan.cc/gofumpt/gofumports
+	GO111MODULE=on go get mvdan.cc/gofumpt
 
 ### Features
 
@@ -270,10 +270,10 @@ Alternatively, to use the tool with VS Code, add these settings:
 ```
 "go.formatTool": "goimports",
 "go.alternateTools": {
-    "goimports": "gofumports",
+	"goimports": "gofumports",
 },
 "go.languageServerExperimentalFeatures": {
-    "format": false
+	"format": false
 }
 ```
 
