@@ -12,6 +12,9 @@ var _ = []int{
 var _ = []int{1, 2,
 	3, 4}
 
+var _ = []int{
+	1, 2, 3, 4}
+
 var _ = [][]string{{
 	"no need for more newlines",
 	"if wrapping a single expression",
@@ -34,6 +37,14 @@ var _ = []struct{ a int }{
 	},
 }
 
+var _ = []struct{ a int }{{
+	a: 1,
+}, {
+	a: 2,
+}, {
+	a: 3,
+}}
+
 -- foo.go.golden --
 package p
 
@@ -44,6 +55,10 @@ var _ = []int{}
 var _ = []int{
 	1, 2,
 	3, 4,
+}
+
+var _ = []int{
+	1, 2, 3, 4,
 }
 
 var _ = [][]string{{
@@ -68,3 +83,11 @@ var _ = []struct{ a int }{
 		a: 3,
 	},
 }
+
+var _ = []struct{ a int }{{
+	a: 1,
+}, {
+	a: 2,
+}, {
+	a: 3,
+}}

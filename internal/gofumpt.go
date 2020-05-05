@@ -367,28 +367,41 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 			break
 		}
 
+		newlineAroundElems := false
 		newlineBetweenElems := false
 		lastLine := openLine
-		for _, elem := range node.Elts {
+		for i, elem := range node.Elts {
 			if f.Line(elem.Pos()) > lastLine {
-				newlineBetweenElems = true
+				if i == 0 {
+					newlineAroundElems = true
+				} else {
+					newlineBetweenElems = true
+				}
 			}
 			lastLine = f.Line(elem.End())
 		}
 		if closeLine > lastLine {
-			newlineBetweenElems = true
+			newlineAroundElems = true
 		}
 
+		if newlineBetweenElems || newlineAroundElems {
+			first := node.Elts[0]
+			if openLine == f.Line(first.Pos()) {
+				// We want the newline right after the brace.
+				f.addNewline(node.Lbrace + 1)
+				closeLine = f.Line(node.Rbrace)
+			}
+			last := node.Elts[len(node.Elts)-1]
+			if closeLine == f.Line(last.End()) {
+				// We want the newline right before the brace.
+				f.addNewline(node.Rbrace)
+			}
+		}
+
+		// If there's a newline between any consecutive elements, there
+		// must be a newline between all composite literal elements.
 		if !newlineBetweenElems {
-			// no newlines between elements (and braces)
 			break
-		}
-
-		first := node.Elts[0]
-		if openLine == f.Line(first.Pos()) {
-			// We want the newline right after the brace.
-			f.addNewline(node.Lbrace + 1)
-			closeLine = f.Line(node.Rbrace)
 		}
 		for i1, elem1 := range node.Elts {
 			i2 := i1 + 1
@@ -402,16 +415,9 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 			if !ok1 && !ok2 {
 				continue
 			}
-			// If there's a newline between any consecutive
-			// elements, there must be a newline between all
-			// composite literal elements.
 			if f.Line(elem1.End()) == f.Line(elem2.Pos()) {
 				f.addNewline(elem1.End())
 			}
-		}
-		last := node.Elts[len(node.Elts)-1]
-		if closeLine == f.Line(last.End()) {
-			f.addNewline(last.End())
 		}
 
 	case *ast.CaseClause:

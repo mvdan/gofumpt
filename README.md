@@ -75,19 +75,38 @@ if err != nil {
 
 </details>
 
-Composite literals with elements in separate lines must also separate both braces
+Composite literals should use newlines consistently
 
 <details><summary>example</summary>
 
 ```
+// A newline before or after an element requires newlines for the opening and
+// closing braces.
 var ints = []int{1, 2,
 	3, 4}
+
+// A newline between consecutive elements requires a newline between all
+// elements.
+var matrix = [][]int{
+	{1},
+	{2}, {
+		3,
+	},
+}
 ```
 
 ```
 var ints = []int{
 	1, 2,
 	3, 4,
+}
+
+var matrix = [][]int{
+	{1},
+	{2},
+	{
+		3,
+	},
 }
 ```
 
