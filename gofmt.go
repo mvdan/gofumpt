@@ -39,7 +39,6 @@ var (
 )
 
 const (
-	goVersion   = "1.13"
 	tabWidth    = 8
 	printerMode = printer.UseSpaces | printer.TabIndent
 )
@@ -119,7 +118,7 @@ func processFile(filename string, in io.Reader, out io.Writer, stdin bool) error
 
 	// This is the only gofumpt change on gofumpt's codebase, besides changing
 	// the name in the usage text.
-	gformat.File(fileSet, file, goVersion)
+	gformat.File(fileSet, file, "")
 
 	res, err := format(fileSet, file, sourceAdj, indentAdj, src, printer.Config{Mode: printerMode, Tabwidth: tabWidth})
 	if err != nil {

@@ -26,8 +26,6 @@ import (
 	"mvdan.cc/gofumpt/format"
 )
 
-const goVersion = "1.13"
-
 var (
 	// main operation modes
 	list   = flag.Bool("l", false, "list files whose formatting differs from goimport's")
@@ -155,7 +153,7 @@ func processFile(filename string, in io.Reader, out io.Writer, argType argumentT
 
 	// This is the only gofumpt change on gofumports's codebase, besides
 	// changing the name in the usage text.
-	res, err = format.Source(res, goVersion)
+	res, err = format.Source(res, "")
 	if err != nil {
 		return err
 	}

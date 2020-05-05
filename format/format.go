@@ -1,6 +1,21 @@
 // Copyright (c) 2019, Daniel Martí <mvdan@mvdan.cc>
 // See LICENSE for licensing information
 
+// Package format exposes gofumpt's formatting in an API similar to go/format.
+// In general, the APIs are only guaranteed to work well when the input source
+// is in canonical gofmt format.
+//
+// The goVersion parameter taken by some of the functions should correspond to
+// the Go language version a piece of code is written in. The version is used to
+// decide whether to apply formatting rules which require new language features.
+// When inside a Go module, goVersion should be the result of:
+//
+//     go list -m -f {{.GoVersion}}
+//
+// goVersion is treated as a semantic version, which might start with a "v"
+// prefix. Like Go versions, it might also be incomplete; "1.14" is equivalent
+// to "1.14.0". An empty goVersion is equivalent to "v99", to use all available
+// language features.
 package format
 
 import (
@@ -22,6 +37,8 @@ import (
 	"golang.org/x/tools/go/ast/astutil"
 )
 
+// Source formats src in gofumpt's format, assuming that src holds a valid Go
+// source file.
 func Source(src []byte, goVersion string) ([]byte, error) {
 	fset := token.NewFileSet()
 	file, err := parser.ParseFile(fset, "", src, parser.ParseComments)
@@ -38,12 +55,23 @@ func Source(src []byte, goVersion string) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+// File modifies a file and fset in place to follow gofumpt's format. The
+// changes might include manipulating adding or removing newlines in fset,
+// modifying the position of nodes, or modifying literal values.
 func File(fset *token.FileSet, file *ast.File, goVersion string) {
+	if goVersion == "" {
+		goVersion = "v99"
+	} else if goVersion[0] != 'v' {
+		goVersion = "v" + goVersion
+	}
+	if !semver.IsValid(goVersion) {
+		panic(fmt.Sprintf("invalid semver string: %q", goVersion))
+	}
 	f := &fumpter{
 		File:      fset.File(file.Pos()),
 		fset:      fset,
 		astFile:   file,
-		goVersion: "v" + goVersion, // semver version strings must begin with a leading "v"
+		goVersion: goVersion,
 	}
 	pre := func(c *astutil.Cursor) bool {
 		f.applyPre(c)
