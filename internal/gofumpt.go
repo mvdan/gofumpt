@@ -500,9 +500,6 @@ func (f *fumpter) joinStdImports(d *ast.GenDecl) {
 
 		// First, separate the non-std imports.
 		if strings.Contains(spec.Path.Value, ".") {
-			// Once we reach a non-std import, we've broken the
-			// first group.
-			firstGroup = false
 			other = append(other, spec)
 			continue
 		}
@@ -515,7 +512,7 @@ func (f *fumpter) joinStdImports(d *ast.GenDecl) {
 
 		// If we're moving this std import further up, reset its
 		// position, to avoid breaking comments.
-		if !firstGroup {
+		if !firstGroup || len(other) > 0 {
 			setPos(reflect.ValueOf(spec), d.Pos())
 			needsSort = true
 		}

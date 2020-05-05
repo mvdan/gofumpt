@@ -39,6 +39,12 @@ import (
 	"std"
 )
 
+// We need to split std vs non-std in this case too.
+import (
+	"foo.local/three"
+	math "math"
+)
+
 // This used to crash gofumpt, as there's no space to insert an extra newline.
 import (
 "std"
@@ -76,6 +82,13 @@ import (
 import (
 	"more"
 	"std"
+)
+
+// We need to split std vs non-std in this case too.
+import (
+	math "math"
+
+	"foo.local/three"
 )
 
 // This used to crash gofumpt, as there's no space to insert an extra newline.
