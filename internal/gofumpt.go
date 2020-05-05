@@ -18,6 +18,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/google/go-cmp/cmp"
+	"golang.org/x/mod/semver"
 	"golang.org/x/tools/go/ast/astutil"
 )
 
@@ -25,14 +26,16 @@ import (
 // bytes may be collapsed onto a single line.
 const shortLineLimit = 60
 
-func GofumptBytes(src []byte) ([]byte, error) {
+var rxOctalInteger = regexp.MustCompile(`\A0[0-7_]+\z`)
+
+func GofumptBytes(src []byte, goVersion string) ([]byte, error) {
 	fset := token.NewFileSet()
 	file, err := parser.ParseFile(fset, "", src, parser.ParseComments)
 	if err != nil {
 		return nil, err
 	}
 
-	Gofumpt(fset, file)
+	Gofumpt(fset, file, goVersion)
 
 	var buf bytes.Buffer
 	if err := format.Node(&buf, fset, file); err != nil {
@@ -41,11 +44,12 @@ func GofumptBytes(src []byte) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func Gofumpt(fset *token.FileSet, file *ast.File) {
+func Gofumpt(fset *token.FileSet, file *ast.File, goVersion string) {
 	f := &fumpter{
-		File:    fset.File(file.Pos()),
-		fset:    fset,
-		astFile: file,
+		File:      fset.File(file.Pos()),
+		fset:      fset,
+		astFile:   file,
+		goVersion: "v" + goVersion, // semver version strings must begin with a leading "v"
 	}
 	pre := func(c *astutil.Cursor) bool {
 		f.applyPre(c)
@@ -70,6 +74,8 @@ type fumpter struct {
 	astFile *ast.File
 
 	blockLevel int
+
+	goVersion string
 }
 
 func (f *fumpter) commentsBetween(p1, p2 token.Pos) []*ast.CommentGroup {
@@ -436,6 +442,14 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 			c.Replace(node)
 		case *ast.StructType:
 			// Do not merge adjacent fields in structs.
+		}
+
+	case *ast.BasicLit:
+		if semver.Compare(f.goVersion, "v1.13") >= 0 {
+			if node.Kind == token.INT && rxOctalInteger.MatchString(node.Value) {
+				node.Value = "0o" + node.Value[1:]
+				c.Replace(node)
+			}
 		}
 	}
 }
