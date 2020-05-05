@@ -487,15 +487,18 @@ func identEqual(expr ast.Expr, name string) bool {
 func (f *fumpter) joinStdImports(d *ast.GenDecl) {
 	var std, other []ast.Spec
 	firstGroup := true
-	lastLine := 0
+	lastEnd := d.Pos()
 	needsSort := false
 	for i, spec := range d.Specs {
 		spec := spec.(*ast.ImportSpec)
-		if i > 0 && firstGroup && f.Line(spec.Pos()) > lastLine+1 {
+		if coms := f.commentsBetween(lastEnd, spec.Pos()); len(coms) > 0 {
+			lastEnd = coms[len(coms)-1].End()
+		}
+		if i > 0 && firstGroup && f.Line(spec.Pos()) > f.Line(lastEnd)+1 {
 			firstGroup = false
 		} else {
-			// We're still in the first group. Update the last line.
-			lastLine = f.Line(spec.Pos())
+			// We're still in the first group, update lastEnd.
+			lastEnd = spec.End()
 		}
 
 		// First, separate the non-std imports.
