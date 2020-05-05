@@ -211,10 +211,10 @@ func readFile(path string) string {
 }
 
 func writeFile(path, body string) {
-	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		panic(err)
 	}
-	if err := ioutil.WriteFile(path, []byte(body), 0644); err != nil {
+	if err := ioutil.WriteFile(path, []byte(body), 0o644); err != nil {
 		panic(err)
 	}
 }
@@ -236,11 +236,13 @@ func sourceFiles(pkg *Package) (paths []string) {
 	return combined
 }
 
+const extraImport = `gformat "mvdan.cc/gofumpt/format"; `
+
 func copyGofmt(pkg *Package) {
 	const extraSrc = `
 		// This is the only gofumpt change on gofmt's codebase, besides changing
 		// the name in the usage text.
-		internal.Gofumpt(fileSet, file)
+		gformat.File(fileSet, file, "")
 		`
 	for _, path := range sourceFiles(pkg) {
 		body := readFile(path)
@@ -250,11 +252,12 @@ func copyGofmt(pkg *Package) {
 		case "doc.go":
 			continue // we have our own
 		case "gofmt.go":
-			i := strings.Index(body, "res, err := format(")
-			if i < 0 {
-				panic("could not insert the gofumpt source code")
+			if i := strings.Index(body, "\t\"mvdan.cc/gofumpt"); i > 0 {
+				body = body[:i] + "\n" + extraImport + "\n" + body[i:]
 			}
-			body = body[:i] + "\n" + extraSrc + "\n" + body[i:]
+			if i := strings.Index(body, "res, err := format("); i > 0 {
+				body = body[:i] + "\n" + extraSrc + "\n" + body[i:]
+			}
 		}
 		body = strings.Replace(body, "gofmt", "gofumpt", -1)
 		writeFile(name, body)
@@ -265,7 +268,7 @@ func copyGoimports(pkg *Package) {
 	const extraSrc = `
 		// This is the only gofumpt change on goimports's codebase, besides
 		// changing the name in the usage text.
-		res, err = internal.GofumptBytes(res)
+		res, err = gformat.Source(res, "")
 		if err != nil {
 			return err
 		}
@@ -278,11 +281,12 @@ func copyGoimports(pkg *Package) {
 		case "doc.go":
 			continue // we have our own
 		case "goimports.go":
-			i := strings.Index(body, "if !bytes.Equal")
-			if i < 0 {
-				panic("could not insert the gofumports source code")
+			if i := strings.Index(body, "\t\"mvdan.cc/gofumpt"); i > 0 {
+				body = body[:i] + "\n" + extraImport + "\n" + body[i:]
 			}
-			body = body[:i] + "\n" + extraSrc + "\n" + body[i:]
+			if i := strings.Index(body, "if !bytes.Equal"); i > 0 {
+				body = body[:i] + "\n" + extraSrc + "\n" + body[i:]
+			}
 		}
 		body = strings.Replace(body, "goimports", "gofumports", -1)
 

@@ -170,7 +170,7 @@ func initialize(filename string, src []byte, opt *Options) ([]byte, *Options, er
 	return src, opt, nil
 }
 
-func formatFile(fileSet *token.FileSet, file *ast.File, src []byte, adjust func(orig []byte, src []byte) []byte, opt *Options) ([]byte, error) {
+func formatFile(fileSet *token.FileSet, file *ast.File, src []byte, adjust func(orig, src []byte) []byte, opt *Options) ([]byte, error) {
 	mergeImports(opt.Env, fileSet, file)
 	sortImports(opt.Env, fileSet, file)
 	imps := astutil.Imports(fileSet, file)
@@ -348,7 +348,7 @@ func cutSpace(b []byte) (before, middle, after []byte) {
 //    to every non-blank line in src.
 // 3) matchSpace copies the trailing space from orig and uses it in place
 //   of src's trailing space.
-func matchSpace(orig []byte, src []byte) []byte {
+func matchSpace(orig, src []byte) []byte {
 	before, _, after := cutSpace(orig)
 	i := bytes.LastIndex(before, []byte{'\n'})
 	before, indent := before[:i+1], before[i+1:]

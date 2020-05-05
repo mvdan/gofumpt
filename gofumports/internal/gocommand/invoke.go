@@ -88,7 +88,7 @@ type Invocation struct {
 
 // RunRaw is like RunPiped, but also returns the raw stderr and error for callers
 // that want to do low-level error handling/recovery.
-func (i *Invocation) runRaw(ctx context.Context) (stdout *bytes.Buffer, stderr *bytes.Buffer, friendlyError, rawError error) {
+func (i *Invocation) runRaw(ctx context.Context) (stdout, stderr *bytes.Buffer, friendlyError, rawError error) {
 	stdout = &bytes.Buffer{}
 	stderr = &bytes.Buffer{}
 	rawError = i.RunPiped(ctx, stdout, stderr)

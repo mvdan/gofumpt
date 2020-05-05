@@ -22,8 +22,8 @@ import (
 	"runtime/pprof"
 	"strings"
 
+	gformat "mvdan.cc/gofumpt/format"
 	"mvdan.cc/gofumpt/gofumports/internal/imports"
-	"mvdan.cc/gofumpt/format"
 )
 
 var (
@@ -153,7 +153,7 @@ func processFile(filename string, in io.Reader, out io.Writer, argType argumentT
 
 	// This is the only gofumpt change on gofumports's codebase, besides
 	// changing the name in the usage text.
-	res, err = format.Source(res, "")
+	res, err = gformat.Source(res, "")
 	if err != nil {
 		return err
 	}

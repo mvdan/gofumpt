@@ -245,7 +245,7 @@ func match(m map[string]reflect.Value, pattern, val reflect.Value) bool {
 // of wildcards and pos used as the position of tokens from the pattern.
 // if m == nil, subst returns a copy of pattern and doesn't change the line
 // number information.
-func subst(m map[string]reflect.Value, pattern reflect.Value, pos reflect.Value) reflect.Value {
+func subst(m map[string]reflect.Value, pattern, pos reflect.Value) reflect.Value {
 	if !pattern.IsValid() {
 		return reflect.Value{}
 	}
