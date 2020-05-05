@@ -1,7 +1,7 @@
 // Copyright (c) 2019, Daniel Martí <mvdan@mvdan.cc>
 // See LICENSE for licensing information
 
-package internal
+package format
 
 import (
 	"bytes"
@@ -22,20 +22,14 @@ import (
 	"golang.org/x/tools/go/ast/astutil"
 )
 
-// Multiline nodes which could fit on a single line under this many
-// bytes may be collapsed onto a single line.
-const shortLineLimit = 60
-
-var rxOctalInteger = regexp.MustCompile(`\A0[0-7_]+\z`)
-
-func GofumptBytes(src []byte, goVersion string) ([]byte, error) {
+func Source(src []byte, goVersion string) ([]byte, error) {
 	fset := token.NewFileSet()
 	file, err := parser.ParseFile(fset, "", src, parser.ParseComments)
 	if err != nil {
 		return nil, err
 	}
 
-	Gofumpt(fset, file, goVersion)
+	File(fset, file, goVersion)
 
 	var buf bytes.Buffer
 	if err := format.Node(&buf, fset, file); err != nil {
@@ -44,7 +38,7 @@ func GofumptBytes(src []byte, goVersion string) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func Gofumpt(fset *token.FileSet, file *ast.File, goVersion string) {
+func File(fset *token.FileSet, file *ast.File, goVersion string) {
 	f := &fumpter{
 		File:      fset.File(file.Pos()),
 		fset:      fset,
@@ -66,6 +60,12 @@ func Gofumpt(fset *token.FileSet, file *ast.File, goVersion string) {
 	}
 	astutil.Apply(file, pre, post)
 }
+
+// Multiline nodes which could fit on a single line under this many
+// bytes may be collapsed onto a single line.
+const shortLineLimit = 60
+
+var rxOctalInteger = regexp.MustCompile(`\A0[0-7_]+\z`)
 
 type fumpter struct {
 	*token.File

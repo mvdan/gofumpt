@@ -14,6 +14,9 @@ A drop-in replacement for `goimports` is also available:
 
 	GO111MODULE=on go get mvdan.cc/gofumpt
 
+Most of the Go source files in this repository belong to gofmt and goimports.
+The added formatting rules are in the `format` package.
+
 ### Features
 
 No empty lines at the beginning or end of a function

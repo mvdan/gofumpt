@@ -23,7 +23,7 @@ import (
 	"strings"
 
 	"mvdan.cc/gofumpt/gofumports/internal/imports"
-	"mvdan.cc/gofumpt/internal"
+	"mvdan.cc/gofumpt/format"
 )
 
 const goVersion = "1.13"
@@ -155,7 +155,7 @@ func processFile(filename string, in io.Reader, out io.Writer, argType argumentT
 
 	// This is the only gofumpt change on gofumports's codebase, besides
 	// changing the name in the usage text.
-	res, err = internal.GofumptBytes(res, goVersion)
+	res, err = format.Source(res, goVersion)
 	if err != nil {
 		return err
 	}
