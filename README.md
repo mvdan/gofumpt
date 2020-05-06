@@ -12,7 +12,7 @@ replacement. Running `gofmt` after `gofumpt` should be a no-op.
 
 A drop-in replacement for `goimports` is also available:
 
-	GO111MODULE=on go get mvdan.cc/gofumpt
+	GO111MODULE=on go get mvdan.cc/gofumpt/gofumports
 
 Most of the Go source files in this repository belong to gofmt and goimports.
 The added formatting rules are in the `format` package.
@@ -261,6 +261,8 @@ const perm = 0755
 ```
 const perm = 0o755
 ```
+
+</details>
 
 Comments which aren't Go directives should start with a whitespace
 
