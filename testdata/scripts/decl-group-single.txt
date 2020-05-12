@@ -1,9 +1,11 @@
 [gofumports] skip 'would remove the unused imports'
 
-gofumpt -w .
-
+gofumpt -w f1.go f2.go
 cmp f1.go f1.go.golden
 cmp f2.go f2.go.golden
+
+gofumpt -d f1.go.golden f2.go.golden
+! stdout .
 
 -- f1.go --
 package p

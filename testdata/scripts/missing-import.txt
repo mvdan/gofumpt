@@ -1,4 +1,4 @@
-gofumpt -w .
+gofumpt -w foo.go
 [gofumpt] cmp foo.go foo.go.gofumpt
 [gofumports] cmp foo.go foo.go.gofumports
 
