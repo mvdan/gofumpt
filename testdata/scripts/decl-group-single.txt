@@ -36,6 +36,13 @@ var (
 const (
 	first = iota
 )
+
+var (
+	multiline = []string{
+		"foo",
+		"bar",
+	}
+)
 -- f1.go.golden --
 package p
 
@@ -63,6 +70,11 @@ var (
 const (
 	first = iota
 )
+
+var multiline = []string{
+	"foo",
+	"bar",
+}
 -- f2.go --
 package p
 
