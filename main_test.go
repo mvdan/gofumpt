@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/rogpeppe/go-internal/gotooltest"
 	"github.com/rogpeppe/go-internal/testscript"
 )
 
@@ -22,7 +23,7 @@ func TestMain(m *testing.M) {
 
 func TestScripts(t *testing.T) {
 	t.Parallel()
-	testscript.Run(t, testscript.Params{
+	p := testscript.Params{
 		Dir: filepath.Join("testdata", "scripts"),
 		Condition: func(cond string) (bool, error) {
 			switch cond {
@@ -31,5 +32,9 @@ func TestScripts(t *testing.T) {
 			}
 			return false, nil
 		},
-	})
+	}
+	if err := gotooltest.Setup(&p); err != nil {
+		t.Fatal(err)
+	}
+	testscript.Run(t, p)
 }

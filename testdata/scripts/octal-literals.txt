@@ -10,7 +10,6 @@ gofumpt -lang=1.14 foo.go
 cmp stdout foo.go.golden
 
 # If we bump the version in go.mod, it should be picked up.
-env HOME=$WORK/home
 exec go mod edit -go=1.14
 gofumpt foo.go
 cmp stdout foo.go.golden
