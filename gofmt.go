@@ -16,6 +16,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"runtime/pprof"
@@ -75,7 +76,7 @@ func isGoFile(f os.FileInfo) bool {
 
 // If in == nil, the source is the contents of the file with the given filename.
 func processFile(filename string, in io.Reader, out io.Writer, stdin bool) error {
-	var perm os.FileMode = 0o644
+	var perm os.FileMode = 0644
 	if in == nil {
 		f, err := os.Open(filename)
 		if err != nil {
@@ -118,7 +119,14 @@ func processFile(filename string, in io.Reader, out io.Writer, stdin bool) error
 
 	// This is the only gofumpt change on gofumpt's codebase, besides changing
 	// the name in the usage text.
-	gformat.File(fileSet, file, "")
+	if *langVersion == "" {
+		out, err := exec.Command("go", "list", "-m", "-f", "{{.GoVersion}}").Output()
+		out = bytes.TrimSpace(out)
+		if err == nil && len(out) > 0 {
+			*langVersion = string(out)
+		}
+	}
+	gformat.File(fileSet, file, gformat.Options{LangVersion: *langVersion})
 
 	res, err := format(fileSet, file, sourceAdj, indentAdj, src, printer.Config{Mode: printerMode, Tabwidth: tabWidth})
 	if err != nil {

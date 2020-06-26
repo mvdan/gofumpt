@@ -87,7 +87,7 @@ func main() {
 	}
 
 	// Write out source file.
-	err = ioutil.WriteFile("pkgindex.go", src, 0o644)
+	err = ioutil.WriteFile("pkgindex.go", src, 0644)
 	if err != nil {
 		log.Fatal(err)
 	}

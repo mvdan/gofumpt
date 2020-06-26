@@ -151,9 +151,16 @@ func processFile(filename string, in io.Reader, out io.Writer, argType argumentT
 		return err
 	}
 
-	// This is the only gofumpt change on gofumports's codebase, besides
-	// changing the name in the usage text.
-	res, err = gformat.Source(res, "")
+	// This is the only gofumpt change on gofumports's codebase, besides changing
+	// the name in the usage text.
+	if *langVersion == "" {
+		out, err := exec.Command("go", "list", "-m", "-f", "{{.GoVersion}}").Output()
+		out = bytes.TrimSpace(out)
+		if err == nil && len(out) > 0 {
+			*langVersion = string(out)
+		}
+	}
+	res, err = gformat.Source(res, gformat.Options{LangVersion: *langVersion})
 	if err != nil {
 		return err
 	}
