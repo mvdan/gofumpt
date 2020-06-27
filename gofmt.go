@@ -76,7 +76,7 @@ func isGoFile(f os.FileInfo) bool {
 
 // If in == nil, the source is the contents of the file with the given filename.
 func processFile(filename string, in io.Reader, out io.Writer, stdin bool) error {
-	var perm os.FileMode = 0644
+	var perm os.FileMode = 0o644
 	if in == nil {
 		f, err := os.Open(filename)
 		if err != nil {
