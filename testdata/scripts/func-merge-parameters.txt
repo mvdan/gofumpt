@@ -4,7 +4,7 @@ cmp stdout foo.go
 
 # It's run with -extra. Note that the flag isn't available in gofumports,
 # following the lack of -s.
-[gofumports] skip
+[!gofumpt] skip
 gofumpt -extra foo.go
 cmp stdout foo.go.golden
 

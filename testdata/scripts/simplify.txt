@@ -2,7 +2,7 @@
 # gofumports, has no such flag.
 gofumpt foo.go
 [gofumpt] cmp stdout foo.go.golden
-[gofumports] cmp stdout foo.go
+[!gofumpt] cmp stdout foo.go
 
 -- foo.go --
 package p

@@ -1,4 +1,4 @@
-[gofumports] skip 'would remove the unused imports'
+[!gofumpt] skip 'would remove the unused imports'
 
 gofumpt -w foo.go
 cmp foo.go foo.go.golden

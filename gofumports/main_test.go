@@ -28,10 +28,6 @@ func TestScripts(t *testing.T) {
 	p := testscript.Params{
 		Dir: filepath.Join("..", "testdata", "scripts"),
 		Condition: func(cond string) (bool, error) {
-			switch cond {
-			case "gofumports":
-				return true, nil
-			}
 			return false, nil
 		},
 	}
