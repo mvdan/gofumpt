@@ -135,7 +135,7 @@ type Invocation struct {
 	Logf       func(format string, args ...interface{})
 }
 
-func (i *Invocation) runWithFriendlyError(ctx context.Context, stdout, stderr io.Writer) (friendlyError, rawError error) {
+func (i *Invocation) runWithFriendlyError(ctx context.Context, stdout, stderr io.Writer) (friendlyError error, rawError error) {
 	rawError = i.run(ctx, stdout, stderr)
 	if rawError != nil {
 		friendlyError = rawError

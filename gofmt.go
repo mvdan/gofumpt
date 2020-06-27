@@ -126,7 +126,10 @@ func processFile(filename string, in io.Reader, out io.Writer, stdin bool) error
 			*langVersion = string(out)
 		}
 	}
-	gformat.File(fileSet, file, gformat.Options{LangVersion: *langVersion})
+	gformat.File(fileSet, file, gformat.Options{
+		LangVersion: *langVersion,
+		ExtraRules:  *extraRules,
+	})
 
 	res, err := format(fileSet, file, sourceAdj, indentAdj, src, printer.Config{Mode: printerMode, Tabwidth: tabWidth})
 	if err != nil {

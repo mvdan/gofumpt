@@ -252,7 +252,10 @@ func copyGofmt(pkg *Package) {
 		// This is the only gofumpt change on gofmt's codebase, besides changing
 		// the name in the usage text.
 		` + extraSrcLangVersion + `
-		gformat.File(fileSet, file, gformat.Options{LangVersion: *langVersion})
+		gformat.File(fileSet, file, gformat.Options{
+			LangVersion: *langVersion,
+			ExtraRules:  *extraRules,
+		})
 		`
 	for _, path := range sourceFiles(pkg) {
 		body := readFile(path)

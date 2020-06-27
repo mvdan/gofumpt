@@ -22,7 +22,7 @@ func Log1(ctx context.Context, message string, t1 label.Label) {
 
 // Log2 takes a message and two labels and delivers a log event to the exporter.
 // It is a customized version of Print that is faster and does no allocation.
-func Log2(ctx context.Context, message string, t1, t2 label.Label) {
+func Log2(ctx context.Context, message string, t1 label.Label, t2 label.Label) {
 	Export(ctx, MakeEvent([3]label.Label{
 		keys.Msg.Of(message),
 		t1,

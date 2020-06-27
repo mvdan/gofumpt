@@ -70,7 +70,7 @@ package p
 //export CgoFunc
 
 //extern open
-func c_open(name *byte, mode, perm int) int
+func c_open(name *byte, mode int, perm int) int
 
 //line 123
 

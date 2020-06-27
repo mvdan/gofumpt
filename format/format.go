@@ -38,6 +38,8 @@ type Options struct {
 	// is equivalent to "1.14.0". When empty, it is equivalent to "v1", to
 	// not use language features which could break programs.
 	LangVersion string
+
+	ExtraRules bool
 }
 
 // Source formats src in gofumpt's format, assuming that src holds a valid Go
@@ -474,6 +476,10 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 		f.stmts(node.Body)
 
 	case *ast.FieldList:
+		// Merging adjacent fields (e.g. parameters) is disabled by default.
+		if !f.ExtraRules {
+			break
+		}
 		switch c.Parent().(type) {
 		case *ast.FuncDecl, *ast.FuncType, *ast.InterfaceType:
 			node.List = f.mergeAdjacentFields(node.List)
