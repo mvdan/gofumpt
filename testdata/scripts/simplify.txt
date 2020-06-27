@@ -1,0 +1,14 @@
+# gofumpt changes -s to default to true. Note that goimports, and thus
+# gofumports, has no such flag.
+gofumpt foo.go
+[gofumpt] cmp stdout foo.go.golden
+[gofumports] cmp stdout foo.go
+
+-- foo.go --
+package p
+
+var _ = [][]int{[]int{1}}
+-- foo.go.golden --
+package p
+
+var _ = [][]int{{1}}
