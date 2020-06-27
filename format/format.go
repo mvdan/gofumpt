@@ -29,7 +29,7 @@ type Options struct {
 	// LangVersion corresponds to the Go language version a piece of code is
 	// written in. The version is used to decide whether to apply formatting
 	// rules which require new language features. When inside a Go module,
-	// LangVersion should be the result of:
+	// LangVersion should generally be specified as the result of:
 	//
 	//     go list -m -f {{.GoVersion}}
 	//
@@ -483,11 +483,8 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 		}
 
 	case *ast.BasicLit:
-		// This language feature was introduced in 1.13; since most
-		// modules support two Go versions at once, only assume we can
-		// use the feature if the current language version target is
-		// 1.14 or later.
-		if semver.Compare(f.LangVersion, "v1.14") >= 0 {
+		// Octal number literals were introduced in 1.13.
+		if semver.Compare(f.LangVersion, "v1.13") >= 0 {
 			if node.Kind == token.INT && rxOctalInteger.MatchString(node.Value) {
 				node.Value = "0o" + node.Value[1:]
 				c.Replace(node)

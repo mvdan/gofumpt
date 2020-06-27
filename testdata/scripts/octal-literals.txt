@@ -6,11 +6,11 @@ gofumpt foo.go
 cmp stdout foo.go.orig
 
 # We can give an explicitly newer version.
-gofumpt -lang=1.14 foo.go
+gofumpt -lang=1.13 foo.go
 cmp stdout foo.go.golden
 
 # If we bump the version in go.mod, it should be picked up.
-exec go mod edit -go=1.14
+exec go mod edit -go=1.13
 gofumpt foo.go
 cmp stdout foo.go.golden
 
@@ -19,12 +19,6 @@ gofumpt -d foo.go.golden
 
 # We can give an explicitly older version.
 gofumpt -lang=v1 foo.go
-cmp stdout foo.go.orig
-
-# Note that specifying 1.13 shouldn't use octal numbers, since we conservatively
-# require at least one version greater than the one that introduced the language
-# feature.
-gofumpt -lang=1.13 foo.go
 cmp stdout foo.go.orig
 
 -- module/go.mod --
