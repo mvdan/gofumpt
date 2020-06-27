@@ -1,7 +1,5 @@
 # gofumpt
 
-`gofmt`, the way it should be pronounced.
-
 	GO111MODULE=on go get mvdan.cc/gofumpt
 
 Enforce a stricter format than `gofmt`, while being backwards compatible. That
@@ -14,14 +12,14 @@ A drop-in replacement for `goimports` is also available:
 
 	GO111MODULE=on go get mvdan.cc/gofumpt/gofumports
 
-Most of the Go source files in this repository belong to gofmt and goimports.
+Most of the Go source files in this repository belong to the Go project.
 The added formatting rules are in the `format` package.
 
-### Features
+### Added rules
 
 No empty lines at the beginning or end of a function
 
-<details><summary>example</summary>
+<details><summary><i>example</i></summary>
 
 ```
 func foo() {
@@ -40,7 +38,7 @@ func foo() {
 
 No empty lines around a lone statement (or comment) in a block
 
-<details><summary>example</summary>
+<details><summary><i>example</i></summary>
 
 ```
 if err != nil {
@@ -59,7 +57,7 @@ if err != nil {
 
 No empty lines before a simple error check
 
-<details><summary>example</summary>
+<details><summary><i>example</i></summary>
 
 ```
 foo, err := processFoo()
@@ -80,7 +78,7 @@ if err != nil {
 
 Composite literals should use newlines consistently
 
-<details><summary>example</summary>
+<details><summary><i>example</i></summary>
 
 ```
 // A newline before or after an element requires newlines for the opening and
@@ -117,7 +115,7 @@ var matrix = [][]int{
 
 `std` imports must be in a separate group at the top
 
-<details><summary>example</summary>
+<details><summary><i>example</i></summary>
 
 ```
 import (
@@ -142,7 +140,7 @@ import (
 
 Short case clauses should take a single line
 
-<details><summary>example</summary>
+<details><summary><i>example</i></summary>
 
 ```
 switch c {
@@ -161,7 +159,7 @@ case 'a', 'b', 'c', 'd':
 
 Multiline top-level declarations must be separated by empty lines
 
-<details><summary>example</summary>
+<details><summary><i>example</i></summary>
 
 ```
 func foo() {
@@ -186,7 +184,7 @@ func bar() {
 
 Single var declarations should not be grouped with parentheses
 
-<details><summary>example</summary>
+<details><summary><i>example</i></summary>
 
 ```
 var (
@@ -202,7 +200,7 @@ var foo = "bar"
 
 Contiguous top-level declarations should be grouped together
 
-<details><summary>example</summary>
+<details><summary><i>example</i></summary>
 
 ```
 var nicer = "x"
@@ -221,24 +219,9 @@ var (
 </details>
 
 
-Adjacent parameters with the same type should be grouped together
-
-<details><summary>example</summary>
-
-```
-func Foo(bar string, baz string) {}
-```
-
-```
-func Foo(bar, baz string) {}
-```
-
-</details>
-
-
 Simple var-declaration statements should use short assignments
 
-<details><summary>example</summary>
+<details><summary><i>example</i></summary>
 
 ```
 var s = "somestring"
@@ -250,9 +233,25 @@ s := "somestring"
 
 </details>
 
+
+The `-s` code simplification flag is enabled by default
+
+<details><summary><i>example</i></summary>
+
+```
+var _ = [][]int{[]int{1}}
+```
+
+```
+var _ = [][]int{{1}}
+```
+
+</details>
+
+
 Octal integer literals should use the `0o` prefix on modules using Go 1.13 and later
 
-<details><summary>example</summary>
+<details><summary><i>example</i></summary>
 
 ```
 const perm = 0755
@@ -266,7 +265,7 @@ const perm = 0o755
 
 Comments which aren't Go directives should start with a whitespace
 
-<details><summary>example</summary>
+<details><summary><i>example</i></summary>
 
 ```
 //go:noinline
@@ -280,6 +279,22 @@ func Foo() {}
 
 // Foo is awesome.
 func Foo() {}
+```
+
+</details>
+
+#### Extra rules behind `-extra`
+
+Adjacent parameters with the same type should be grouped together
+
+<details><summary><i>example</i></summary>
+
+```
+func Foo(bar string, baz string) {}
+```
+
+```
+func Foo(bar, baz string) {}
 ```
 
 </details>
@@ -301,7 +316,8 @@ Alternatively, to use the tool with VS Code, add these settings:
 }
 ```
 
-You can use `gofmt` instead of `goimports` and `gofumpt` instead of `gofumports` if you don't need auto-importing on-save.
+You can use `gofmt` instead of `goimports` and `gofumpt` instead of `gofumports`
+if you don't need auto-importing on-save.
 
 ### Roadmap
 
