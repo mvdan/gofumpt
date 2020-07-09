@@ -15,6 +15,12 @@ package p
 
 //lint:disablefoo
 
+//nolint
+
+//nolint // explanation
+
+//nolint:somelinter // explanation
+
 //not actually: a directive
 
 //TODO: do something
@@ -62,6 +68,12 @@ package p
 //go:unknowndirective
 
 //lint:disablefoo
+
+//nolint
+
+//nolint // explanation
+
+//nolint:somelinter // explanation
 
 // not actually: a directive
 
