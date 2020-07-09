@@ -217,7 +217,8 @@ func (f *fumpter) printLength(node ast.Node) int {
 //   //export     | to mark cgo funcs for exporting
 //   //extern     | C function declarations for gccgo
 //   //sys(nb)?   | syscall function wrapper prototypes
-var rxCommentDirective = regexp.MustCompile(`^([a-z]+:|line\b|export\b|extern\b|sys(nb)?\b)`)
+//   //nolint     | nolint directive for golangci
+var rxCommentDirective = regexp.MustCompile(`^([a-z]+:|line\b|export\b|extern\b|sys(nb)?\b|nolint\b)`)
 
 // visit takes either an ast.Node or a []ast.Stmt.
 func (f *fumpter) applyPre(c *astutil.Cursor) {
