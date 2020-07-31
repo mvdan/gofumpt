@@ -16,6 +16,7 @@ import (
 	"reflect"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -547,14 +548,20 @@ func (f *fumpter) joinStdImports(d *ast.GenDecl) {
 			lastEnd = spec.End()
 		}
 
-		// First, separate the non-std imports.
-		if strings.Contains(spec.Path.Value, ".") {
-			other = append(other, spec)
-			continue
-		}
+		path, _ := strconv.Unquote(spec.Path.Value)
+		switch {
+		// Imports with a period are definitely third party.
+		case strings.Contains(path, "."):
+			fallthrough
+		// "test" and "example" are reserved as per golang.org/issue/37641.
+		// "internal" is unreachable.
+		case strings.HasPrefix(path, "test/") ||
+			strings.HasPrefix(path, "example/") ||
+			strings.HasPrefix(path, "internal/"):
+			fallthrough
 		// To be conservative, if an import has a name or an inline
 		// comment, and isn't part of the top group, treat it as non-std.
-		if !firstGroup && (spec.Name != nil || spec.Comment != nil) {
+		case !firstGroup && (spec.Name != nil || spec.Comment != nil):
 			other = append(other, spec)
 			continue
 		}

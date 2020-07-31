@@ -62,6 +62,16 @@ import (
 "std"
 "non.std/pkg"
 )
+
+// All of the extra imports below are known to not belong in std.
+// For example/ and test/, see https://golang.org/issue/37641.
+import (
+	"io"
+
+	"example/foo"
+	"internal/bar"
+	"test/baz"
+)
 -- foo.go.golden --
 package p
 
@@ -117,4 +127,14 @@ import (
 	"std"
 
 	"non.std/pkg"
+)
+
+// All of the extra imports below are known to not belong in std.
+// For example/ and test/, see https://golang.org/issue/37641.
+import (
+	"io"
+
+	"example/foo"
+	"internal/bar"
+	"test/baz"
 )
