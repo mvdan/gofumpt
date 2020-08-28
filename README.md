@@ -304,20 +304,20 @@ func Foo(bar, baz string) {}
 `gofumpt` is a replacement for `gofmt`, so you can simply `go get` it as
 described at the top of this README and use it.
 
-Alternatively, to use the tool with VS Code, add these settings:
+Alternatively, to use the tool with VS Code, add the following setting:
 
 ```
-"go.formatTool": "goimports",
-"go.alternateTools": {
-	"goimports": "gofumports",
-},
-"go.languageServerExperimentalFeatures": {
-	"format": false
-}
+"go.formatTool": "gofumports",
 ```
 
-You can use `gofmt` instead of `goimports` and `gofumpt` instead of `gofumports`
-if you don't need auto-importing on-save.
+This setting must be modified through the JSON file, there is no way of doing
+this change in the UI, as it's a selector and not a textbox. For this reason,
+VS Code will complain about an invalid setting value. You can safely ignore
+this warning, the correct tool will be used even if VS Code says the opposite.
+
+You can use `gofumpt` instead of `gofumports` if you don't need auto-importing
+on-save. This setting only works with the Go language server disabled, as
+formatting is completely bypassed and delegated to `gopls` if enabled.
 
 ### Roadmap
 
