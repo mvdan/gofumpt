@@ -304,20 +304,51 @@ func Foo(bar, baz string) {}
 `gofumpt` is a replacement for `gofmt`, so you can simply `go get` it as
 described at the top of this README and use it.
 
-Alternatively, to use the tool with VS Code, add the following setting:
+#### Visual Studio Code
 
-```
-"go.formatTool": "gofumports",
+Using the language server is the recommended method of running `gofumpt`. There is
+no need of using `gofumports` in this case, as import ordering is performed in a
+different step. Some of the settings required to enable it are not yet recognized
+by VS Code and it will complain about them, but they will still work. This is an
+expected behaviour until `gopls` gets a consistent set of settings, as stated in
+its [official documentation](https://github.com/golang/tools/blob/master/gopls/doc/vscode.md).
+
+```json
+"go.useLanguageServer": true,
+    
+"gopls": {
+    "gofumpt": true,
+},
+    
+"[go]": {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": true,
+    },
+},
+
+"[go.mod]": {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": true,
+    },
+},
 ```
 
-This setting must be modified through the JSON file, there is no way of doing
-this change in the UI, as it's a selector and not a textbox. For this reason,
-VS Code will complain about an invalid setting value. You can safely ignore
-this warning, the correct tool will be used even if VS Code says the opposite.
+Alternatively, if you don't use the language server, you can still configure
+the IDE to use either `gofumpt` or `goimports`. This change must be done through
+the `settings.json` file because the formatting tool parameter is shown as a
+selector and not as a textbox in the interface. For this reason, VS Code will
+complain about an invalid property value, but this warning can be safely ignored
+and the correct tool will be used anyways.
+
+```json
+"go.formatTool": "gofumports"
+```
 
 You can use `gofumpt` instead of `gofumports` if you don't need auto-importing
-on-save. This setting only works with the Go language server disabled, as
-formatting is completely bypassed and delegated to `gopls` if enabled.
+on-save. Remember to disable the language server, as formatting is completely
+bypassed and delegated to `gopls` if enabled.
 
 ### Roadmap
 
