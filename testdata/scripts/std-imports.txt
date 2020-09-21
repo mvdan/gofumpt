@@ -72,6 +72,58 @@ import (
 	"internal/bar"
 	"test/baz"
 )
+
+// Comment1
+// Comment2
+import "C"
+import "os"
+
+// Comment1
+// Comment2
+import "C"
+import (
+	"io"
+	"utf8"
+)
+
+// Comment1
+// Comment2
+import "C"
+import (
+	"io"
+	"utf8"
+)
+import "bufio"
+
+// Comment1
+// Comment2
+import "C"
+import "io"
+import "utf8"
+import "bufio"
+
+// Comment4
+import "utf8"
+// Comment1
+// Comment2
+import "C"
+// Comment3
+import "io"
+// Comment5
+import "bufio"
+
+// Comment
+import "C"
+import (
+	"a"
+	"b"
+
+  "x/y/z"
+  "x/w"
+
+
+	"d/f"
+)
 -- foo.go.golden --
 package p
 
@@ -137,4 +189,60 @@ import (
 	"example/foo"
 	"internal/bar"
 	"test/baz"
+)
+
+// Comment1
+// Comment2
+import "C"
+import "os"
+
+// Comment1
+// Comment2
+import "C"
+import (
+	"io"
+	"utf8"
+)
+
+// Comment1
+// Comment2
+import "C"
+import (
+	"bufio"
+	"io"
+	"utf8"
+)
+
+// Comment1
+// Comment2
+import "C"
+import (
+	"bufio"
+	"io"
+	"utf8"
+)
+
+// Comment1
+// Comment2
+import "C"
+import (
+	// Comment5
+	"bufio"
+
+	// Comment3
+	"io"
+
+	// Comment4
+	"utf8"
+)
+
+
+// Comment
+import "C"
+import (
+	"a"
+	"b"
+	"d/f"
+	"x/w"
+	"x/y/z"
 )

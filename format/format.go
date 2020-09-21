@@ -550,6 +550,9 @@ func (f *fumpter) joinStdImports(d *ast.GenDecl) {
 
 		path, _ := strconv.Unquote(spec.Path.Value)
 		switch {
+		// CGO compatibility
+		case path == "C":
+			continue
 		// Imports with a period are definitely third party.
 		case strings.Contains(path, "."):
 			fallthrough
