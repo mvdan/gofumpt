@@ -552,6 +552,10 @@ func (f *fumpter) joinStdImports(d *ast.GenDecl) {
 		switch {
 		// CGO compatibility
 		case path == "C":
+			// Remove the parentheses. go/printer will automatically
+			// get rid of the newlines.
+			d.Lparen = token.NoPos
+			d.Rparen = token.NoPos
 			continue
 		// Imports with a period are definitely third party.
 		case strings.Contains(path, "."):

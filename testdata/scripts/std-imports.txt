@@ -194,11 +194,13 @@ import (
 // Comment1
 // Comment2
 import "C"
+
 import "os"
 
 // Comment1
 // Comment2
 import "C"
+
 import (
 	"io"
 	"utf8"
@@ -207,15 +209,7 @@ import (
 // Comment1
 // Comment2
 import "C"
-import (
-	"bufio"
-	"io"
-	"utf8"
-)
 
-// Comment1
-// Comment2
-import "C"
 import (
 	"bufio"
 	"io"
@@ -225,6 +219,17 @@ import (
 // Comment1
 // Comment2
 import "C"
+
+import (
+	"bufio"
+	"io"
+	"utf8"
+)
+
+// Comment1
+// Comment2
+import "C"
+
 import (
 	// Comment5
 	"bufio"
@@ -239,6 +244,7 @@ import (
 
 // Comment
 import "C"
+
 import (
 	"a"
 	"b"
