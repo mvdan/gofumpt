@@ -170,7 +170,7 @@ func (f *fumpter) addNewline(at token.Pos) {
 	}
 }
 
-// removeNewlines removes all newlines between two positions, so that they end
+// removeLines removes all newlines between two positions, so that they end
 // up on the same line.
 func (f *fumpter) removeLines(fromLine, toLine int) {
 	for fromLine < toLine {
