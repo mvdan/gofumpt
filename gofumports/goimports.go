@@ -151,7 +151,10 @@ func processFile(filename string, in io.Reader, out io.Writer, argType argumentT
 			*langVersion = string(out)
 		}
 	}
-	res, err = gformat.Source(res, gformat.Options{LangVersion: *langVersion})
+	res, err = gformat.Source(res, gformat.Options{
+		LangVersion: *langVersion,
+		ExtraRules:  *extraRules,
+	})
 	if err != nil {
 		return err
 	}
