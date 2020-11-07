@@ -350,6 +350,31 @@ You can use `gofumpt` instead of `gofumports` if you don't need auto-importing
 on-save. Remember to disable the language server, as formatting is completely
 bypassed and delegated to `gopls` if enabled.
 
+#### Goland
+
+It's possible to set up Goland IDE to automatically perform `gofumpt` actions.
+
+After `gofumpt` installation, follow the following steps to enable it in Goland :
+- Open **Settings** (File > Settings)
+- Open **Tools** section
+- Find *File Watchers* sub-section
+- Clic on the `+` on the right side to add a new file watcher 
+- Choose *Custom Template*
+
+A new windows will ask for settings, if you follow instructions below, your project files
+will be `gofumpt` automatically by file watcher directives.
+
+* Name : Just choose the name you want to identify your file watcher
+* File Types : Select all .go files
+* Scope : Project Files
+* Program : Select your `gofumpt` executable
+* Arguments : `-w $FilePath$`
+* Output path to refresh : `$FilePath$`
+* Working directory : `$ProjectFileDir$`
+* Environment variables : `GOROOT=$GOROOT$;GOPATH=$GOPATH$;PATH=$GoBinDirs$`
+
+To avoid unecessary runs, you must disable all checkboxes in *Advanced* section.
+
 ### Roadmap
 
 This tool is a place to experiment. In the long term, the features that work
