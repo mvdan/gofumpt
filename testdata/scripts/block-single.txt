@@ -45,6 +45,19 @@ func f() {
 		// comment directly after
 
 	}
+
+	// For readability; the empty line helps separate the multi-line
+	// condition from the body.
+	if true &&
+		true {
+
+		println()
+	}
+	for true &&
+		true {
+
+		println()
+	}
 }
 -- foo.go.golden --
 package p
@@ -76,5 +89,18 @@ func f() {
 
 		println()
 		// comment directly after
+	}
+
+	// For readability; the empty line helps separate the multi-line
+	// condition from the body.
+	if true &&
+		true {
+
+		println()
+	}
+	for true &&
+		true {
+
+		println()
 	}
 }

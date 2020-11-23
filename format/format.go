@@ -361,11 +361,16 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 		}
 
 		isFuncBody := false
-		switch c.Parent().(type) {
+		var cond ast.Expr
+		switch parent := c.Parent().(type) {
 		case *ast.FuncDecl:
 			isFuncBody = true
 		case *ast.FuncLit:
 			isFuncBody = true
+		case *ast.IfStmt:
+			cond = parent.Cond
+		case *ast.ForStmt:
+			cond = parent.Cond
 		}
 
 		if len(node.List) > 1 && !isFuncBody {
@@ -388,7 +393,12 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 			}
 		}
 
-		f.removeLinesBetween(node.Lbrace, bodyPos)
+		if cond != nil && f.Line(cond.Pos()) != f.Line(cond.End()) {
+			// The body is preceded by a multi-line condition, so an
+			// empty line can help readability.
+		} else {
+			f.removeLinesBetween(node.Lbrace, bodyPos)
+		}
 		f.removeLinesBetween(bodyEnd, node.Rbrace)
 
 	case *ast.CompositeLit:
