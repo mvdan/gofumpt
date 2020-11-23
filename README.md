@@ -315,11 +315,11 @@ its [official documentation](https://github.com/golang/tools/blob/master/gopls/d
 
 ```json
 "go.useLanguageServer": true,
-    
+
 "gopls": {
     "gofumpt": true,
 },
-    
+
 "[go]": {
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
@@ -354,26 +354,27 @@ bypassed and delegated to `gopls` if enabled.
 
 It's possible to set up Goland IDE to automatically perform `gofumpt` actions.
 
-After `gofumpt` installation, follow the following steps to enable it in Goland :
+After `gofumpt` installation, follow the following steps to enable it in Goland:
+
 - Open **Settings** (File > Settings)
-- Open **Tools** section
-- Find *File Watchers* sub-section
-- Clic on the `+` on the right side to add a new file watcher 
+- Open the **Tools** section
+- Find the *File Watchers* sub-section
+- Click on the `+` on the right side to add a new file watcher
 - Choose *Custom Template*
 
 A new windows will ask for settings, if you follow instructions below, your project files
-will be `gofumpt` automatically by file watcher directives.
+will be `gofumpt`ed automatically by file watcher directives.
 
-* Name : Just choose the name you want to identify your file watcher
-* File Types : Select all .go files
-* Scope : Project Files
-* Program : Select your `gofumpt` executable
-* Arguments : `-w $FilePath$`
-* Output path to refresh : `$FilePath$`
-* Working directory : `$ProjectFileDir$`
-* Environment variables : `GOROOT=$GOROOT$;GOPATH=$GOPATH$;PATH=$GoBinDirs$`
+* Name: Just choose the name you want to identify your file watcher
+* File Types: Select all .go files
+* Scope: Project Files
+* Program: Select your `gofumpt` executable
+* Arguments: `-w $FilePath$`
+* Output path to refresh: `$FilePath$`
+* Working directory: `$ProjectFileDir$`
+* Environment variables: `GOROOT=$GOROOT$;GOPATH=$GOPATH$;PATH=$GoBinDirs$`
 
-To avoid unecessary runs, you must disable all checkboxes in *Advanced* section.
+To avoid unecessary runs, you must disable all checkboxes in the *Advanced* section.
 
 ### Roadmap
 
