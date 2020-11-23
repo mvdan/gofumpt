@@ -250,7 +250,7 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 		for i := 0; i < len(node.Decls); {
 			newDecls = append(newDecls, node.Decls[i])
 			start, ok := node.Decls[i].(*ast.GenDecl)
-			if !ok {
+			if !ok || isCgoImport(start) {
 				i++
 				continue
 			}
@@ -258,7 +258,7 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 			for i++; i < len(node.Decls); {
 				cont, ok := node.Decls[i].(*ast.GenDecl)
 				if !ok || cont.Tok != start.Tok || cont.Lparen != token.NoPos ||
-					f.Line(lastPos) < f.Line(cont.Pos())-1 {
+					f.Line(lastPos) < f.Line(cont.Pos())-1 || isCgoImport(cont) {
 					break
 				}
 				start.Specs = append(start.Specs, cont.Specs...)
@@ -527,6 +527,19 @@ func (f *fumpter) stmts(list []ast.Stmt) {
 func identEqual(expr ast.Expr, name string) bool {
 	id, ok := expr.(*ast.Ident)
 	return ok && id.Name == name
+}
+
+// isCgoImport returns true if the declaration is simply:
+//
+//   import "C"
+//
+// Note that parentheses do not affect the result.
+func isCgoImport(decl *ast.GenDecl) bool {
+	if decl.Tok != token.IMPORT || len(decl.Specs) != 1 {
+		return false
+	}
+	spec := decl.Specs[0].(*ast.ImportSpec)
+	return spec.Path.Value == `"C"`
 }
 
 // joinStdImports ensures that all standard library imports are together and at
