@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	gformat "mvdan.cc/gofumpt/format"
+	"mvdan.cc/gofumpt/gofumports/internal/gocommand"
 	"mvdan.cc/gofumpt/gofumports/internal/imports"
 )
 
@@ -43,14 +44,16 @@ var (
 		TabIndent: true,
 		Comments:  true,
 		Fragment:  true,
-		Env:       &imports.ProcessEnv{},
+		Env: &imports.ProcessEnv{
+			GocmdRunner: &gocommand.Runner{},
+		},
 	}
 	exitCode = 0
 )
 
 func init() {
 	flag.BoolVar(&options.AllErrors, "e", false, "report all errors (not just the first 10 on different lines)")
-	flag.StringVar(&options.Env.LocalPrefix, "local", "", "put imports beginning with this string after 3rd-party packages; comma-separated list")
+	flag.StringVar(&options.LocalPrefix, "local", "", "put imports beginning with this string after 3rd-party packages; comma-separated list")
 	flag.BoolVar(&options.FormatOnly, "format-only", false, "if true, don't fix imports and only format. In this mode, gofumports is effectively gofmt, with the addition that imports are grouped into sections.")
 }
 
