@@ -1,3 +1,5 @@
+[!gofumpt] skip 'don''t add or remove imports'
+
 gofumpt -w foo.go
 cmp foo.go foo.go.golden
 
