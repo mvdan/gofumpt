@@ -352,6 +352,20 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 			node.Rparen = token.NoPos
 		}
 
+		// Remove newlines between uncommented interface method signatures.
+		if node.Tok == token.TYPE && len(node.Specs) == 1 {
+			spec := node.Specs[0].(*ast.TypeSpec)
+			if iface, ok := spec.Type.(*ast.InterfaceType); ok {
+				methods := iface.Methods.List
+				for i := range methods {
+					if i >= len(methods)-1 || methods[i].Doc != nil || methods[i+1].Doc != nil {
+						continue
+					}
+					f.removeLinesBetween(methods[i].Pos(), methods[i+1].End())
+				}
+			}
+		}
+
 	case *ast.BlockStmt:
 		f.stmts(node.List)
 		comments := f.commentsBetween(node.Lbrace, node.Rbrace)
