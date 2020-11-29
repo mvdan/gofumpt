@@ -58,6 +58,12 @@ func f() {
 
 		println()
 	}
+	if true &&
+		true {
+
+		// documented single statement
+		println()
+	}
 }
 -- foo.go.golden --
 package p
@@ -101,6 +107,12 @@ func f() {
 	for true &&
 		true {
 
+		println()
+	}
+	if true &&
+		true {
+
+		// documented single statement
 		println()
 	}
 }
