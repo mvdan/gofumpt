@@ -376,6 +376,14 @@ will be `gofumpt`ed automatically by file watcher directives.
 
 To avoid unecessary runs, you must disable all checkboxes in the *Advanced* section.
 
+#### Vim-go
+
+Specify `gofumports` in [g:go_fmt_command](https://github.com/fatih/vim-go/blob/master/doc/vim-go.txt#L1350) and restart vim.
+
+```vim
+let g:go_fmt_command="gofumports"
+```
+
 ### Roadmap
 
 This tool is a place to experiment. In the long term, the features that work
