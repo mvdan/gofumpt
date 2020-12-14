@@ -378,10 +378,11 @@ To avoid unecessary runs, you must disable all checkboxes in the *Advanced* sect
 
 #### Vim-go
 
-Specify `gofumports` in [g:go_fmt_command](https://github.com/fatih/vim-go/blob/master/doc/vim-go.txt#L1350) and restart vim.
+Release [v1.24](https://github.com/fatih/vim-go/blob/master/CHANGELOG.md#v124---september-15-2020) adds support for using gopls' gofumpt workspace setting via `g:go_gopls_gofumpt`.
 
 ```vim
-let g:go_fmt_command="gofumports"
+let g:go_fmt_command="gopls"
+let g:go_gopls_gofumpt=1
 ```
 
 ### Roadmap
