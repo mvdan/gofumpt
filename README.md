@@ -376,6 +376,15 @@ will be `gofumpt`ed automatically by file watcher directives.
 
 To avoid unecessary runs, you must disable all checkboxes in the *Advanced* section.
 
+#### Vim-go
+
+Release [v1.24](https://github.com/fatih/vim-go/blob/master/CHANGELOG.md#v124---september-15-2020) adds support for using gopls' gofumpt workspace setting via `g:go_gopls_gofumpt`.
+
+```vim
+let g:go_fmt_command="gopls"
+let g:go_gopls_gofumpt=1
+```
+
 ### Roadmap
 
 This tool is a place to experiment. In the long term, the features that work
