@@ -48,6 +48,18 @@ var _ = []struct{ a int }{{
 	a: 3,
 }}
 
+var _ interface{
+}
+
+func _(struct{
+})
+
+var _ = []interface {
+}{1, 2, 3}
+
+func _(
+)
+
 -- foo.go.golden --
 package p
 
@@ -94,3 +106,11 @@ var _ = []struct{ a int }{{
 }, {
 	a: 3,
 }}
+
+var _ interface{}
+
+func _(struct{})
+
+var _ = []interface{}{1, 2, 3}
+
+func _()

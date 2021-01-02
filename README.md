@@ -113,6 +113,46 @@ var matrix = [][]int{
 
 </details>
 
+Empty field lists should use a single line
+
+<details><summary><i>example</i></summary>
+
+```
+var V interface {
+} = 3
+
+type T struct {
+}
+
+func F(
+)
+```
+
+```
+var V interface{} = 3
+
+type T struct{}
+
+func F()
+```
+
+```
+var ints = []int{
+	1, 2,
+	3, 4,
+}
+
+var matrix = [][]int{
+	{1},
+	{2},
+	{
+		3,
+	},
+}
+```
+
+</details>
+
 `std` imports must be in a separate group at the top
 
 <details><summary><i>example</i></summary>

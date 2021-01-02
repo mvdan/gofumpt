@@ -491,6 +491,13 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 		f.stmts(node.Body)
 
 	case *ast.FieldList:
+		if node.NumFields() == 0 {
+			// Empty field lists should not contain a newline.
+			openLine := f.Line(node.Pos())
+			closeLine := f.Line(node.End())
+			f.removeLines(openLine, closeLine)
+		}
+
 		// Merging adjacent fields (e.g. parameters) is disabled by default.
 		if !f.ExtraRules {
 			break
