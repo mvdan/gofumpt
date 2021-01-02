@@ -23,6 +23,8 @@ package p
 
 //not actually: a directive
 
+//https://just.one/url
+
 //TODO: do something
 
 //export CgoFunc
@@ -76,6 +78,8 @@ package p
 //nolint:somelinter // explanation
 
 // not actually: a directive
+
+// https://just.one/url
 
 // TODO: do something
 
