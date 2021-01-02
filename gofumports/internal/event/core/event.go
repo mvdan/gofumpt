@@ -12,7 +12,7 @@ import (
 	"mvdan.cc/gofumpt/gofumports/internal/event/label"
 )
 
-// Event holds the information about an event of note that ocurred.
+// Event holds the information about an event of note that occurred.
 type Event struct {
 	at time.Time
 
