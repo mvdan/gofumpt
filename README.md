@@ -8,10 +8,6 @@ is, `gofumpt` is happy with a subset of the formats that `gofmt` is happy with.
 The tool is a modified fork of `gofmt`, so it can be used as a drop-in
 replacement. Running `gofmt` after `gofumpt` should be a no-op.
 
-A drop-in replacement for `goimports` is also available:
-
-	GO111MODULE=on go get mvdan.cc/gofumpt/gofumports
-
 Most of the Go source files in this repository belong to the Go project.
 The added formatting rules are in the `format` package.
 
@@ -344,57 +340,26 @@ func Foo(bar, baz string) {}
 `gofumpt` is a replacement for `gofmt`, so you can simply `go get` it as
 described at the top of this README and use it.
 
+When using an IDE or editor with Go integrations, it's best to use `gofumpt` as
+part of `gopls`. The instructions below show how to do that for some of the
+major editors out there.
+
 #### Visual Studio Code
 
-Using the language server is the recommended method of running `gofumpt`. There is
-no need of using `gofumports` in this case, as import ordering is performed in a
-different step. Some of the settings required to enable it are not yet recognized
-by VS Code and it will complain about them, but they will still work. This is an
-expected behaviour until `gopls` gets a consistent set of settings, as stated in
-its [official documentation](https://github.com/golang/tools/blob/master/gopls/doc/vscode.md).
+Enable the language server following [the official docs](https://github.com/golang/tools/blob/master/gopls/doc/vscode.md),
+and then enable gopls's `gofumpt` option. Note that VS Code will complain about
+the `gopls` settings, but they will still work.
 
 ```json
 "go.useLanguageServer": true,
-
 "gopls": {
-    "gofumpt": true,
-},
-
-"[go]": {
-    "editor.formatOnSave": true,
-    "editor.codeActionsOnSave": {
-        "source.organizeImports": true,
-    },
-},
-
-"[go.mod]": {
-    "editor.formatOnSave": true,
-    "editor.codeActionsOnSave": {
-        "source.organizeImports": true,
-    },
+	"gofumpt": true,
 },
 ```
-
-Alternatively, if you don't use the language server, you can still configure
-the IDE to use either `gofumpt` or `goimports`. This change must be done through
-the `settings.json` file because the formatting tool parameter is shown as a
-selector and not as a textbox in the interface. For this reason, VS Code will
-complain about an invalid property value, but this warning can be safely ignored
-and the correct tool will be used anyways.
-
-```json
-"go.formatTool": "gofumports"
-```
-
-You can use `gofumpt` instead of `gofumports` if you don't need auto-importing
-on-save. Remember to disable the language server, as formatting is completely
-bypassed and delegated to `gopls` if enabled.
 
 #### Goland
 
-It's possible to set up Goland IDE to automatically perform `gofumpt` actions.
-
-After `gofumpt` installation, follow the following steps to enable it in Goland:
+Once `gofumpt` is installed, follow the steps below:
 
 - Open **Settings** (File > Settings)
 - Open the **Tools** section
@@ -402,10 +367,8 @@ After `gofumpt` installation, follow the following steps to enable it in Goland:
 - Click on the `+` on the right side to add a new file watcher
 - Choose *Custom Template*
 
-A new windows will ask for settings, if you follow instructions below, your project files
-will be `gofumpt`ed automatically by file watcher directives.
+When a window asks for settings, you can enter the following:
 
-* Name: Just choose the name you want to identify your file watcher
 * File Types: Select all .go files
 * Scope: Project Files
 * Program: Select your `gofumpt` executable
@@ -414,15 +377,26 @@ will be `gofumpt`ed automatically by file watcher directives.
 * Working directory: `$ProjectFileDir$`
 * Environment variables: `GOROOT=$GOROOT$;GOPATH=$GOPATH$;PATH=$GoBinDirs$`
 
-To avoid unecessary runs, you must disable all checkboxes in the *Advanced* section.
+To avoid unecessary runs, you should disable all checkboxes in the *Advanced* section.
 
 #### Vim-go
 
-Release [v1.24](https://github.com/fatih/vim-go/blob/master/CHANGELOG.md#v124---september-15-2020) adds support for using gopls' gofumpt workspace setting via `g:go_gopls_gofumpt`.
+Ensure you are at least running version
+[v1.24](https://github.com/fatih/vim-go/blob/master/CHANGELOG.md#v124---september-15-2020),
+and set up `gopls` for formatting code with `gofumpt`:
 
 ```vim
 let g:go_fmt_command="gopls"
 let g:go_gopls_gofumpt=1
+```
+
+#### Govim
+
+With a [new enough version of govim](https://github.com/govim/govim/pull/1005),
+simply configure `gopls` to use `gofumpt`:
+
+```vim
+call govim#config#Set("Gofumpt", 1)
 ```
 
 ### Roadmap
