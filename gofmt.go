@@ -123,6 +123,7 @@ func processFile(filename string, in io.Reader, out io.Writer, stdin bool) error
 	}
 
 	// Apply gofumpt's changes before we print the code in gofumpt's format.
+
 	if *langVersion == "" {
 		out, err := exec.Command("go", "list", "-m", "-f", "{{.GoVersion}}").Output()
 		out = bytes.TrimSpace(out)
@@ -130,6 +131,7 @@ func processFile(filename string, in io.Reader, out io.Writer, stdin bool) error
 			*langVersion = string(out)
 		}
 	}
+
 	gformat.File(fileSet, file, gformat.Options{
 		LangVersion: *langVersion,
 		ExtraRules:  *extraRules,

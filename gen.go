@@ -213,26 +213,26 @@ func sourceFiles(pkg *Package) (paths []string) {
 	return combined
 }
 
-const extraImport = `gformat "mvdan.cc/gofumpt/format"; `
+const (
+	extraImport = `gformat "mvdan.cc/gofumpt/format"; `
 
-const extraSrcLangVersion = `` +
-	`if *langVersion == "" {
-		out, err := exec.Command("go", "list", "-m", "-f", "{{.GoVersion}}").Output()
-		out = bytes.TrimSpace(out)
-		if err == nil && len(out) > 0 {
-			*langVersion = string(out)
+	extraSrcLangVersion = `
+		if *langVersion == "" {
+			out, err := exec.Command("go", "list", "-m", "-f", "{{.GoVersion}}").Output()
+			out = bytes.TrimSpace(out)
+			if err == nil && len(out) > 0 {
+				*langVersion = string(out)
+			}
 		}
-	}`
-
-func copyGofmt(pkg *Package) {
-	const extraVersion = `
+		`
+	extraVersion = `
 		// Print the gofumpt version if the user asks for it.
 		if *showVersion {
 			printVersion()
 			return
 		}
 		`
-	const extraFormat = `
+	extraFormat = `
 		// Apply gofumpt's changes before we print the code in gofmt's format.
 		` + extraSrcLangVersion + `
 		gformat.File(fileSet, file, gformat.Options{
@@ -240,6 +240,9 @@ func copyGofmt(pkg *Package) {
 			ExtraRules:  *extraRules,
 		})
 		`
+)
+
+func copyGofmt(pkg *Package) {
 	for _, path := range sourceFiles(pkg) {
 		body := readFile(path)
 		body = fixImports(body)
