@@ -132,21 +132,6 @@ type T struct{}
 func F()
 ```
 
-```
-var ints = []int{
-	1, 2,
-	3, 4,
-}
-
-var matrix = [][]int{
-	{1},
-	{2},
-	{
-		3,
-	},
-}
-```
-
 </details>
 
 `std` imports must be in a separate group at the top
