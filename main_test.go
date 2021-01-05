@@ -25,13 +25,6 @@ func TestScripts(t *testing.T) {
 	t.Parallel()
 	p := testscript.Params{
 		Dir: filepath.Join("testdata", "scripts"),
-		Condition: func(cond string) (bool, error) {
-			switch cond {
-			case "gofumpt":
-				return true, nil
-			}
-			return false, nil
-		},
 	}
 	if err := gotooltest.Setup(&p); err != nil {
 		t.Fatal(err)

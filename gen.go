@@ -24,39 +24,16 @@ func main() {
 
 		// These are internal cmd dependencies. Copy them.
 		"cmd/internal/diff",
-
-		"golang.org/x/tools/cmd/goimports",
-
-		// These are internal goimports dependencies. Copy them.
-		"golang.org/x/tools/internal/event",
-		"golang.org/x/tools/internal/event/core",
-		"golang.org/x/tools/internal/event/keys",
-		"golang.org/x/tools/internal/event/label",
-		"golang.org/x/tools/internal/fastwalk",
-		"golang.org/x/tools/internal/gocommand",
-		"golang.org/x/tools/internal/gopathwalk",
-		"golang.org/x/tools/internal/imports",
-		"golang.org/x/tools/internal/module",
-		"golang.org/x/tools/internal/semver",
-		"golang.org/x/tools/internal/telemetry/event",
 	)
 	if err != nil {
 		panic(err)
 	}
 	for _, pkg := range pkgs {
-		switch pkg.ImportPath {
-		case "cmd/gofmt":
+		if pkg.ImportPath == "cmd/gofmt" {
 			copyGofmt(pkg)
-		case "golang.org/x/tools/cmd/goimports":
-			copyGoimports(pkg)
-		default:
+		} else {
 			parts := strings.Split(pkg.ImportPath, "/")
-			if parts[0] == "cmd" {
-				copyInternal(pkg, filepath.Join(parts[1:]...))
-			} else {
-				dir := filepath.Join(append([]string{"gofumports"}, parts[3:]...)...)
-				copyInternal(pkg, dir)
-			}
+			copyInternal(pkg, filepath.Join(parts[1:]...))
 		}
 	}
 }
@@ -256,8 +233,7 @@ func copyGofmt(pkg *Package) {
 		}
 		`
 	const extraFormat = `
-		// Apply gofumpt's changes before we print the code in gofmt's
-		// format.
+		// Apply gofumpt's changes before we print the code in gofmt's format.
 		` + extraSrcLangVersion + `
 		gformat.File(fileSet, file, gformat.Options{
 			LangVersion: *langVersion,
@@ -287,37 +263,6 @@ func copyGofmt(pkg *Package) {
 	}
 }
 
-func copyGoimports(pkg *Package) {
-	const extraFormat = `
-		// This is the only gofumpt change on goimports's codebase, besides changing
-		// the name in the usage text.
-		` + extraSrcLangVersion + `
-		res, err = gformat.Source(res, gformat.Options{LangVersion: *langVersion})
-		if err != nil {
-			return err
-		}
-		`
-	for _, path := range sourceFiles(pkg) {
-		body := readFile(path)
-		body = fixImports(body)
-		name := filepath.Base(path)
-		switch name {
-		case "doc.go":
-			continue // we have our own
-		case "goimports.go":
-			if i := strings.Index(body, "\t\"mvdan.cc/gofumpt"); i > 0 {
-				body = body[:i] + "\n" + extraImport + "\n" + body[i:]
-			}
-			if i := strings.Index(body, "if !bytes.Equal"); i > 0 {
-				body = body[:i] + "\n" + extraFormat + "\n" + body[i:]
-			}
-		}
-		body = strings.Replace(body, "goimports", "gofumports", -1)
-
-		writeFile(filepath.Join("gofumports", name), body)
-	}
-}
-
 func copyInternal(pkg *Package, dir string) {
 	for _, path := range sourceFiles(pkg) {
 		body := readFile(path)
@@ -328,10 +273,6 @@ func copyInternal(pkg *Package, dir string) {
 }
 
 func fixImports(body string) string {
-	body = strings.Replace(body,
-		"golang.org/x/tools/internal/",
-		"mvdan.cc/gofumpt/gofumports/internal/",
-		-1)
 	body = strings.Replace(body,
 		"cmd/internal/",
 		"mvdan.cc/gofumpt/internal/",

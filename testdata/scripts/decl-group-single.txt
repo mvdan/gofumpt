@@ -1,5 +1,3 @@
-[!gofumpt] skip 'would remove the unused imports'
-
 gofumpt -w f1.go f2.go
 cmp f1.go f1.go.golden
 cmp f2.go f2.go.golden

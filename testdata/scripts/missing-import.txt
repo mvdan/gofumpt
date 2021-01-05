@@ -1,18 +1,8 @@
-gofumpt -w foo.go
-[gofumpt] cmp foo.go foo.go.gofumpt
-[!gofumpt] cmp foo.go foo.go.gofumports
+# A missing import shouldn't matter nor be fixed by gofumpt.
+gofumpt foo.go
+cmp stdout foo.go
 
 -- foo.go --
 package p
-
-var _ bytes.Buffer
--- foo.go.gofumpt --
-package p
-
-var _ bytes.Buffer
--- foo.go.gofumports --
-package p
-
-import "bytes"
 
 var _ bytes.Buffer

@@ -409,9 +409,9 @@ rely on it for your code as long as you pin a version of it.
 
 ### License
 
-Note that much of the code is copied from Go's `gofmt` and `goimports` commands.
-You can tell which files originate from the Go repository from their copyright
-headers. Their license file is `LICENSE.google`.
+Note that much of the code is copied from Go's `gofmt` command. You can tell
+which files originate from the Go repository from their copyright headers. Their
+license file is `LICENSE.google`.
 
 `gofumpt`'s original source files are also under the 3-clause BSD license, with
 the separate file `LICENSE`.

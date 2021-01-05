@@ -3,7 +3,7 @@
 
 package main
 
-// First, sync the files with x/tools and GOROOT.
+// First, sync cmd/gofmt from GOROOT.
 //go:generate go run gen.go
 
 // Then, add the missing imports to our added code.

@@ -122,8 +122,7 @@ func processFile(filename string, in io.Reader, out io.Writer, stdin bool) error
 		simplify(file)
 	}
 
-	// Apply gofumpt's changes before we print the code in gofumpt's
-	// format.
+	// Apply gofumpt's changes before we print the code in gofumpt's format.
 	if *langVersion == "" {
 		out, err := exec.Command("go", "list", "-m", "-f", "{{.GoVersion}}").Output()
 		out = bytes.TrimSpace(out)
