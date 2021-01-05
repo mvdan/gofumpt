@@ -122,8 +122,8 @@ func processFile(filename string, in io.Reader, out io.Writer, stdin bool) error
 		simplify(file)
 	}
 
-	// This is the only gofumpt change on gofumpt's codebase, besides changing
-	// the name in the usage text.
+	// Apply gofumpt's changes before we print the code in gofumpt's
+	// format.
 	if *langVersion == "" {
 		out, err := exec.Command("go", "list", "-m", "-f", "{{.GoVersion}}").Output()
 		out = bytes.TrimSpace(out)
@@ -206,6 +206,12 @@ func main() {
 func gofumptMain() {
 	flag.Usage = usage
 	flag.Parse()
+
+	// Print the gofumpt version if the user asks for it.
+	if *showVersion {
+		printVersion()
+		return
+	}
 
 	if *cpuprofile != "" {
 		f, err := os.Create(*cpuprofile)

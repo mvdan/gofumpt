@@ -248,9 +248,16 @@ const extraSrcLangVersion = `` +
 	}`
 
 func copyGofmt(pkg *Package) {
-	const extraSrc = `
-		// This is the only gofumpt change on gofmt's codebase, besides changing
-		// the name in the usage text.
+	const extraVersion = `
+		// Print the gofumpt version if the user asks for it.
+		if *showVersion {
+			printVersion()
+			return
+		}
+		`
+	const extraFormat = `
+		// Apply gofumpt's changes before we print the code in gofmt's
+		// format.
 		` + extraSrcLangVersion + `
 		gformat.File(fileSet, file, gformat.Options{
 			LangVersion: *langVersion,
@@ -268,8 +275,11 @@ func copyGofmt(pkg *Package) {
 			if i := strings.Index(body, "\t\"mvdan.cc/gofumpt"); i > 0 {
 				body = body[:i] + "\n" + extraImport + "\n" + body[i:]
 			}
+			if i := strings.Index(body, "if *cpuprofile !="); i > 0 {
+				body = body[:i] + "\n" + extraVersion + "\n" + body[i:]
+			}
 			if i := strings.Index(body, "res, err := format("); i > 0 {
-				body = body[:i] + "\n" + extraSrc + "\n" + body[i:]
+				body = body[:i] + "\n" + extraFormat + "\n" + body[i:]
 			}
 		}
 		body = strings.Replace(body, "gofmt", "gofumpt", -1)
@@ -278,7 +288,7 @@ func copyGofmt(pkg *Package) {
 }
 
 func copyGoimports(pkg *Package) {
-	const extraSrc = `
+	const extraFormat = `
 		// This is the only gofumpt change on goimports's codebase, besides changing
 		// the name in the usage text.
 		` + extraSrcLangVersion + `
@@ -299,7 +309,7 @@ func copyGoimports(pkg *Package) {
 				body = body[:i] + "\n" + extraImport + "\n" + body[i:]
 			}
 			if i := strings.Index(body, "if !bytes.Equal"); i > 0 {
-				body = body[:i] + "\n" + extraSrc + "\n" + body[i:]
+				body = body[:i] + "\n" + extraFormat + "\n" + body[i:]
 			}
 		}
 		body = strings.Replace(body, "goimports", "gofumports", -1)
