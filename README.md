@@ -6,7 +6,9 @@ Enforce a stricter format than `gofmt`, while being backwards compatible. That
 is, `gofumpt` is happy with a subset of the formats that `gofmt` is happy with.
 
 The tool is a modified fork of `gofmt`, so it can be used as a drop-in
-replacement. Running `gofmt` after `gofumpt` should be a no-op.
+replacement. Running `gofmt` after `gofumpt` should be a no-op. For example:
+
+	gofumpt -l -w .
 
 Most of the Go source files in this repository belong to the Go project.
 The added formatting rules are in the `format` package.
