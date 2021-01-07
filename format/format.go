@@ -363,20 +363,20 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 			break
 		}
 
-		isFuncBody := false
+		var sign *ast.FuncType
 		var cond ast.Expr
 		switch parent := c.Parent().(type) {
 		case *ast.FuncDecl:
-			isFuncBody = true
+			sign = parent.Type
 		case *ast.FuncLit:
-			isFuncBody = true
+			sign = parent.Type
 		case *ast.IfStmt:
 			cond = parent.Cond
 		case *ast.ForStmt:
 			cond = parent.Cond
 		}
 
-		if len(node.List) > 1 && !isFuncBody {
+		if len(node.List) > 1 && sign == nil {
 			// only if we have a single statement, or if
 			// it's a func body.
 			break
@@ -396,13 +396,29 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 			}
 		}
 
+		f.removeLinesBetween(bodyEnd, node.Rbrace)
+
 		if cond != nil && f.Line(cond.Pos()) != f.Line(cond.End()) {
 			// The body is preceded by a multi-line condition, so an
 			// empty line can help readability.
-		} else {
-			f.removeLinesBetween(node.Lbrace, bodyPos)
+			return
 		}
-		f.removeLinesBetween(bodyEnd, node.Rbrace)
+		if sign != nil {
+			var lastParam *ast.Field
+			if l := sign.Results; l != nil && len(l.List) > 0 {
+				lastParam = l.List[len(l.List)-1]
+			} else if l := sign.Params; l != nil && len(l.List) > 0 {
+				lastParam = l.List[len(l.List)-1]
+			}
+			endLine := f.Line(sign.End())
+			if lastParam != nil && f.Line(sign.Pos()) != endLine && f.Line(lastParam.Pos()) == endLine {
+				// The body is preceded by a multi-line function
+				// signature, and the empty line helps readability.
+				return
+			}
+		}
+
+		f.removeLinesBetween(node.Lbrace, bodyPos)
 
 	case *ast.CompositeLit:
 		if len(node.Elts) == 0 {
