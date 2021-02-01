@@ -340,7 +340,7 @@ the `gopls` settings, but they will still work.
 ```json
 "go.useLanguageServer": true,
 "gopls": {
-	"gofumpt": true,
+	"formatting.gofumpt": true,
 },
 ```
 
