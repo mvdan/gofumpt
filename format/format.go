@@ -507,8 +507,10 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 		f.stmts(node.Body)
 
 	case *ast.FieldList:
-		if node.NumFields() == 0 {
+		if node.NumFields() == 0 && f.inlineComment(node.Pos()) == nil {
 			// Empty field lists should not contain a newline.
+			// Do not join the two lines if the first has an inline
+			// comment, as that can result in broken formatting.
 			openLine := f.Line(node.Pos())
 			closeLine := f.Line(node.End())
 			f.removeLines(openLine, closeLine)
