@@ -60,6 +60,11 @@ var _ = []interface {
 func _(
 )
 
+type T struct {
+	Foo          // comment
+	Bar struct { // comment
+	}
+}
 -- foo.go.golden --
 package p
 
@@ -114,3 +119,9 @@ func _(struct{})
 var _ = []interface{}{1, 2, 3}
 
 func _()
+
+type T struct {
+	Foo          // comment
+	Bar struct { // comment
+	}
+}
