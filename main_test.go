@@ -4,6 +4,7 @@
 package main
 
 import (
+	"flag"
 	"os"
 	"path/filepath"
 	"testing"
@@ -21,10 +22,13 @@ func TestMain(m *testing.M) {
 	}))
 }
 
+var update = flag.Bool("u", false, "update testscript output files")
+
 func TestScripts(t *testing.T) {
 	t.Parallel()
 	p := testscript.Params{
-		Dir: filepath.Join("testdata", "scripts"),
+		Dir:           filepath.Join("testdata", "scripts"),
+		UpdateScripts: *update,
 	}
 	if err := gotooltest.Setup(&p); err != nil {
 		t.Fatal(err)
