@@ -1,0 +1,157 @@
+cp foo.go foo.go.orig
+
+gofumpt -w foo.go
+cmp foo.go foo.go.orig
+
+env GOFUMPT_SPLIT_LONG_LINES=on
+gofumpt -w foo.go
+cmp foo.go foo.go.golden
+
+gofumpt -d foo.go.golden
+! stdout .
+
+-- foo.go --
+package p
+
+func _() {
+	if err := f(argument1, argument2, argument3, argument4, argument5, argument6, argument7, argument8, argument9, argument10); err != nil {
+		panic(err)
+	}
+
+	// Tiny arguments to ensure the length calculation is right.
+	if err := f(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10); err != nil {
+		panic(err)
+	}
+
+	// These wouldn't take significantly less horizontal space if split.
+	f(x, "one single very very very very very very very very very very very very very very very very long literal")
+	if err := f(x, "one single very very very very very very very very very very very very very very very very long literal"); err != nil {
+		panic(err)
+	}
+	{
+		{
+			{
+				{
+					println("first", "one single very very very very very very very very very very very very very long literal")
+				}
+			}
+		}
+	}
+
+	// Allow splitting at the start of sub-lists too.
+	if err := f(argument1, argument2, argument3, argument4, someComplex{argument5, argument6, argument7, argument8, argument9, argument10}); err != nil {
+		panic(err)
+	}
+	if err := f(argument1, argument2, argument3, argument4, &someComplex{argument5, argument6, argument7, argument8, argument9, argument10}); err != nil {
+		panic(err)
+	}
+	if err := f(argument1, argument2, argument3, argument4, []someSlice{argument5, argument6, argument7, argument8, argument9, argument10}); err != nil {
+		panic(err)
+	}
+
+	// Allow splitting "lists" of binary expressions.
+	if boolean1 && boolean2 && boolean3 && boolean4 && boolean5 && boolean6 && boolean7 && boolean8 && boolean9 && boolean10 && boolean11 {
+	}
+	// Over 100, and we split in a way that doesn't break "len(" off.
+	if boolean1 || boolean2 || boolean3 || boolean4 || len(someVeryLongVarName.SomeVeryLongSelector) > 0 {
+	}
+}
+
+// Note that function declarations have a higher limit of 120.
+
+// This line goes beyond the limit of 120, but splitting it would leave the
+// following line with just 20 non-indentation characters. Not worth it.
+func LongButNotWorthSplitting(argument1, argument2, argument3, argument4, argument5, argument6, argument7, argument8, argument9 int) bool {
+}
+
+// This line goes well past the limit and it should be split.
+// Note that it has a nested func type in a parameter.
+func TooLongWithFuncParam(fn func(int) (int, error), argument1, argument2, argument3, argument4, argument5, argument6, argument7, argument8, argument9, argument10 int) bool {
+}
+
+// This is like LongButNotWorthSplitting, but with a func parameter.
+func LongButNotWorthSplitting2(fn func(int) (int, error), argument3, argument4, argument5, argument6, argument7, argument8, argument9 int) bool {
+}
+
+// Never split result parameter lists, as that could easily add confusion with
+// extra input parameters.
+func NeverSplitResults(argument1, argument2, argument3, argument4, argument5 int) (result1 int, result2, result3, result4, result5, result6, result7, result8 bool) {
+}
+-- foo.go.golden --
+package p
+
+func _() {
+	if err := f(argument1, argument2, argument3, argument4, argument5, argument6, argument7,
+		argument8, argument9, argument10); err != nil {
+		panic(err)
+	}
+
+	// Tiny arguments to ensure the length calculation is right.
+	if err := f(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z, 0,
+		1, 2, 3, 4, 5, 6, 7, 8, 9, 10); err != nil {
+		panic(err)
+	}
+
+	// These wouldn't take significantly less horizontal space if split.
+	f(x, "one single very very very very very very very very very very very very very very very very long literal")
+	if err := f(x, "one single very very very very very very very very very very very very very very very very long literal"); err != nil {
+		panic(err)
+	}
+	{
+		{
+			{
+				{
+					println("first", "one single very very very very very very very very very very very very very long literal")
+				}
+			}
+		}
+	}
+
+	// Allow splitting at the start of sub-lists too.
+	if err := f(argument1, argument2, argument3, argument4, someComplex{
+		argument5, argument6, argument7, argument8, argument9, argument10,
+	}); err != nil {
+		panic(err)
+	}
+	if err := f(argument1, argument2, argument3, argument4, &someComplex{
+		argument5, argument6, argument7, argument8, argument9, argument10,
+	}); err != nil {
+		panic(err)
+	}
+	if err := f(argument1, argument2, argument3, argument4, []someSlice{
+		argument5, argument6, argument7, argument8, argument9, argument10,
+	}); err != nil {
+		panic(err)
+	}
+
+	// Allow splitting "lists" of binary expressions.
+	if boolean1 && boolean2 && boolean3 && boolean4 && boolean5 && boolean6 && boolean7 &&
+		boolean8 && boolean9 && boolean10 && boolean11 {
+	}
+	// Over 100, and we split in a way that doesn't break "len(" off.
+	if boolean1 || boolean2 || boolean3 || boolean4 ||
+		len(someVeryLongVarName.SomeVeryLongSelector) > 0 {
+	}
+}
+
+// Note that function declarations have a higher limit of 120.
+
+// This line goes beyond the limit of 120, but splitting it would leave the
+// following line with just 20 non-indentation characters. Not worth it.
+func LongButNotWorthSplitting(argument1, argument2, argument3, argument4, argument5, argument6, argument7, argument8, argument9 int) bool {
+}
+
+// This line goes well past the limit and it should be split.
+// Note that it has a nested func type in a parameter.
+func TooLongWithFuncParam(fn func(int) (int, error), argument1, argument2, argument3, argument4,
+	argument5, argument6, argument7, argument8, argument9, argument10 int) bool {
+}
+
+// This is like LongButNotWorthSplitting, but with a func parameter.
+func LongButNotWorthSplitting2(fn func(int) (int, error), argument3, argument4, argument5, argument6, argument7, argument8, argument9 int) bool {
+}
+
+// Never split result parameter lists, as that could easily add confusion with
+// extra input parameters.
+func NeverSplitResults(argument1, argument2, argument3, argument4, argument5 int) (result1 int, result2, result3, result4, result5, result6, result7, result8 bool) {
+}
