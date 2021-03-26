@@ -327,7 +327,7 @@ func Foo(bar, baz string) {}
 `gofumpt` is a replacement for `gofmt`, so you can simply `go get` it as
 described at the top of this README and use it.
 
-When using an IDE or editor with Go integration based ono `gopls`,
+When using an IDE or editor with Go integration based on `gopls`,
 it's best to configure the editor to use the `gofumpt` support built into `gopls`.
 
 The instructions below show how to set up `gofumpt` for some of the
