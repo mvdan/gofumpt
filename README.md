@@ -327,8 +327,10 @@ func Foo(bar, baz string) {}
 `gofumpt` is a replacement for `gofmt`, so you can simply `go get` it as
 described at the top of this README and use it.
 
-When using an IDE or editor with Go integrations, it's best to use `gofumpt` as
-part of `gopls`. The instructions below show how to do that for some of the
+When using an IDE or editor with Go integration based on `gopls`,
+it's best to configure the editor to use the `gofumpt` support built into `gopls`.
+
+The instructions below show how to set up `gofumpt` for some of the
 major editors out there.
 
 #### Visual Studio Code
@@ -344,8 +346,9 @@ the `gopls` settings, but they will still work.
 },
 ```
 
-#### Goland
+#### GoLand
 
+GoLand doesn't use `gopls` so it should be configured to use `gofumpt` directly.
 Once `gofumpt` is installed, follow the steps below:
 
 - Open **Settings** (File > Settings)
