@@ -348,7 +348,7 @@ the `gopls` settings, but they will still work.
 
 #### GoLand
 
-GoLand doesn't use `gopls` so it should be configured to used `gofumpt` directly.
+GoLand doesn't use `gopls` so it should be configured to use `gofumpt` directly.
 Once `gofumpt` is installed, follow the steps below:
 
 - Open **Settings** (File > Settings)
