@@ -335,7 +335,7 @@ major editors out there.
 
 #### Visual Studio Code
 
-Enable the language server following [the official docs](https://github.com/golang/tools/blob/master/gopls/doc/vscode.md),
+Enable the language server following [the official docs](https://github.com/golang/vscode-go#readme),
 and then enable gopls's `gofumpt` option. Note that VS Code will complain about
 the `gopls` settings, but they will still work.
 
