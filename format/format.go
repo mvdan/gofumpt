@@ -301,32 +301,14 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 
 	switch node := c.Node().(type) {
 	case *ast.File:
-		var lastMulti bool
-		var lastEnd token.Pos
-		for _, decl := range node.Decls {
-			pos := decl.Pos()
-			comments := f.commentsBetween(lastEnd, pos)
-			if len(comments) > 0 {
-				pos = comments[0].Pos()
-			}
-
-			// multiline top-level declarations should be separated
-			multi := f.Line(pos) < f.Line(decl.End())
-			if multi && lastMulti && f.Line(lastEnd)+1 == f.Line(pos) {
-				f.addNewline(lastEnd)
-			}
-
-			lastMulti = multi
-			lastEnd = decl.End()
-		}
-
-		// Join contiguous lone var/const/import lines; abort if there
-		// are empty lines or comments in between.
+		// Join contiguous lone var/const/import lines.
+		// Abort if there are empty lines or comments in between,
+		// includng a leading comment, which could be a directive.
 		newDecls := make([]ast.Decl, 0, len(node.Decls))
 		for i := 0; i < len(node.Decls); {
 			newDecls = append(newDecls, node.Decls[i])
 			start, ok := node.Decls[i].(*ast.GenDecl)
-			if !ok || isCgoImport(start) {
+			if !ok || isCgoImport(start) || start.Doc != nil {
 				i++
 				continue
 			}
@@ -341,12 +323,38 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 				if c := f.inlineComment(cont.End()); c != nil {
 					// don't move an inline comment outside
 					start.Rparen = c.End()
+				} else {
+					// so the code below treats the joined
+					// decl group as multi-line
+					start.Rparen = cont.End()
 				}
 				lastPos = cont.Pos()
 				i++
 			}
 		}
 		node.Decls = newDecls
+
+		// Multiline top-level declarations should be separated by an
+		// empty line.
+		// Do this after the joining of lone declarations above,
+		// as joining single-line declarations makes then multi-line.
+		var lastMulti bool
+		var lastEnd token.Pos
+		for _, decl := range node.Decls {
+			pos := decl.Pos()
+			comments := f.commentsBetween(lastEnd, pos)
+			if len(comments) > 0 {
+				pos = comments[0].Pos()
+			}
+
+			multi := f.Line(pos) < f.Line(decl.End())
+			if multi && lastMulti && f.Line(lastEnd)+1 == f.Line(pos) {
+				f.addNewline(lastEnd)
+			}
+
+			lastMulti = multi
+			lastEnd = decl.End()
+		}
 
 		// Comments aren't nodes, so they're not walked by default.
 	groupLoop:

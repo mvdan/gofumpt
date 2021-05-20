@@ -17,10 +17,17 @@ const four = 'r'
 
 var not = 'a'
 
-var to = 's'
-// comment
-var be = 'd'
-const joined = 'f'
+var v1 = 's'
+// comment, e.g. directive
+var v2 = 'd'
+
+var v1 = "mixed"
+const c1 = "mixed"
+
+// comment, e.g. directive
+var v1 = 's'
+var v2 = 'd'
+var v3 = 'd'
 
 const inline1 = "s1" // c1
 const inline2 = "s2" // c2
@@ -42,12 +49,22 @@ const (
 
 var not = 'a'
 
-var to = 's'
+var v1 = 's'
 
-// comment
-var be = 'd'
+// comment, e.g. directive
+var v2 = 'd'
 
-const joined = 'f'
+var v1 = "mixed"
+
+const c1 = "mixed"
+
+// comment, e.g. directive
+var v1 = 's'
+
+var (
+	v2 = 'd'
+	v3 = 'd'
+)
 
 const (
 	inline1 = "s1" // c1
