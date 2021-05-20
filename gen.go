@@ -1,6 +1,7 @@
 // Copyright (c) 2019, Daniel Martí <mvdan@mvdan.cc>
 // See LICENSE for licensing information
 
+//go:build ignore
 // +build ignore
 
 package main
@@ -22,7 +23,8 @@ func main() {
 	pkgs, err := listPackages(context.TODO(), nil,
 		"cmd/gofmt",
 
-		// These are internal cmd dependencies. Copy them.
+		// These are internal dependencies. Copy them.
+		"internal/execabs",
 		"cmd/internal/diff",
 	)
 	if err != nil {
@@ -32,8 +34,11 @@ func main() {
 		if pkg.ImportPath == "cmd/gofmt" {
 			copyGofmt(pkg)
 		} else {
-			parts := strings.Split(pkg.ImportPath, "/")
-			copyInternal(pkg, filepath.Join(parts[1:]...))
+			dir := pkg.ImportPath
+			if strings.HasPrefix(dir, "cmd/internal") {
+				dir = dir[len("cmd/"):]
+			}
+			copyInternal(pkg, filepath.FromSlash(dir))
 		}
 	}
 }
@@ -279,6 +284,10 @@ func fixImports(body string) string {
 	body = strings.Replace(body,
 		"cmd/internal/",
 		"mvdan.cc/gofumpt/internal/",
+		-1)
+	body = strings.Replace(body,
+		`"internal/`,
+		`"mvdan.cc/gofumpt/internal/`,
 		-1)
 	return body
 }

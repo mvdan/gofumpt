@@ -9,8 +9,9 @@ package diff
 import (
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"runtime"
+
+	exec "mvdan.cc/gofumpt/internal/execabs"
 )
 
 // Returns diff of two arrays of bytes in diff tool format.
