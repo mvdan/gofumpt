@@ -389,6 +389,26 @@ simply configure `gopls` to use `gofumpt`:
 call govim#config#Set("Gofumpt", 1)
 ```
 
+#### Sublime Text
+
+With ST4, install the Sublime Text LSP extension according to [the documentation](https://github.com/sublimelsp/LSP),
+and enable `gopls`'s `gofumpt` option in the LSP package settings,
+including setting `lsp_format_on_save` to `true`.
+
+```json
+"lsp_format_on_save": true,
+"clients":
+{
+	"gopls":
+	{
+		"enabled": true,
+		"initializationOptions": {
+			"gofumpt": true,
+		}
+	}
+}
+```
+
 ### Roadmap
 
 This tool is a place to experiment. In the long term, the features that work
