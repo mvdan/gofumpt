@@ -14,7 +14,7 @@ import (
 	"go/scanner"
 	"go/token"
 	"io"
-	"io/fs"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -75,7 +75,7 @@ func initParserMode() {
 	}
 }
 
-func isGoFile(f fs.DirEntry) bool {
+func isGoFile(f os.FileInfo) bool {
 	// ignore non-Go files
 	name := f.Name()
 	return !f.IsDir() && !strings.HasPrefix(name, ".") && strings.HasSuffix(name, ".go")
@@ -83,7 +83,7 @@ func isGoFile(f fs.DirEntry) bool {
 
 // If in == nil, the source is the contents of the file with the given filename.
 func processFile(filename string, in io.Reader, out io.Writer, stdin bool) error {
-	var perm fs.FileMode = 0o644
+	var perm os.FileMode = 0o644
 	if in == nil {
 		f, err := os.Open(filename)
 		if err != nil {
@@ -98,7 +98,7 @@ func processFile(filename string, in io.Reader, out io.Writer, stdin bool) error
 		perm = fi.Mode().Perm()
 	}
 
-	src, err := io.ReadAll(in)
+	src, err := ioutil.ReadAll(in)
 	if err != nil {
 		return err
 	}
@@ -153,7 +153,7 @@ func processFile(filename string, in io.Reader, out io.Writer, stdin bool) error
 			if err != nil {
 				return err
 			}
-			err = os.WriteFile(filename, res, perm)
+			err = ioutil.WriteFile(filename, res, perm)
 			if err != nil {
 				os.Rename(bakname, filename)
 				return err
@@ -180,7 +180,7 @@ func processFile(filename string, in io.Reader, out io.Writer, stdin bool) error
 	return err
 }
 
-func visitFile(path string, f fs.DirEntry, err error) error {
+func visitFile(path string, f os.FileInfo, err error) error {
 	if err == nil && isGoFile(f) {
 		err = processFile(path, nil, os.Stdout, false)
 	}
@@ -193,7 +193,7 @@ func visitFile(path string, f fs.DirEntry, err error) error {
 }
 
 func walkDir(path string) {
-	filepath.WalkDir(path, visitFile)
+	filepath.Walk(path, visitFile)
 }
 
 func main() {
@@ -298,9 +298,9 @@ const chmodSupported = runtime.GOOS != "windows"
 // backupFile writes data to a new file named filename<number> with permissions perm,
 // with <number randomly chosen such that the file name is unique. backupFile returns
 // the chosen file name.
-func backupFile(filename string, data []byte, perm fs.FileMode) (string, error) {
+func backupFile(filename string, data []byte, perm os.FileMode) (string, error) {
 	// create backup file
-	f, err := os.CreateTemp(filepath.Dir(filename), filepath.Base(filename))
+	f, err := ioutil.TempFile(filepath.Dir(filename), filepath.Base(filename))
 	if err != nil {
 		return "", err
 	}

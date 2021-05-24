@@ -23,8 +23,7 @@ func main() {
 	pkgs, err := listPackages(context.TODO(), nil,
 		"cmd/gofmt",
 
-		// These are internal dependencies. Copy them.
-		"internal/execabs",
+		// These are internal cmd dependencies. Copy them.
 		"cmd/internal/diff",
 	)
 	if err != nil {
@@ -34,11 +33,8 @@ func main() {
 		if pkg.ImportPath == "cmd/gofmt" {
 			copyGofmt(pkg)
 		} else {
-			dir := pkg.ImportPath
-			if strings.HasPrefix(dir, "cmd/internal") {
-				dir = dir[len("cmd/"):]
-			}
-			copyInternal(pkg, filepath.FromSlash(dir))
+			parts := strings.Split(pkg.ImportPath, "/")
+			copyInternal(pkg, filepath.Join(parts[1:]...))
 		}
 	}
 }
@@ -284,10 +280,6 @@ func fixImports(body string) string {
 	body = strings.Replace(body,
 		"cmd/internal/",
 		"mvdan.cc/gofumpt/internal/",
-		-1)
-	body = strings.Replace(body,
-		`"internal/`,
-		`"mvdan.cc/gofumpt/internal/`,
 		-1)
 	return body
 }
