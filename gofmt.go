@@ -119,7 +119,7 @@ func processFile(filename string, in io.Reader, out io.Writer, stdin bool) error
 	ast.SortImports(fileSet, file)
 
 	if *simplifyAST {
-		simplify(file)
+		gformat.Simplify(file)
 	}
 
 	// Apply gofumpt's changes before we print the code in gofumpt's format.

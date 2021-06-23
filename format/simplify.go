@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package main
+package format
 
 import (
 	"go/ast"
 	"go/token"
 	"reflect"
+
+	"mvdan.cc/gofumpt/internal/util"
 )
 
 type simplifier struct{}
@@ -106,7 +108,7 @@ func (s simplifier) simplifyLiteral(typ reflect.Value, astType, x ast.Expr, px *
 	// matches the outer literal's element type exactly, the inner
 	// literal type may be omitted
 	if inner, ok := x.(*ast.CompositeLit); ok {
-		if match(nil, typ, reflect.ValueOf(inner.Type)) {
+		if util.Match(nil, typ, reflect.ValueOf(inner.Type)) {
 			inner.Type = nil
 		}
 	}
@@ -116,7 +118,7 @@ func (s simplifier) simplifyLiteral(typ reflect.Value, astType, x ast.Expr, px *
 	if ptr, ok := astType.(*ast.StarExpr); ok {
 		if addr, ok := x.(*ast.UnaryExpr); ok && addr.Op == token.AND {
 			if inner, ok := addr.X.(*ast.CompositeLit); ok {
-				if match(nil, reflect.ValueOf(ptr.X), reflect.ValueOf(inner.Type)) {
+				if util.Match(nil, reflect.ValueOf(ptr.X), reflect.ValueOf(inner.Type)) {
 					inner.Type = nil // drop T
 					*px = inner      // drop &
 				}
@@ -130,7 +132,7 @@ func isBlank(x ast.Expr) bool {
 	return ok && ident.Name == "_"
 }
 
-func simplify(f *ast.File) {
+func Simplify(f *ast.File) {
 	// remove empty declarations such as "const ()", etc
 	removeEmptyDeclGroups(f)
 
