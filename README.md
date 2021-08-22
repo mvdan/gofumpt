@@ -306,6 +306,36 @@ func Foo() {}
 
 </details>
 
+Composite literals should not have leading or trailing empty lines
+
+<details><summary><i>example</i></summary>
+
+```
+var _ = []string{
+
+	"foo",
+
+}
+
+var _ = map[string]string{
+
+	"foo": "bar",
+
+}
+```
+
+```
+var _ = []string{
+	"foo",
+}
+
+var _ = map[string]string{
+	"foo": "bar",
+}
+```
+
+</details>
+
 #### Extra rules behind `-extra`
 
 Adjacent parameters with the same type should be grouped together
