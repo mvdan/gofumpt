@@ -576,9 +576,12 @@ func (f *fumpter) applyPost(c *astutil.Cursor) {
 		newlineBetweenElems := false
 		lastLine := openLine
 		for i, elem := range node.Elts {
-			if f.Line(elem.Pos()) > lastLine {
+			if elPos := f.Line(elem.Pos()); elPos > lastLine {
 				if i == 0 {
 					newlineAroundElems = true
+
+					// rm leading lines if they exist
+					f.removeLines(openLine+1, elPos)
 				} else {
 					newlineBetweenElems = true
 				}

@@ -1,0 +1,93 @@
+gofumpt -w foo.go
+cmp foo.go foo.go.golden
+
+gofumpt -d foo.go.golden
+! stdout .
+
+-- foo.go --
+package p
+
+var _ = []string{
+
+
+	"foo",
+}
+
+var _ = []string{
+
+	"foo",
+}
+
+var _ = []string{
+
+	// comment
+	"foo",
+}
+
+var _ = []string{
+	// comment
+
+	"foo",
+}
+
+var _ = map[string]string{
+
+
+	"foo": "bar",
+}
+
+var _ = map[string]string{
+
+	"foo": "bar",
+}
+
+var _ = map[string]string{
+
+	// comment
+	"foo": "bar",
+}
+
+var _ = map[string]string{
+	// comment
+
+	"foo": "bar",
+}
+
+-- foo.go.golden --
+package p
+
+var _ = []string{
+	"foo",
+}
+
+var _ = []string{
+	"foo",
+}
+
+var _ = []string{
+	// comment
+	"foo",
+}
+
+var _ = []string{
+	// comment
+	"foo",
+}
+
+var _ = map[string]string{
+	"foo": "bar",
+}
+
+var _ = map[string]string{
+	"foo": "bar",
+}
+
+var _ = map[string]string{
+	// comment
+	"foo": "bar",
+}
+
+var _ = map[string]string{
+	// comment
+	"foo": "bar",
+}
