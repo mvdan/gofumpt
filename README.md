@@ -447,6 +447,43 @@ well might be proposed for `gofmt` itself.
 The tool is also compatible with `gofmt` and is aimed to be stable, so you can
 rely on it for your code as long as you pin a version of it.
 
+### Frequently Asked Questions
+
+> Why attempt to replace `gofmt` instead of building on top of it?
+
+Our design is to build on top of `gofmt`, and we'll never add rules which
+disagree with its formatting. So we extend `gofmt` rather than compete with it.
+
+The tool is a modified copy of `gofmt`, for the purpose of allowing its use as a
+drop-in replacement in editors and scripts.
+
+> Why are my module imports being grouped with standard library imports?
+
+Any import paths that don't start with a domain name like `foo.com` are
+effectively reserved by the Go toolchain. Otherwise, adding new standard library
+packages like `embed` would be a breaking change. See https://github.com/golang/go/issues/32819.
+
+Third party modules should use domain names to avoid conflicts.
+If your module is meant for local use only, you can use `foo.local`.
+For small example or test modules, `example/...` and `test/...` may be reserved
+if a proposal is accepted; see https://github.com/golang/go/issues/37641.
+
+> How can I use `gofumpt` if I already use `goimports` to replace `gofmt`?
+
+Most editors have replaced the `goimports` program with the same functionality
+provided by a language server like `gopls`. This mechanism is significantly
+faster and more powerful, since the language server has more information that is
+kept up to date, necessary to add missing imports.
+
+As such, the general recommendation is to let your editor fix your imports -
+either via `gopls`, such as VSCode or vim-go, or via their own custom
+implementation, such as GoLand. Then follow the install instructions above to
+enable the use of `gofumpt` instead of `gofmt`.
+
+If you want to avoid integrating with `gopls`, and are OK with the overhead of
+calling `goimports` from scratch on each save, you should be able to call both
+tools; for example, `goimports file.go && gofumpt file.go`.
+
 ### License
 
 Note that much of the code is copied from Go's `gofmt` command. You can tell
