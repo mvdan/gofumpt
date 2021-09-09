@@ -1,0 +1,40 @@
+gofumpt orig.go.golden
+cp stdout formatted.go.golden
+mkdir -p vendor/foo
+cp orig.go.golden vendor/foo/foo.go
+
+# format explicit vendor dir
+gofumpt -l vendor
+stdout 'vendor[/\\]foo[/\\]foo.go'
+
+# format explicit vendor file
+gofumpt -l vendor/foo/foo.go
+stdout 'vendor[/\\]foo[/\\]foo.go'
+
+# ignore implicit vendor call
+gofumpt -l .
+! stdout .
+
+# format explicit vendor pkg while ignoring rest
+mkdir vendor/ignore
+cp orig.go.golden vendor/ignore/ignore.go
+gofumpt -l vendor/foo .
+stdout 'vendor[/\\]foo[/\\]foo.go'
+
+-- orig.go.golden --
+package p
+
+func f() {
+	if true {
+		// lone comment
+	}
+	{
+
+	}
+
+	{
+
+		// lone comment
+
+	}
+}
