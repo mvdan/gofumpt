@@ -56,6 +56,9 @@ var (
 	exitCode   = 0
 	rewrite    func(*ast.File) *ast.File
 	parserMode parser.Mode
+
+	// walkingVendorDir is true if we are explicitly walking a vendor directory.
+	walkingVendorDir bool
 )
 
 func report(err error) {
@@ -181,6 +184,9 @@ func processFile(filename string, in io.Reader, out io.Writer, stdin bool) error
 }
 
 func visitFile(path string, f os.FileInfo, err error) error {
+	if !walkingVendorDir && filepath.Base(path) == "vendor" {
+		return filepath.SkipDir
+	}
 	if err == nil && isGoFile(f) {
 		err = processFile(path, nil, os.Stdout, false)
 	}
@@ -193,6 +199,7 @@ func visitFile(path string, f os.FileInfo, err error) error {
 }
 
 func walkDir(path string) {
+	walkingVendorDir = filepath.Base(path) == "vendor"
 	filepath.Walk(path, visitFile)
 }
 
