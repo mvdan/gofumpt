@@ -354,7 +354,7 @@ func Foo(bar, baz string) {}
 
 ### Installation
 
-`gofumpt` is a replacement for `gofmt`, so you can simply `go get` it as
+`gofumpt` is a replacement for `gofmt`, so you can simply `go install` it as
 described at the top of this README and use it.
 
 When using an IDE or editor with Go integration based on `gopls`,
