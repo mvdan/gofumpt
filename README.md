@@ -1,6 +1,6 @@
 # gofumpt
 
-	GO111MODULE=on go get mvdan.cc/gofumpt
+	go install mvdan.cc/gofumpt@latest
 
 Enforce a stricter format than `gofmt`, while being backwards compatible. That
 is, `gofumpt` is happy with a subset of the formats that `gofmt` is happy with.
