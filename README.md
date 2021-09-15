@@ -336,6 +336,55 @@ var _ = map[string]string{
 
 </details>
 
+Remove unnecessary empty lines from interfaces
+
+<details><summary><i>example</i></summary>
+
+```
+type i interface {
+
+	// comment for a
+	a(x int) int
+
+	// comment between a and b
+
+	// comment for b
+	b(x int) int
+
+	// comment between b and c
+
+	c(x int) int
+
+	d(x int) int
+
+	// comment for e
+	e(x int) int
+
+}
+```
+
+```
+type i interface {
+	// comment for a
+	a(x int) int
+
+	// comment between a and b
+
+	// comment for b
+	b(x int) int
+
+	// comment between b and c
+
+	c(x int) int
+	d(x int) int
+
+	// comment for e
+	e(x int) int
+}
+```
+
+</details>
+
 #### Extra rules behind `-extra`
 
 Adjacent parameters with the same type should be grouped together

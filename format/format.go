@@ -436,6 +436,27 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 			node.Rparen = token.NoPos
 		}
 
+	case *ast.InterfaceType:
+		var prev *ast.Field
+		for _, method := range node.Methods.List {
+			switch {
+			case prev == nil:
+				removeToPos := method.Pos()
+				if comments := f.commentsBetween(node.Interface, method.Pos()); len(comments) > 0 {
+					// only remove leading line upto the first comment
+					removeToPos = comments[0].Pos()
+				}
+				// remove leading lines if they exist
+				f.removeLines(f.Line(node.Interface)+1, f.Line(removeToPos))
+
+			case len(f.commentsBetween(prev.End(), method.Pos())) > 0:
+				// continue
+			default:
+				f.removeLinesBetween(prev.End(), method.Pos())
+			}
+			prev = method
+		}
+
 	case *ast.BlockStmt:
 		f.stmts(node.List)
 		comments := f.commentsBetween(node.Lbrace, node.Rbrace)
@@ -580,7 +601,7 @@ func (f *fumpter) applyPost(c *astutil.Cursor) {
 				if i == 0 {
 					newlineAroundElems = true
 
-					// rm leading lines if they exist
+					// remove leading lines if they exist
 					f.removeLines(openLine+1, elPos)
 				} else {
 					newlineBetweenElems = true
