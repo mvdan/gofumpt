@@ -24,6 +24,7 @@ import (
 
 	gformat "mvdan.cc/gofumpt/format"
 	"mvdan.cc/gofumpt/internal/diff"
+	"mvdan.cc/gofumpt/internal/version"
 )
 
 var (
@@ -217,7 +218,7 @@ func gofumptMain() {
 
 	// Print the gofumpt version if the user asks for it.
 	if *showVersion {
-		printVersion()
+		version.Print()
 		return
 	}
 

@@ -1,0 +1,42 @@
+cp foo.go foo.go.orig
+env GOFUMPT_VERSION_TEST=v0.1.1-0.20210524140936-ba6406b58f36
+
+gofumpt -w foo.go
+cmp foo.go foo.go.golden
+
+gofumpt -w outdated.go
+cmp outdated.go foo.go.golden
+
+cp foo.go.orig foo.go
+gofumpt -w -extra foo.go
+cmp foo.go foo.go.golden-extra
+
+gofumpt -d nochange.go
+! stdout .
+
+gofumpt -d foo.go.golden
+! stdout .
+
+gofumpt -d -extra foo.go.golden-extra
+! stdout .
+
+-- foo.go --
+package p
+
+//gofumpt:diagnose
+-- outdated.go --
+package p
+
+//gofumpt:diagnose v0.1.0
+-- nochange.go --
+package p
+
+//gofumpt:diagnosefoobar
+-- foo.go.golden --
+package p
+
+//gofumpt:diagnose v0.1.1-0.20210524140936-ba6406b58f36 -lang=v1
+-- foo.go.golden-extra --
+package p
+
+//gofumpt:diagnose v0.1.1-0.20210524140936-ba6406b58f36 -lang=v1 -extra

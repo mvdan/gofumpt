@@ -25,6 +25,8 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"golang.org/x/mod/semver"
 	"golang.org/x/tools/go/ast/astutil"
+
+	"mvdan.cc/gofumpt/internal/version"
 )
 
 type Options struct {
@@ -373,6 +375,17 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 	groupLoop:
 		for _, group := range node.Comments {
 			for _, comment := range group.List {
+				if comment.Text == "//gofumpt:diagnose" || strings.HasPrefix(comment.Text, "//gofumpt:diagnose ") {
+					slc := []string{
+						"//gofumpt:diagnose",
+						version.String(),
+						"-lang=" + f.LangVersion,
+					}
+					if f.ExtraRules {
+						slc = append(slc, "-extra")
+					}
+					comment.Text = strings.Join(slc, " ")
+				}
 				body := strings.TrimPrefix(comment.Text, "//")
 				if body == comment.Text {
 					// /*-style comment
@@ -394,7 +407,7 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 				body := strings.TrimPrefix(comment.Text, "//")
 				r, _ := utf8.DecodeRuneInString(body)
 				if !unicode.IsSpace(r) {
-					comment.Text = "// " + strings.TrimPrefix(comment.Text, "//")
+					comment.Text = "// " + body
 				}
 			}
 		}
