@@ -92,6 +92,10 @@ type leadingLine7 interface {
 	// comment for a
 	a(x int) int
 }
+
+type leadingLine8 interface {
+	// comment
+}
 -- foo.go.golden --
 package p
 
@@ -165,4 +169,8 @@ type leadingLine7 interface {
 
 	// comment for a
 	a(x int) int
+}
+
+type leadingLine8 interface {
+	// comment
 }
