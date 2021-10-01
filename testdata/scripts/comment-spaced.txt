@@ -5,6 +5,7 @@ gofumpt -d foo.go.golden
 ! stdout .
 
 -- foo.go --
+//go:build tag
 // +build tag
 
 package p
