@@ -11,6 +11,10 @@ cp foo.go.orig foo.go
 gofumpt -w -extra foo.go
 cmp foo.go foo.go.golden-extra
 
+cp foo.go.orig foo.go
+gofumpt -w -lang=v1 foo.go
+cmp foo.go foo.go.golden-lang
+
 gofumpt -d nochange.go
 ! stdout .
 
@@ -20,6 +24,10 @@ gofumpt -d foo.go.golden
 gofumpt -d -extra foo.go.golden-extra
 ! stdout .
 
+-- go.mod --
+module test
+
+go 1.16
 -- foo.go --
 package p
 
@@ -35,8 +43,12 @@ package p
 -- foo.go.golden --
 package p
 
-//gofumpt:diagnose v0.1.1-0.20210524140936-ba6406b58f36 -lang=v1
+//gofumpt:diagnose v0.1.1-0.20210524140936-ba6406b58f36 -lang=v1.16
 -- foo.go.golden-extra --
 package p
 
-//gofumpt:diagnose v0.1.1-0.20210524140936-ba6406b58f36 -lang=v1 -extra
+//gofumpt:diagnose v0.1.1-0.20210524140936-ba6406b58f36 -lang=v1.16 -extra
+-- foo.go.golden-lang --
+package p
+
+//gofumpt:diagnose v0.1.1-0.20210524140936-ba6406b58f36 -lang=v1

@@ -63,6 +63,7 @@ type foo int
 
 //
 -- foo.go.golden --
+//go:build tag
 // +build tag
 
 package p
