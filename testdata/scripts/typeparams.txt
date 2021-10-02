@@ -1,0 +1,25 @@
+[!go1.18] skip 'type parameters require Go 1.18 or later'
+
+gofumpt foo.go
+cmp stdout foo.go.golden
+
+-- go.mod --
+module test
+
+go 1.18
+-- foo.go --
+package main
+
+func Foo[   A, B any](x A, y B) {}
+
+func main() {
+	Foo[int,int](1,2)
+}
+-- foo.go.golden --
+package main
+
+func Foo[A, B any](x A, y B) {}
+
+func main() {
+	Foo[int, int](1, 2)
+}
