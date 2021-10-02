@@ -14,7 +14,7 @@ import (
 	"go/scanner"
 	"go/token"
 	"io"
-	"io/ioutil"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -80,7 +80,7 @@ func initParserMode() {
 	}
 }
 
-func isGoFile(f os.FileInfo) bool {
+func isGoFile(f fs.DirEntry) bool {
 	// ignore non-Go files
 	name := f.Name()
 	return !f.IsDir() && !strings.HasPrefix(name, ".") && strings.HasSuffix(name, ".go")
@@ -103,7 +103,7 @@ func processFile(filename string, in io.Reader, out io.Writer, stdin bool) error
 		perm = fi.Mode().Perm()
 	}
 
-	src, err := ioutil.ReadAll(in)
+	src, err := io.ReadAll(in)
 	if err != nil {
 		return err
 	}
@@ -158,7 +158,7 @@ func processFile(filename string, in io.Reader, out io.Writer, stdin bool) error
 			if err != nil {
 				return err
 			}
-			err = ioutil.WriteFile(filename, res, perm)
+			err = os.WriteFile(filename, res, perm)
 			if err != nil {
 				os.Rename(bakname, filename)
 				return err
@@ -173,7 +173,7 @@ func processFile(filename string, in io.Reader, out io.Writer, stdin bool) error
 			if err != nil {
 				return fmt.Errorf("computing diff: %s", err)
 			}
-			fmt.Printf("diff -u %s %s\n", filepath.ToSlash(filename+".orig"), filepath.ToSlash(filename))
+			fmt.Fprintf(out, "diff -u %s %s\n", filepath.ToSlash(filename+".orig"), filepath.ToSlash(filename))
 			out.Write(data)
 		}
 	}
@@ -185,24 +185,17 @@ func processFile(filename string, in io.Reader, out io.Writer, stdin bool) error
 	return err
 }
 
-func visitFile(path string, f os.FileInfo, err error) error {
+func visitFile(path string, f fs.DirEntry, err error) error {
 	if !walkingVendorDir && filepath.Base(path) == "vendor" {
 		return filepath.SkipDir
 	}
-	if err == nil && isGoFile(f) {
-		err = processFile(path, nil, os.Stdout, false)
+	if err != nil || !isGoFile(f) {
+		return err
 	}
-	// Don't complain if a file was deleted in the meantime (i.e.
-	// the directory changed concurrently while running gofumpt).
-	if err != nil && !os.IsNotExist(err) {
+	if err := processFile(path, nil, os.Stdout, false); err != nil {
 		report(err)
 	}
 	return nil
-}
-
-func walkDir(path string) {
-	walkingVendorDir = filepath.Base(path) == "vendor"
-	filepath.Walk(path, visitFile)
 }
 
 func main() {
@@ -238,7 +231,8 @@ func gofumptMain() {
 	initParserMode()
 	initRewrite()
 
-	if flag.NArg() == 0 {
+	args := flag.Args()
+	if len(args) == 0 {
 		if *write {
 			fmt.Fprintln(os.Stderr, "error: cannot use -w with standard input")
 			exitCode = 2
@@ -250,15 +244,19 @@ func gofumptMain() {
 		return
 	}
 
-	for i := 0; i < flag.NArg(); i++ {
-		path := flag.Arg(i)
-		switch dir, err := os.Stat(path); {
+	for _, arg := range args {
+		switch info, err := os.Stat(arg); {
 		case err != nil:
 			report(err)
-		case dir.IsDir():
-			walkDir(path)
+		case !info.IsDir():
+			// Non-directory arguments are always formatted.
+			if err := processFile(arg, nil, os.Stdout, false); err != nil {
+				report(err)
+			}
 		default:
-			if err := processFile(path, nil, os.Stdout, false); err != nil {
+			// Directories are walked, ignoring non-Go files.
+			walkingVendorDir = filepath.Base(arg) == "vendor"
+			if err := filepath.WalkDir(arg, visitFile); err != nil {
 				report(err)
 			}
 		}
@@ -307,9 +305,9 @@ const chmodSupported = runtime.GOOS != "windows"
 // backupFile writes data to a new file named filename<number> with permissions perm,
 // with <number randomly chosen such that the file name is unique. backupFile returns
 // the chosen file name.
-func backupFile(filename string, data []byte, perm os.FileMode) (string, error) {
+func backupFile(filename string, data []byte, perm fs.FileMode) (string, error) {
 	// create backup file
-	f, err := ioutil.TempFile(filepath.Dir(filename), filepath.Base(filename))
+	f, err := os.CreateTemp(filepath.Dir(filename), filepath.Base(filename))
 	if err != nil {
 		return "", err
 	}
