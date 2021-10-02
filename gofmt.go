@@ -16,11 +16,12 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"runtime"
 	"runtime/pprof"
 	"strings"
+
+	exec "golang.org/x/sys/execabs"
 
 	gformat "mvdan.cc/gofumpt/format"
 	"mvdan.cc/gofumpt/internal/diff"
