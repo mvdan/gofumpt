@@ -5,8 +5,38 @@ cmp stdout foo.go.golden
 -- foo.go --
 package p
 
+const ()
+
+const (
+// Comment
+)
+
+type ()
+
+type (
+// Comment
+)
+
+var ()
+
+var (
+// Comment
+)
+
 var _ = [][]int{[]int{1}}
 -- foo.go.golden --
 package p
+
+const (
+// Comment
+)
+
+type (
+// Comment
+)
+
+var (
+// Comment
+)
 
 var _ = [][]int{{1}}
