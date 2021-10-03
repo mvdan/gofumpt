@@ -30,15 +30,18 @@ import (
 
 var (
 	// main operation modes
-	list        = flag.Bool("l", false, "list files whose formatting differs from gofumpt's")
-	write       = flag.Bool("w", false, "write result to (source) file instead of stdout")
-	rewriteRule = flag.String("r", "", "rewrite rule (e.g., 'a[b:len(a)] -> a[b:]')")
-	simplifyAST = flag.Bool("s", false, "simplify code")
-	doDiff      = flag.Bool("d", false, "display diffs instead of rewriting files")
-	allErrors   = flag.Bool("e", false, "report all errors (not just the first 10 on different lines)")
+	list      = flag.Bool("l", false, "list files whose formatting differs from gofumpt's")
+	write     = flag.Bool("w", false, "write result to (source) file instead of stdout")
+	doDiff    = flag.Bool("d", false, "display diffs instead of rewriting files")
+	allErrors = flag.Bool("e", false, "report all errors (not just the first 10 on different lines)")
 
 	// debugging
 	cpuprofile = flag.String("cpuprofile", "", "write cpu profile to this file")
+
+	// gofumpt's own flags
+	langVersion = flag.String("lang", "", "target Go version in the form 1.X (default from go.mod)")
+	extraRules  = flag.Bool("extra", false, "enable extra rules which should be vetted by a human")
+	showVersion = flag.Bool("version", false, "show version and exit")
 )
 
 // Keep these in sync with go/format/format.go.
@@ -56,7 +59,6 @@ const (
 var (
 	fileSet    = token.NewFileSet() // per process FileSet
 	exitCode   = 0
-	rewrite    func(*ast.File) *ast.File
 	parserMode parser.Mode
 
 	// walkingVendorDir is true if we are explicitly walking a vendor directory.
@@ -113,19 +115,9 @@ func processFile(filename string, in io.Reader, out io.Writer, stdin bool) error
 		return err
 	}
 
-	if rewrite != nil {
-		if sourceAdj == nil {
-			file = rewrite(file)
-		} else {
-			fmt.Fprintf(os.Stderr, "warning: rewrite ignored for incomplete programs\n")
-		}
-	}
-
 	ast.SortImports(fileSet, file)
 
-	if *simplifyAST {
-		simplify(file)
-	}
+	simplify(file)
 
 	// Apply gofumpt's changes before we print the code in gofumpt's format.
 
@@ -229,7 +221,6 @@ func gofumptMain() {
 	}
 
 	initParserMode()
-	initRewrite()
 
 	args := flag.Args()
 	if len(args) == 0 {
