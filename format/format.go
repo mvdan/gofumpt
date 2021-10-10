@@ -532,14 +532,19 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 			return
 		}
 		if sign != nil {
-			var lastParam *ast.Field
-			if l := sign.Results; l != nil && len(l.List) > 0 {
-				lastParam = l.List[len(l.List)-1]
-			} else if l := sign.Params; l != nil && len(l.List) > 0 {
-				lastParam = l.List[len(l.List)-1]
-			}
 			endLine := f.Line(sign.End())
-			if lastParam != nil && f.Line(sign.Pos()) != endLine && f.Line(lastParam.Pos()) == endLine {
+
+			paramClosingIsFirstCharOnEndLine := sign.Params != nil &&
+				f.Position(sign.Params.Closing).Column == 1 &&
+				f.Line(sign.Params.Closing) == endLine
+
+			resultClosingIsFirstCharOnEndLine := sign.Results != nil &&
+				f.Position(sign.Results.Closing).Column == 1 &&
+				f.Line(sign.Results.Closing) == endLine
+
+			if f.Line(sign.Pos()) != endLine &&
+				// param/result closing is not the 1st char of the left bracket line
+				!(paramClosingIsFirstCharOnEndLine || resultClosingIsFirstCharOnEndLine) {
 				// The body is preceded by a multi-line function
 				// signature, and the empty line helps readability.
 				return
