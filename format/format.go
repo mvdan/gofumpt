@@ -599,6 +599,10 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 				c.Replace(node)
 			}
 		}
+
+	case *ast.AssignStmt:
+		// Only remove lines between the assignment token and the first right-hand side expression
+		f.removeLines(f.Line(node.TokPos), f.Line(node.Rhs[0].Pos()))
 	}
 }
 

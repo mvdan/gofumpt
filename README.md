@@ -15,6 +15,25 @@ The added formatting rules are in the `format` package.
 
 ### Added rules
 
+No empty lines following an assignment operator
+
+<details><summary><i>example</i></summary>
+
+```
+func foo() {
+    foo :=
+        "bar"
+}
+```
+
+```
+func foo() {
+	foo := "bar"
+}
+```
+
+</details>
+
 No empty lines at the beginning or end of a function
 
 <details><summary><i>example</i></summary>
