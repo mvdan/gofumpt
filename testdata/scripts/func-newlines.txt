@@ -230,6 +230,14 @@ func f2(
 
 	return "", nil
 }
+
+func multilineResultsMultipleEmptyLines() (p1 string,
+	p2 string) {
+
+
+	println("body")
+
+}
 -- foo.go.golden --
 package p
 
@@ -412,4 +420,10 @@ func f2(
 	/* baz */) {
 
 	return "", nil
+}
+
+func multilineResultsMultipleEmptyLines() (p1 string,
+	p2 string) {
+
+	println("body")
 }

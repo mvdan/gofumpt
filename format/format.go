@@ -542,9 +542,9 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 				f.Position(sign.Results.Closing).Column == 1 &&
 				f.Line(sign.Results.Closing) == endLine
 
-			if f.Line(sign.Pos()) != endLine &&
-				// param/result closing is not the 1st char of the left bracket line
-				!(paramClosingIsFirstCharOnEndLine || resultClosingIsFirstCharOnEndLine) {
+			endLineIsIndented := !(paramClosingIsFirstCharOnEndLine || resultClosingIsFirstCharOnEndLine)
+
+			if f.Line(sign.Pos()) != endLine && endLineIsIndented {
 				// The body is preceded by a multi-line function
 				// signature, and the empty line helps readability.
 				return

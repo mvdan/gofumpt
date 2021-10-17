@@ -1,3 +1,4 @@
+
 # gofumpt
 
 	go install mvdan.cc/gofumpt@latest
@@ -36,10 +37,13 @@ func foo() {
 
 No empty lines at the beginning or end of a function
 
+*Exception: does not remove the beginning line if the last func decl line is indented*
+
 <details><summary><i>example</i></summary>
 
 ```
 func foo() {
+
 	println("bar")
 
 }
@@ -47,6 +51,23 @@ func foo() {
 
 ```
 func foo() {
+	println("bar")
+}
+```
+
+```
+func foo(foo string,
+	bar int) {
+
+	println("bar")
+
+}
+```
+
+```
+func foo(foo string,
+	bar int) {
+
 	println("bar")
 }
 ```
