@@ -230,6 +230,25 @@ func f2(
 
 	return "", nil
 }
+
+func multilineResultsMultipleEmptyLines() (p1 string,
+	p2 string) {
+
+
+	println("body")
+
+}
+
+func multilineParamsWithoutEmptyLine(p1 string,
+	p2 string) {
+	println("body")
+}
+
+func multilineParamsWithoutEmptyLineWithComment(p1 string,
+	p2 string) {
+	// comment
+	println("body")
+}
 -- foo.go.golden --
 package p
 
@@ -253,8 +272,8 @@ func _() {
 }
 
 func multilineParams(p1 string,
-	p2 string) {
-
+	p2 string,
+) {
 	println("body")
 }
 
@@ -380,8 +399,8 @@ func multilineParamsOneParamReturningMultiLineValues(
 }
 
 func multilineResults() (p1 string,
-	p2 string) {
-
+	p2 string,
+) {
 	println("body")
 }
 
@@ -398,8 +417,8 @@ func multilineNoFields() {
 func f(
 	foo int,
 	bar string,
-	/* baz */) {
-
+	/* baz */
+) {
 	body()
 }
 
@@ -409,7 +428,24 @@ func f2(
 ) (
 	string,
 	error,
-	/* baz */) {
-
+	/* baz */
+) {
 	return "", nil
+}
+
+func multilineResultsMultipleEmptyLines() (p1 string,
+	p2 string,
+) {
+	println("body")
+}
+
+func multilineParamsWithoutEmptyLine(p1 string,
+	p2 string) {
+	println("body")
+}
+
+func multilineParamsWithoutEmptyLineWithComment(p1 string,
+	p2 string) {
+	// comment
+	println("body")
 }

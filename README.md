@@ -40,6 +40,7 @@ No empty lines at the beginning or end of a function
 
 ```
 func foo() {
+
 	println("bar")
 
 }
@@ -47,6 +48,28 @@ func foo() {
 
 ```
 func foo() {
+	println("bar")
+}
+```
+
+</details>
+
+Functions using an empty line for readability should use a `) {` line instead
+
+<details><summary><i>example</i></summary>
+
+```
+func foo(s string,
+	i int) {
+
+	println("bar")
+}
+```
+
+```
+func foo(s string,
+	i int,
+) {
 	println("bar")
 }
 ```
