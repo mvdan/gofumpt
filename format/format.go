@@ -542,12 +542,22 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 				f.Position(sign.Results.Closing).Column == 1 &&
 				f.Line(sign.Results.Closing) == endLine
 
-			if f.Line(sign.Pos()) != endLine &&
-				// param/result closing is not the 1st char of the left bracket line
-				!(paramClosingIsFirstCharOnEndLine || resultClosingIsFirstCharOnEndLine) {
+			endLineIsIndented := !(paramClosingIsFirstCharOnEndLine || resultClosingIsFirstCharOnEndLine)
+
+			if f.Line(sign.Pos()) != endLine && endLineIsIndented {
+				// is there an empty line?
+				isThereAnEmptyLine := endLine+1 != f.Line(bodyPos)
+
 				// The body is preceded by a multi-line function
-				// signature, and the empty line helps readability.
-				return
+				// signature, we move the `) {` to avoid the empty line.
+				switch {
+				case isThereAnEmptyLine && sign.Results != nil && !resultClosingIsFirstCharOnEndLine:
+					sign.Results.Closing += 1
+					f.addNewline(sign.Results.Closing)
+				case isThereAnEmptyLine && sign.Params != nil && !paramClosingIsFirstCharOnEndLine:
+					sign.Params.Closing += 1
+					f.addNewline(sign.Params.Closing)
+				}
 			}
 		}
 
