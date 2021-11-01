@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	qt "github.com/frankban/quicktest"
+
 	"github.com/rogpeppe/go-internal/gotooltest"
 	"github.com/rogpeppe/go-internal/testscript"
 )
@@ -30,8 +32,7 @@ func TestScripts(t *testing.T) {
 		Dir:           filepath.Join("testdata", "scripts"),
 		UpdateScripts: *update,
 	}
-	if err := gotooltest.Setup(&p); err != nil {
-		t.Fatal(err)
-	}
+	err := gotooltest.Setup(&p)
+	qt.Assert(t, err, qt.IsNil)
 	testscript.Run(t, p)
 }
