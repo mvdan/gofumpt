@@ -117,8 +117,6 @@ func processFile(filename string, in io.Reader, out io.Writer, stdin bool) error
 
 	ast.SortImports(fileSet, file)
 
-	simplify(file)
-
 	// Apply gofumpt's changes before we print the code in gofumpt's format.
 
 	if *langVersion == "" {

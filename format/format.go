@@ -70,6 +70,8 @@ var rxCodeGenerated = regexp.MustCompile(`^// Code generated .* DO NOT EDIT\.$`)
 // changes might include manipulating adding or removing newlines in fset,
 // modifying the position of nodes, or modifying literal values.
 func File(fset *token.FileSet, file *ast.File, opts Options) {
+	simplify(file)
+
 	for _, cg := range file.Comments {
 		if cg.Pos() > file.Package {
 			break
