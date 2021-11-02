@@ -575,6 +575,14 @@ If you want to avoid integrating with `gopls`, and are OK with the overhead of
 calling `goimports` from scratch on each save, you should be able to call both
 tools; for example, `goimports file.go && gofumpt file.go`.
 
+### Contributing
+
+Issues and pull requests are welcome! Please open an issue to discuss a feature
+before sending a pull request.
+
+We also use the `#gofumpt` channel over at the
+[Gophers Slack](https://invite.slack.golangbridge.org/) to chat.
+
 ### License
 
 Note that much of the code is copied from Go's `gofmt` command. You can tell
