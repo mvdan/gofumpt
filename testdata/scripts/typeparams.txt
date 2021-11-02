@@ -1,25 +1,53 @@
-[!go1.18] skip 'type parameters require Go 1.18 or later'
+[go1.18] gofumpt foo.go
+[!go1.18] ! gofumpt foo.go
 
-gofumpt foo.go
-cmp stdout foo.go.golden
+[go1.18] cmp stdout foo.go.golden
+[!go1.18] stderr 'foo.go:.*expected'
 
 -- go.mod --
 module test
 
 go 1.18
 -- foo.go --
-package main
-
-func Foo[   A, B any](x A, y B) {}
-
-func main() {
-	Foo[int,int](1,2)
-}
--- foo.go.golden --
-package main
+package p
 
 func Foo[A, B any](x A, y B) {}
 
-func main() {
+type Vector[T any] []T
+
+var v Vector[int  ]
+
+type PredeclaredSignedInteger interface {
+	int | int8 | int16 | int32 | int64
+}
+
+type StringableSignedInteger interface {
+	~int | ~int8 | ~int16 | ~int32 | ~int64
+	String() string
+
+}
+
+func Caller() {
+	Foo[int,int](1,2)
+}
+-- foo.go.golden --
+package p
+
+func Foo[A, B any](x A, y B) {}
+
+type Vector[T any] []T
+
+var v Vector[int]
+
+type PredeclaredSignedInteger interface {
+	int | int8 | int16 | int32 | int64
+}
+
+type StringableSignedInteger interface {
+	~int | ~int8 | ~int16 | ~int32 | ~int64
+	String() string
+}
+
+func Caller() {
 	Foo[int, int](1, 2)
 }
