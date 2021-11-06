@@ -10,8 +10,15 @@ replacement. Running `gofmt` after `gofumpt` should be a no-op. For example:
 
 	gofumpt -l -w .
 
-Most of the Go source files in this repository belong to the Go project.
+Some of the Go source files in this repository belong to the Go project.
 The added formatting rules are in the `format` package.
+
+Beyond the [added rules below](#Added-rules), the tool differs from gofmt in the
+following ways:
+
+* Vendor directories are skipped unless given as explicit arguments
+* The added rules are not applied to generated Go files
+* The `-r` rewrite feature is removed in favor of `gofmt -r`
 
 ### Added rules
 
@@ -582,6 +589,21 @@ before sending a pull request.
 
 We also use the `#gofumpt` channel over at the
 [Gophers Slack](https://invite.slack.golangbridge.org/) to chat.
+
+When reporting a formatting bug, insert a `//gofumpt:diagnose` comment.
+The comment will be rewritten to include useful debugging information.
+For instance:
+
+```
+$ cat f.go
+package p
+
+//gofumpt:diagnose
+$ gofumpt f.go
+package p
+
+//gofumpt:diagnose v0.1.1-0.20211103104632-bdfa3b02e50a -lang=v1.16
+```
 
 ### License
 
