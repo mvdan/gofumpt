@@ -824,13 +824,21 @@ func identEqual(expr ast.Expr, name string) bool {
 //
 //   import "C"
 //
+// or the equivalent:
+//
+//   import `C`
+//
 // Note that parentheses do not affect the result.
 func isCgoImport(decl *ast.GenDecl) bool {
 	if decl.Tok != token.IMPORT || len(decl.Specs) != 1 {
 		return false
 	}
 	spec := decl.Specs[0].(*ast.ImportSpec)
-	return spec.Path.Value == `"C"`
+	v, err := strconv.Unquote(spec.Path.Value)
+	if err != nil {
+		return false
+	}
+	return v == "C"
 }
 
 // joinStdImports ensures that all standard library imports are together and at
