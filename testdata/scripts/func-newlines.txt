@@ -249,6 +249,15 @@ func multilineParamsWithoutEmptyLineWithComment(p1 string,
 	// comment
 	println("body")
 }
+
+// Same as the others above, but with a single result parameter without
+// parentheses. This used to cause token.File.Offset crashes.
+func f(p1 string,
+	p2 string) int {
+
+	println("body")
+	return 0
+}
 -- foo.go.golden --
 package p
 
@@ -448,4 +457,13 @@ func multilineParamsWithoutEmptyLineWithComment(p1 string,
 	p2 string) {
 	// comment
 	println("body")
+}
+
+// Same as the others above, but with a single result parameter without
+// parentheses. This used to cause token.File.Offset crashes.
+func f(p1 string,
+	p2 string,
+) int {
+	println("body")
+	return 0
 }
