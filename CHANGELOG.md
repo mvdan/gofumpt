@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.2.0] - 2021-11-??
+## [0.2.0] - 2021-11-10
 
 This is gofumpt's second major release, based on Go 1.17's gofmt.
 The jump from Go 1.15's gofmt should bring a mild speed-up,
