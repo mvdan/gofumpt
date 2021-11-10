@@ -50,6 +50,11 @@ type Options struct {
 // source file.
 func Source(src []byte, opts Options) ([]byte, error) {
 	fset := token.NewFileSet()
+
+	// Ensure our parsed files never start with base 1,
+	// to ensure that using token.NoPos+1 will panic.
+	fset.AddFile("gofumpt_base.go", 1, 10)
+
 	file, err := parser.ParseFile(fset, "", src, parser.ParseComments)
 	if err != nil {
 		return nil, err
@@ -553,10 +558,14 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 				// The body is preceded by a multi-line function
 				// signature, we move the `) {` to avoid the empty line.
 				switch {
-				case isThereAnEmptyLine && sign.Results != nil && !resultClosingIsFirstCharOnEndLine:
+				case isThereAnEmptyLine && sign.Results != nil &&
+					!resultClosingIsFirstCharOnEndLine &&
+					sign.Results.Closing.IsValid(): // there may be no ")"
 					sign.Results.Closing += 1
 					f.addNewline(sign.Results.Closing)
-				case isThereAnEmptyLine && sign.Params != nil && !paramClosingIsFirstCharOnEndLine:
+
+				case isThereAnEmptyLine && sign.Params != nil &&
+					!paramClosingIsFirstCharOnEndLine:
 					sign.Params.Closing += 1
 					f.addNewline(sign.Params.Closing)
 				}

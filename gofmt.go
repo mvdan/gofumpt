@@ -197,6 +197,10 @@ func main() {
 }
 
 func gofumptMain() {
+	// Ensure our parsed files never start with base 1,
+	// to ensure that using token.NoPos+1 will panic.
+	fileSet.AddFile("gofumpt_base.go", 1, 10)
+
 	flag.Usage = usage
 	flag.Parse()
 
