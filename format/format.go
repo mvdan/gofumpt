@@ -836,7 +836,7 @@ func isCgoImport(decl *ast.GenDecl) bool {
 	spec := decl.Specs[0].(*ast.ImportSpec)
 	v, err := strconv.Unquote(spec.Path.Value)
 	if err != nil {
-		return false
+		panic(err) // should never happen
 	}
 	return v == "C"
 }
