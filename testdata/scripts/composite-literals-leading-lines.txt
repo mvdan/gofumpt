@@ -20,12 +20,12 @@ var _ = []string{
 
 var _ = []string{
 
-	// comment
+	// joint comment
 	"foo",
 }
 
 var _ = []string{
-	// comment
+	// separate comment
 
 	"foo",
 }
@@ -43,13 +43,20 @@ var _ = map[string]string{
 
 var _ = map[string]string{
 
-	// comment
+	// joint comment
 	"foo": "bar",
 }
 
 var _ = map[string]string{
-	// comment
+	// separate comment
 
+	"foo": "bar",
+}
+
+var _ = map[string]string{
+	/*
+		joint comment
+	*/
 	"foo": "bar",
 }
 
@@ -65,12 +72,13 @@ var _ = []string{
 }
 
 var _ = []string{
-	// comment
+	// joint comment
 	"foo",
 }
 
 var _ = []string{
-	// comment
+	// separate comment
+
 	"foo",
 }
 
@@ -83,11 +91,19 @@ var _ = map[string]string{
 }
 
 var _ = map[string]string{
-	// comment
+	// joint comment
 	"foo": "bar",
 }
 
 var _ = map[string]string{
-	// comment
+	// separate comment
+
+	"foo": "bar",
+}
+
+var _ = map[string]string{
+	/*
+		joint comment
+	*/
 	"foo": "bar",
 }

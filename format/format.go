@@ -655,19 +655,26 @@ func (f *fumpter) applyPost(c *astutil.Cursor) {
 
 		newlineAroundElems := false
 		newlineBetweenElems := false
+		lastEnd := node.Lbrace
 		lastLine := openLine
 		for i, elem := range node.Elts {
-			if elPos := f.Line(elem.Pos()); elPos > lastLine {
+			pos := elem.Pos()
+			comments := f.commentsBetween(lastEnd, pos)
+			if len(comments) > 0 {
+				pos = comments[0].Pos()
+			}
+			if curLine := f.Line(pos); curLine > lastLine {
 				if i == 0 {
 					newlineAroundElems = true
 
 					// remove leading lines if they exist
-					f.removeLines(openLine+1, elPos)
+					f.removeLines(openLine+1, curLine)
 				} else {
 					newlineBetweenElems = true
 				}
 			}
-			lastLine = f.Line(elem.End())
+			lastEnd = elem.End()
+			lastLine = f.Line(lastEnd)
 		}
 		if closeLine > lastLine {
 			newlineAroundElems = true
