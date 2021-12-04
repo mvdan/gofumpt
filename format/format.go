@@ -483,7 +483,11 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 				f.removeLines(f.Line(node.Interface)+1, f.Line(removeToPos))
 
 			case len(f.commentsBetween(prev.End(), method.Pos())) > 0:
-				// continue
+				// comments in between; leave newlines alone
+			case len(prev.Names) != len(method.Names):
+				// don't group type unions with methods
+			case len(prev.Names) == 1 && token.IsExported(prev.Names[0].Name) != token.IsExported(method.Names[0].Name):
+				// don't group exported and unexported methods together
 			default:
 				f.removeLinesBetween(prev.End(), method.Pos())
 			}
