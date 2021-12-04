@@ -22,9 +22,18 @@ type PredeclaredSignedInteger interface {
 }
 
 type StringableSignedInteger interface {
+
 	~int | ~int8 | ~int16 | ~int32 | ~int64
+
 	String() string
 
+}
+
+type CombineEmbeds interface {
+	fmt.Stringer
+	comparable | io.Reader
+
+	Foo()
 }
 
 func Caller() {
@@ -45,7 +54,15 @@ type PredeclaredSignedInteger interface {
 
 type StringableSignedInteger interface {
 	~int | ~int8 | ~int16 | ~int32 | ~int64
+
 	String() string
+}
+
+type CombineEmbeds interface {
+	fmt.Stringer
+	comparable | io.Reader
+
+	Foo()
 }
 
 func Caller() {
