@@ -497,6 +497,15 @@ When a window asks for settings, you can enter the following:
 
 To avoid unecessary runs, you should disable all checkboxes in the *Advanced* section.
 
+#### Emacs
+
+For [lsp-mode](https://emacs-lsp.github.io/lsp-mode/) users:
+
+```elisp
+(lsp-register-custom-settings
+ '(("gopls.gofumpt" t)))
+```
+
 #### Vim-go
 
 Ensure you are at least running version
