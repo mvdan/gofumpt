@@ -30,18 +30,22 @@ import (
 
 var (
 	// main operation modes
-	list      = flag.Bool("l", false, "list files whose formatting differs from gofumpt's")
-	write     = flag.Bool("w", false, "write result to (source) file instead of stdout")
-	doDiff    = flag.Bool("d", false, "display diffs instead of rewriting files")
-	allErrors = flag.Bool("e", false, "report all errors (not just the first 10 on different lines)")
+	list      = flag.Bool("l", false, "")
+	write     = flag.Bool("w", false, "")
+	doDiff    = flag.Bool("d", false, "")
+	allErrors = flag.Bool("e", false, "")
 
 	// debugging
-	cpuprofile = flag.String("cpuprofile", "", "write cpu profile to this file")
+	cpuprofile = flag.String("cpuprofile", "", "")
 
 	// gofumpt's own flags
-	langVersion = flag.String("lang", "", "target Go version in the form 1.X (default from go.mod)")
-	extraRules  = flag.Bool("extra", false, "enable extra rules which should be vetted by a human")
-	showVersion = flag.Bool("version", false, "show version and exit")
+	langVersion = flag.String("lang", "", "")
+	extraRules  = flag.Bool("extra", false, "")
+	showVersion = flag.Bool("version", false, "")
+
+	// DEPRECATED
+	rewriteRule = flag.String("r", "", "")
+	simplifyAST = flag.Bool("s", false, "")
 )
 
 // Keep these in sync with go/format/format.go.
@@ -71,8 +75,18 @@ func report(err error) {
 }
 
 func usage() {
-	fmt.Fprintf(os.Stderr, "usage: gofumpt [flags] [path ...]\n")
-	flag.PrintDefaults()
+	fmt.Fprintf(os.Stderr, `usage: gofumpt [flags] [path ...]
+	-version  show version and exit
+
+	-d        display diffs instead of rewriting files
+	-e        report all errors (not just the first 10 on different lines)
+	-l        list files whose formatting differs from gofumpt's
+	-w        write result to (source) file instead of stdout
+	-extra    enable extra rules which should be vetted by a human
+
+	-cpuprofile str    write cpu profile to this file
+	-lang       str    target Go version in the form 1.X (default from go.mod)
+`)
 }
 
 func initParserMode() {
@@ -203,6 +217,14 @@ func gofumptMain() {
 
 	flag.Usage = usage
 	flag.Parse()
+
+	if *simplifyAST {
+		fmt.Fprintf(os.Stderr, "warning: -s is deprecated as it is always enabled\n")
+	}
+	if *rewriteRule != "" {
+		fmt.Fprintf(os.Stderr, `the rewrite flag is no longer available; use "gofmt -r" instead`+"\n")
+		os.Exit(2)
+	}
 
 	// Print the gofumpt version if the user asks for it.
 	if *showVersion {

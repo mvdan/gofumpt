@@ -1,0 +1,26 @@
+cp foo.orig.go foo.go
+! gofumpt -w -r foo foo.go
+stderr 'the rewrite flag is no longer available; use "gofmt -r" instead\n'
+cmp foo.orig.go foo.go
+
+gofumpt -w -s foo.go
+stderr 'warning: -s is deprecated as it is always enabled\n'
+cmp foo.go foo.go.golden
+
+gofumpt -d foo.go.golden
+! stdout .
+
+-- foo.orig.go --
+package p
+
+func f() {
+
+	println("foo")
+
+}
+-- foo.go.golden --
+package p
+
+func f() {
+	println("foo")
+}
