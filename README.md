@@ -517,6 +517,15 @@ simply configure `gopls` to use `gofumpt`:
 call govim#config#Set("Gofumpt", 1)
 ```
 
+#### Emacs
+
+For [lsp-mode](https://emacs-lsp.github.io/lsp-mode/) users:
+
+```elisp
+(lsp-register-custom-settings
+ '(("gopls.gofumpt" t)))
+```
+
 #### Sublime Text
 
 With ST4, install the Sublime Text LSP extension according to [the documentation](https://github.com/sublimelsp/LSP),
