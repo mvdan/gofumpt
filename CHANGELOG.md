@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.2.1] - 2021-12-12
+
+This bugfix release resolves a number of issues:
+
+* Add deprecated flags `-s` and `-r` once again, now giving useful errors
+* Avoid a panic with certain function declaration styles
+* Don't group interface members of different kinds
+* Account for leading comments in composite literals
+
 ## [0.2.0] - 2021-11-10
 
 This is gofumpt's second major release, based on Go 1.17's gofmt.
@@ -36,9 +45,7 @@ Finally, the following changes are made to the gofumpt tool:
 This bugfix release backports fixes for a few issues:
 
 * Keep leading empty lines in func bodies if they help readability
-
 * Avoid breaking comment alignment on empty field lists
-
 * Add support for `//go-sumtype:` directives
 
 ## [0.1.0] - 2021-01-05
@@ -62,6 +69,7 @@ those building programs with gofumpt.
 Finally, this release adds the `-version` flag, to print the tool's own version.
 The flag will work for "master" builds too.
 
+[0.2.1]: https://github.com/mvdan/gofumpt/releases/tag/v0.2.1
 [0.2.0]: https://github.com/mvdan/gofumpt/releases/tag/v0.2.0
 [0.1.1]: https://github.com/mvdan/gofumpt/releases/tag/v0.1.1
 [0.1.0]: https://github.com/mvdan/gofumpt/releases/tag/v0.1.0
