@@ -306,17 +306,18 @@ func (f *fumpter) lineEnd(line int) token.Pos {
 
 // rxCommentDirective covers all common Go comment directives:
 //
-//   //go:         | standard Go directives, like go:noinline
-//   //some-words: | similar to the syntax above, like lint:ignore or go-sumtype:decl
-//   //line        | inserted line information for cmd/compile
-//   //export      | to mark cgo funcs for exporting
-//   //extern      | C function declarations for gccgo
-//   //sys(nb)?    | syscall function wrapper prototypes
-//   //nolint      | nolint directive for golangci
+//   //go:          | standard Go directives, like go:noinline
+//   //some-words:  | similar to the syntax above, like lint:ignore or go-sumtype:decl
+//   //line         | inserted line information for cmd/compile
+//   //export       | to mark cgo funcs for exporting
+//   //extern       | C function declarations for gccgo
+//   //sys(nb)?     | syscall function wrapper prototypes
+//   //nolint       | nolint directive for golangci
+//   //noinspection | noinspection directive for GoLand and friends
 //
 // Note that the "some-words:" matching expects a letter afterward, such as
 // "go:generate", to prevent matching false positives like "https://site".
-var rxCommentDirective = regexp.MustCompile(`^([a-z-]+:[a-z]+|line\b|export\b|extern\b|sys(nb)?\b|nolint\b)`)
+var rxCommentDirective = regexp.MustCompile(`^([a-z-]+:[a-z]+|line\b|export\b|extern\b|sys(nb)?\b|no(lint|inspection)\b)`)
 
 func (f *fumpter) applyPre(c *astutil.Cursor) {
 	f.splitLongLine(c)
