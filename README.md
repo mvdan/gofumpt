@@ -495,7 +495,7 @@ When a window asks for settings, you can enter the following:
 * Working directory: `$ProjectFileDir$`
 * Environment variables: `GOROOT=$GOROOT$;GOPATH=$GOPATH$;PATH=$GoBinDirs$`
 
-To avoid unecessary runs, you should disable all checkboxes in the *Advanced* section.
+To avoid unnecessary runs, you should disable all checkboxes in the *Advanced* section.
 
 #### Vim-go
 
