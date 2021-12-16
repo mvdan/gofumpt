@@ -526,6 +526,13 @@ For [lsp-mode](https://emacs-lsp.github.io/lsp-mode/) users:
  '(("gopls.gofumpt" t)))
 ```
 
+For [eglot](https://github.com/joaotavora/eglot) users:
+
+```elisp
+(setq-default eglot-workspace-configuration
+ '((:gopls . ((gofumpt . t)))))
+```
+
 #### Sublime Text
 
 With ST4, install the Sublime Text LSP extension according to [the documentation](https://github.com/sublimelsp/LSP),
