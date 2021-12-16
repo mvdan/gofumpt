@@ -325,7 +325,7 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 	case *ast.File:
 		// Join contiguous lone var/const/import lines.
 		// Abort if there are empty lines or comments in between,
-		// includng a leading comment, which could be a directive.
+		// including a leading comment, which could be a directive.
 		newDecls := make([]ast.Decl, 0, len(node.Decls))
 		for i := 0; i < len(node.Decls); {
 			newDecls = append(newDecls, node.Decls[i])
@@ -934,7 +934,7 @@ func (f *fumpter) mergeAdjacentFields(fields []*ast.Field) []*ast.Field {
 
 	// Otherwise, iterate over adjacent pairs of fields, merging if possible,
 	// and mutating fields. Elements of fields may be mutated (if merged with
-	// following fields), discarded (if merged with a preceeding field), or left
+	// following fields), discarded (if merged with a preceding field), or left
 	// unchanged.
 	i := 0
 	for j := 1; j < len(fields); j++ {
