@@ -557,20 +557,16 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 			endLineIsIndented := !(paramClosingIsFirstCharOnEndLine || resultClosingIsFirstCharOnEndLine)
 
 			if f.Line(sign.Pos()) != endLine && endLineIsIndented {
-				// is there an empty line?
-				isThereAnEmptyLine := endLine+1 != f.Line(bodyPos)
-
 				// The body is preceded by a multi-line function
 				// signature, we move the `) {` to avoid the empty line.
 				switch {
-				case isThereAnEmptyLine && sign.Results != nil &&
+				case sign.Results != nil &&
 					!resultClosingIsFirstCharOnEndLine &&
 					sign.Results.Closing.IsValid(): // there may be no ")"
 					sign.Results.Closing += 1
 					f.addNewline(sign.Results.Closing)
 
-				case isThereAnEmptyLine && sign.Params != nil &&
-					!paramClosingIsFirstCharOnEndLine:
+				case sign.Params != nil && !paramClosingIsFirstCharOnEndLine:
 					sign.Params.Closing += 1
 					f.addNewline(sign.Params.Closing)
 				}
