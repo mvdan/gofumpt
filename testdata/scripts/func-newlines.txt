@@ -449,12 +449,14 @@ func multilineResultsMultipleEmptyLines() (p1 string,
 }
 
 func multilineParamsWithoutEmptyLine(p1 string,
-	p2 string) {
+	p2 string,
+) {
 	println("body")
 }
 
 func multilineParamsWithoutEmptyLineWithComment(p1 string,
-	p2 string) {
+	p2 string,
+) {
 	// comment
 	println("body")
 }
