@@ -471,28 +471,15 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 		}
 
 	case *ast.InterfaceType:
-		var prev *ast.Field
-		for _, method := range node.Methods.List {
-			switch {
-			case prev == nil:
-				removeToPos := method.Pos()
-				if comments := f.commentsBetween(node.Interface, method.Pos()); len(comments) > 0 {
-					// only remove leading line upto the first comment
-					removeToPos = comments[0].Pos()
-				}
-				// remove leading lines if they exist
-				f.removeLines(f.Line(node.Interface)+1, f.Line(removeToPos))
-
-			case len(f.commentsBetween(prev.End(), method.Pos())) > 0:
-				// comments in between; leave newlines alone
-			case len(prev.Names) != len(method.Names):
-				// don't group type unions with methods
-			case len(prev.Names) == 1 && token.IsExported(prev.Names[0].Name) != token.IsExported(method.Names[0].Name):
-				// don't group exported and unexported methods together
-			default:
-				f.removeLinesBetween(prev.End(), method.Pos())
+		if len(node.Methods.List) > 0 {
+			method := node.Methods.List[0]
+			removeToPos := method.Pos()
+			if comments := f.commentsBetween(node.Interface, method.Pos()); len(comments) > 0 {
+				// only remove leading line upto the first comment
+				removeToPos = comments[0].Pos()
 			}
-			prev = method
+			// remove leading lines if they exist
+			f.removeLines(f.Line(node.Interface)+1, f.Line(removeToPos))
 		}
 
 	case *ast.BlockStmt:

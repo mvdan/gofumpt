@@ -425,6 +425,7 @@ type i interface {
 	// comment between b and c
 
 	c(x int) int
+
 	d(x int) int
 
 	// comment for e
