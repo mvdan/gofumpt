@@ -41,7 +41,7 @@ func foo() {
 
 </details>
 
-No empty lines at the beginning or end of a function
+No empty lines around function bodies
 
 <details><summary><i>example</i></summary>
 
@@ -385,51 +385,25 @@ var _ = map[string]string{
 
 </details>
 
-Remove unnecessary empty lines from interfaces
+Interfaces should not have leading or trailing empty lines
 
 <details><summary><i>example</i></summary>
 
 ```
-type i interface {
+type Person interface {
 
-	// comment for a
-	a(x int) int
+	Name() string
 
-	// comment between a and b
-
-	// comment for b
-	b(x int) int
-
-	// comment between b and c
-
-	c(x int) int
-
-	d(x int) int
-
-	// comment for e
-	e(x int) int
+	Age() int
 
 }
 ```
 
 ```
-type i interface {
-	// comment for a
-	a(x int) int
+type Person interface {
+	Name() string
 
-	// comment between a and b
-
-	// comment for b
-	b(x int) int
-
-	// comment between b and c
-
-	c(x int) int
-
-	d(x int) int
-
-	// comment for e
-	e(x int) int
+	Age() int
 }
 ```
 
