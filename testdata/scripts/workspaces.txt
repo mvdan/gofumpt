@@ -1,0 +1,33 @@
+[!go1.18] skip
+
+# Octal literal prefixes were introduced in Go 1.13. If we are outside of the
+# module, language version should not be set.
+gofumpt a/go112
+cmp stdout a/go112
+
+cd a
+gofumpt go112
+cmp stdout go113
+
+-- a/go112 --
+package main
+
+const x = 0777
+-- a/go113 --
+package main
+
+const x = 0o777
+-- go.work --
+go 1.18
+use ./a
+use ./b
+-- a/go.mod --
+module a
+go 1.18
+-- a/a.go --
+package a
+-- b/go.mod --
+module b
+go 1.18
+-- b/b.go --
+package b

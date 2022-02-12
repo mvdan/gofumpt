@@ -6,6 +6,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"go/ast"
@@ -134,10 +135,11 @@ func processFile(filename string, in io.Reader, out io.Writer, stdin bool) error
 	// Apply gofumpt's changes before we print the code in gofumpt's format.
 
 	if *langVersion == "" {
-		out, err := exec.Command("go", "list", "-m", "-f", "{{.GoVersion}}").Output()
-		out = bytes.TrimSpace(out)
+		out, err := exec.Command("go", "mod", "edit", "-json").Output()
 		if err == nil && len(out) > 0 {
-			*langVersion = string(out)
+			var mod struct{ Go string }
+			_ = json.Unmarshal(out, &mod)
+			*langVersion = mod.Go
 		}
 	}
 
