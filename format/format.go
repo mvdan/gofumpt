@@ -584,13 +584,34 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 		f.stmts(node.Body)
 
 	case *ast.FieldList:
-		if node.NumFields() == 0 && len(f.commentsBetween(node.Pos(), node.End())) == 0 {
+		numFields := node.NumFields()
+		comments := f.commentsBetween(node.Pos(), node.End())
+
+		if numFields == 0 && len(comments) == 0 {
 			// Empty field lists should not contain a newline.
 			// Do not join the two lines if the first has an inline
 			// comment, as that can result in broken formatting.
 			openLine := f.Line(node.Pos())
 			closeLine := f.Line(node.End())
 			f.removeLines(openLine, closeLine)
+		} else {
+			// Remove lines before first comment/field and lines after last
+			// comment/field
+			var bodyPos, bodyEnd token.Pos
+			if numFields > 0 {
+				bodyPos = node.List[0].Pos()
+				bodyEnd = node.List[len(node.List)-1].End()
+			}
+			if len(comments) > 0 {
+				if pos := comments[0].Pos(); !bodyPos.IsValid() || pos < bodyPos {
+					bodyPos = pos
+				}
+				if pos := comments[len(comments)-1].End(); !bodyPos.IsValid() || pos > bodyEnd {
+					bodyEnd = pos
+				}
+			}
+			f.removeLinesBetween(node.Pos(), bodyPos)
+			f.removeLinesBetween(bodyEnd, node.End())
 		}
 
 		// Merging adjacent fields (e.g. parameters) is disabled by default.
