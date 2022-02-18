@@ -281,15 +281,6 @@ func (f *fumpter) printLength(node ast.Node) int {
 	return int(count) + (f.blockLevel * 8)
 }
 
-func (f *fumpter) tabbedColumn(p token.Pos) int {
-	col := f.Position(p).Column
-
-	// Like in printLength, add an approximation of the indentation level.
-	// Since any existing tabs were already counted as one column, multiply
-	// the level by 7.
-	return col + (f.blockLevel * 7)
-}
-
 func (f *fumpter) lineEnd(line int) token.Pos {
 	if line < 1 {
 		panic("illegal line number")
