@@ -11,14 +11,14 @@ replacement. Running `gofmt` after `gofumpt` should be a no-op. For example:
 	gofumpt -l -w .
 
 Some of the Go source files in this repository belong to the Go project.
-The added formatting rules are in the `format` package.
+The [added formatting rules](#Added-rules) are implemented in the `format` package.
 
-Beyond the [added rules below](#Added-rules), the tool differs from gofmt in the
-following ways:
+Note that vendor directories are skipped unless given as explicit arguments.
+Similarly, the added rules do not apply to generated Go files unless they are
+given as explicit arguments.
 
-* Vendor directories are skipped unless given as explicit arguments
-* The added rules are not applied to generated Go files
-* The `-r` rewrite feature is removed in favor of `gofmt -r`
+Finally, note that the `-r` rewrite flag is removed in favor of `gofmt -r`,
+and the `-s` flag is hidden as it is always enabled.
 
 ### Added rules
 

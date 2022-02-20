@@ -69,24 +69,11 @@ func Source(src []byte, opts Options) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-var rxCodeGenerated = regexp.MustCompile(`^// Code generated .* DO NOT EDIT\.$`)
-
 // File modifies a file and fset in place to follow gofumpt's format. The
 // changes might include manipulating adding or removing newlines in fset,
 // modifying the position of nodes, or modifying literal values.
 func File(fset *token.FileSet, file *ast.File, opts Options) {
 	simplify(file)
-
-	for _, cg := range file.Comments {
-		if cg.Pos() > file.Package {
-			break
-		}
-		for _, line := range cg.List {
-			if rxCodeGenerated.MatchString(line.Text) {
-				return
-			}
-		}
-	}
 
 	if opts.LangVersion == "" {
 		opts.LangVersion = "v1"
