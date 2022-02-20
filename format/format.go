@@ -511,29 +511,40 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 		if sign != nil {
 			endLine := f.Line(sign.End())
 
-			paramClosingIsFirstCharOnEndLine := sign.Params != nil &&
-				f.Position(sign.Params.Closing).Column == 1 &&
-				f.Line(sign.Params.Closing) == endLine
+			if f.Line(sign.Pos()) != endLine {
+				handleMultiLine := func(fl *ast.FieldList) {
+					if fl == nil || len(fl.List) == 0 {
+						return
+					}
+					lastFieldEnd := fl.List[len(fl.List)-1].End()
+					lastFieldLine := f.Line(lastFieldEnd)
+					fieldClosingLine := f.Line(fl.Closing)
+					isLastFieldOnFieldClosingLine := lastFieldLine == fieldClosingLine
+					isLastFieldOnSigClosingLine := lastFieldLine == endLine
 
-			resultClosingIsFirstCharOnEndLine := sign.Results != nil &&
-				f.Position(sign.Results.Closing).Column == 1 &&
-				f.Line(sign.Results.Closing) == endLine
+					var isLastCommentGrpOnFieldClosingLine, isLastCommentGrpOnSigClosingLine bool
+					if comments := f.commentsBetween(lastFieldEnd, fl.Closing); len(comments) > 0 {
+						lastCommentGrp := comments[len(comments)-1]
+						lastCommentGrpLine := f.Line(lastCommentGrp.End())
 
-			endLineIsIndented := !(paramClosingIsFirstCharOnEndLine || resultClosingIsFirstCharOnEndLine)
+						isLastCommentGrpOnFieldClosingLine = lastCommentGrpLine == fieldClosingLine
+						isLastCommentGrpOnSigClosingLine = lastCommentGrpLine == endLine
+					}
 
-			if f.Line(sign.Pos()) != endLine && endLineIsIndented {
-				// The body is preceded by a multi-line function
-				// signature, we move the `) {` to avoid the empty line.
-				switch {
-				case sign.Results != nil &&
-					!resultClosingIsFirstCharOnEndLine &&
-					sign.Results.Closing.IsValid(): // there may be no ")"
-					sign.Results.Closing += 1
-					f.addNewline(sign.Results.Closing)
-
-				case sign.Params != nil && !paramClosingIsFirstCharOnEndLine:
-					sign.Params.Closing += 1
-					f.addNewline(sign.Params.Closing)
+					// is there a comment grp/last field, field closing and sig closing on the same line?
+					if (isLastFieldOnFieldClosingLine && isLastFieldOnSigClosingLine) ||
+						(isLastCommentGrpOnFieldClosingLine && isLastCommentGrpOnSigClosingLine) {
+						fl.Closing += 1
+						f.addNewline(fl.Closing)
+					}
+				}
+				handleMultiLine(sign.Params)
+				if sign.Results != nil {
+					lastResultLine := f.Line(sign.Results.List[len(sign.Results.List)-1].End())
+					isLastResultOnParamClosingLine := sign.Params != nil && lastResultLine == f.Line(sign.Params.Closing)
+					if !isLastResultOnParamClosingLine {
+						handleMultiLine(sign.Results)
+					}
 				}
 			}
 		}

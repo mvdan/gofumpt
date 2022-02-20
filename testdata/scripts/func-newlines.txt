@@ -258,6 +258,22 @@ func f(p1 string,
 	println("body")
 	return 0
 }
+
+func a() {
+	f := func(s string,
+		b bool,
+	) {
+		// foo
+	}
+}
+
+func f(p1 string,
+	p2 string) (int, string,
+	/* baz */) {
+
+	println("body")
+	return 0, ""
+}
 -- foo.go.golden --
 package p
 
@@ -468,4 +484,20 @@ func f(p1 string,
 ) int {
 	println("body")
 	return 0
+}
+
+func a() {
+	f := func(s string,
+		b bool,
+	) {
+		// foo
+	}
+}
+
+func f(p1 string,
+	p2 string) (int, string,
+
+/* baz */) {
+	println("body")
+	return 0, ""
 }
