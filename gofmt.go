@@ -18,6 +18,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"runtime/pprof"
 	"strings"
@@ -103,8 +104,24 @@ func isGoFile(f fs.DirEntry) bool {
 	return !f.IsDir() && !strings.HasPrefix(name, ".") && strings.HasSuffix(name, ".go")
 }
 
+var rxCodeGenerated = regexp.MustCompile(`^// Code generated .* DO NOT EDIT\.$`)
+
+func isGenerated(file *ast.File) bool {
+	for _, cg := range file.Comments {
+		if cg.Pos() > file.Package {
+			return false
+		}
+		for _, line := range cg.List {
+			if rxCodeGenerated.MatchString(line.Text) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 // If in == nil, the source is the contents of the file with the given filename.
-func processFile(filename string, in io.Reader, out io.Writer, stdin bool) error {
+func processFile(filename string, in io.Reader, out io.Writer, stdin, explicit bool) error {
 	var perm os.FileMode = 0o644
 	if in == nil {
 		f, err := os.Open(filename)
@@ -143,10 +160,12 @@ func processFile(filename string, in io.Reader, out io.Writer, stdin bool) error
 		}
 	}
 
-	gformat.File(fileSet, file, gformat.Options{
-		LangVersion: *langVersion,
-		ExtraRules:  *extraRules,
-	})
+	if explicit || !isGenerated(file) {
+		gformat.File(fileSet, file, gformat.Options{
+			LangVersion: *langVersion,
+			ExtraRules:  *extraRules,
+		})
+	}
 
 	res, err := format(fileSet, file, sourceAdj, indentAdj, src, printer.Config{Mode: printerMode, Tabwidth: tabWidth})
 	if err != nil {
@@ -198,7 +217,7 @@ func visitFile(path string, f fs.DirEntry, err error) error {
 	if err != nil || !isGoFile(f) {
 		return err
 	}
-	if err := processFile(path, nil, os.Stdout, false); err != nil {
+	if err := processFile(path, nil, os.Stdout, false, false); err != nil {
 		report(err)
 	}
 	return nil
@@ -255,7 +274,7 @@ func gofumptMain() {
 			exitCode = 2
 			return
 		}
-		if err := processFile("<standard input>", os.Stdin, os.Stdout, true); err != nil {
+		if err := processFile("<standard input>", os.Stdin, os.Stdout, true, true); err != nil {
 			report(err)
 		}
 		return
@@ -267,7 +286,7 @@ func gofumptMain() {
 			report(err)
 		case !info.IsDir():
 			// Non-directory arguments are always formatted.
-			if err := processFile(arg, nil, os.Stdout, false); err != nil {
+			if err := processFile(arg, nil, os.Stdout, false, true); err != nil {
 				report(err)
 			}
 		default:
