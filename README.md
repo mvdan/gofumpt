@@ -385,7 +385,7 @@ var _ = map[string]string{
 
 </details>
 
-Interfaces should not have leading or trailing empty lines
+Field lists should not have leading or trailing empty lines
 
 <details><summary><i>example</i></summary>
 
@@ -397,6 +397,12 @@ type Person interface {
 	Age() int
 
 }
+
+type ZeroFields struct {
+
+	// No fields are needed here.
+
+}
 ```
 
 ```
@@ -404,6 +410,10 @@ type Person interface {
 	Name() string
 
 	Age() int
+}
+
+type ZeroFields struct {
+	// No fields are needed here.
 }
 ```
 
