@@ -20,7 +20,42 @@ func f() {
 		// lone comment
 
 	}
+
+	type S struct {
+
+
+		// lone comment
+		
+		
+	}
+
+	type I interface {
+
+
+		// lone comment
+		
+		
+	}
+
+
 }
+
+type SOut struct {
+
+	// lone comment
+	
+}
+
+type IOut interface {
+
+	
+	// lone comment
+
+
+}
+
+
+
 -- foo.go.golden --
 package p
 
@@ -34,4 +69,20 @@ func f() {
 	{
 		// lone comment
 	}
+
+	type S struct {
+		// lone comment
+	}
+
+	type I interface {
+		// lone comment
+	}
+}
+
+type SOut struct {
+	// lone comment
+}
+
+type IOut interface {
+	// lone comment
 }
