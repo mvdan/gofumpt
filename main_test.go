@@ -17,10 +17,7 @@ import (
 
 func TestMain(m *testing.M) {
 	os.Exit(testscript.RunMain(m, map[string]func() int{
-		"gofumpt": func() int {
-			gofumptMain()
-			return exitCode
-		},
+		"gofumpt": main1,
 	}))
 }
 
