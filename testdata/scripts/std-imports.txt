@@ -4,6 +4,10 @@ cmp foo.go foo.go.golden
 gofumpt -d foo.go.golden
 ! stdout .
 
+-- go.mod --
+module nodomainmod/mod1
+
+go 1.16
 -- foo.go --
 package p
 
@@ -42,6 +46,7 @@ import (
 
 // We need to split std vs non-std in this case too.
 import (
+	"foo.local"
 	"foo.local/three"
 	math "math"
 )
@@ -69,6 +74,21 @@ import (
 	"example/foo"
 	"internal/bar"
 	"test/baz"
+)
+
+import (
+	"io"
+
+	"nodomainmod"
+	"nodomainmod/mod1/pkg1"
+	"nodomainmod/mod2"
+	"nodomainmodextra"
+)
+
+import (
+	"io"
+
+	"nodomainother/mod.withdot/pkg1"
 )
 -- foo.go.golden --
 package p
@@ -108,6 +128,7 @@ import (
 import (
 	math "math"
 
+	"foo.local"
 	"foo.local/three"
 )
 
@@ -135,4 +156,18 @@ import (
 	"example/foo"
 	"internal/bar"
 	"test/baz"
+)
+
+import (
+	"io"
+	"nodomainmodextra"
+
+	"nodomainmod"
+	"nodomainmod/mod1/pkg1"
+	"nodomainmod/mod2"
+)
+
+import (
+	"io"
+	"nodomainother/mod.withdot/pkg1"
 )

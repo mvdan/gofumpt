@@ -29,20 +29,35 @@ import (
 	"mvdan.cc/gofumpt/internal/version"
 )
 
+// Options is the set of formatting options which affect gofumpt.
 type Options struct {
 	// LangVersion corresponds to the Go language version a piece of code is
 	// written in. The version is used to decide whether to apply formatting
 	// rules which require new language features. When inside a Go module,
-	// LangVersion should generally be specified as the result of:
+	// LangVersion should be:
 	//
-	//     go list -m -f {{.GoVersion}}
+	//     go mod edit -json | jq -r '.Go'
 	//
-	// LangVersion is treated as a semantic version, which might start with
-	// a "v" prefix. Like Go versions, it might also be incomplete; "1.14"
-	// is equivalent to "1.14.0". When empty, it is equivalent to "v1", to
-	// not use language features which could break programs.
+	// LangVersion is treated as a semantic version, which may start with a "v"
+	// prefix. Like Go versions, it may also be incomplete; "1.14" is equivalent
+	// to "1.14.0". When empty, it is equivalent to "v1", to not use language
+	// features which could break programs.
 	LangVersion string
 
+	// ModulePath corresponds to the Go module path which contains the source
+	// code being formatted. When inside a Go module, ModulePath should be:
+	// rules which require new language features. When inside a Go module,
+	// LangVersion should generally be specified as the result of:
+	//
+	//     go mod edit -json | jq -r '.Module.Path'
+	//
+	// ModulePath is used for formatting decisions like what import paths are
+	// considered to be not part of the standard library. When empty, the source
+	// is formatted as if it weren't inside a module.
+	ModulePath string
+
+	// ExtraRules enables extra formatting rules, such as grouping function
+	// parameters with repeated types together.
 	ExtraRules bool
 }
 
@@ -366,6 +381,7 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 						"//gofumpt:diagnose",
 						version.String(),
 						"-lang=" + f.LangVersion,
+						"-modpath=" + f.ModulePath,
 					}
 					if f.ExtraRules {
 						slc = append(slc, "-extra")
@@ -862,6 +878,23 @@ func (f *fumpter) joinStdImports(d *ast.GenDecl) {
 	firstGroup := true
 	lastEnd := d.Pos()
 	needsSort := false
+
+	// If ModulePath is "foo/bar", we assume "foo/..." is not part of std.
+	// Users shouldn't declare modules that may collide with std this way,
+	// but historically some private codebases have done so.
+	// This is a relatively harmless way to make gofumpt compatible with them,
+	// as it changes nothing for the common external module paths.
+	var modulePrefix string
+	if f.ModulePath == "" {
+		// Nothing to do.
+	} else if i := strings.IndexByte(f.ModulePath, '/'); i != -1 {
+		// ModulePath is "foo/bar", so we use "foo" as the prefix.
+		modulePrefix = f.ModulePath[:i]
+	} else {
+		// ModulePath is "foo", so we use "foo" as the prefix.
+		modulePrefix = f.ModulePath
+	}
+
 	for i, spec := range d.Specs {
 		spec := spec.(*ast.ImportSpec)
 		if coms := f.commentsBetween(lastEnd, spec.Pos()); len(coms) > 0 {
@@ -874,20 +907,32 @@ func (f *fumpter) joinStdImports(d *ast.GenDecl) {
 			lastEnd = spec.End()
 		}
 
-		path, _ := strconv.Unquote(spec.Path.Value)
+		path, err := strconv.Unquote(spec.Path.Value)
+		if err != nil {
+			panic(err) // should never error
+		}
+		periodIndex := strings.IndexByte(path, '.')
+		slashIndex := strings.IndexByte(path, '/')
 		switch {
-		// Imports with a period are definitely third party.
-		case strings.Contains(path, "."):
-			fallthrough
-		// "test" and "example" are reserved as per golang.org/issue/37641.
-		// "internal" is unreachable.
-		case strings.HasPrefix(path, "test/") ||
-			strings.HasPrefix(path, "example/") ||
-			strings.HasPrefix(path, "internal/"):
-			fallthrough
-		// To be conservative, if an import has a name or an inline
-		// comment, and isn't part of the top group, treat it as non-std.
-		case !firstGroup && (spec.Name != nil || spec.Comment != nil):
+
+		// Imports with a period in the first path element are third party.
+		// Note that this includes "foo.com" and excludes "foo/bar.com/baz".
+		case periodIndex > 0 && (slashIndex == -1 || periodIndex < slashIndex),
+
+			// "test" and "example" are reserved as per golang.org/issue/37641.
+			// "internal" is unreachable.
+			strings.HasPrefix(path, "test/"),
+			strings.HasPrefix(path, "example/"),
+			strings.HasPrefix(path, "internal/"),
+
+			// See if we match modulePrefix; see its documentation above.
+			// We match either exactly or with a slash suffix,
+			// so that the prefix "foo" for "foo/..." does not match "foobar".
+			path == modulePrefix || strings.HasPrefix(path, modulePrefix+"/"),
+
+			// To be conservative, if an import has a name or an inline
+			// comment, and isn't part of the top group, treat it as non-std.
+			!firstGroup && (spec.Name != nil || spec.Comment != nil):
 			other = append(other, spec)
 			continue
 		}

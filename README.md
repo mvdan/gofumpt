@@ -561,13 +561,14 @@ drop-in replacement in editors and scripts.
 > Why are my module imports being grouped with standard library imports?
 
 Any import paths that don't start with a domain name like `foo.com` are
-effectively reserved by the Go toolchain. Otherwise, adding new standard library
-packages like `embed` would be a breaking change. See https://github.com/golang/go/issues/32819.
+effectively [reserved by the Go toolchain](https://github.com/golang/go/issues/32819).
+Third party modules should either start with a domain name,
+even a local one like `foo.local`, or use [a reserved path prefix](https://github.com/golang/go/issues/37641).
 
-Third party modules should use domain names to avoid conflicts.
-If your module is meant for local use only, you can use `foo.local`.
-For small example or test modules, `example/...` and `test/...` may be reserved
-if a proposal is accepted; see https://github.com/golang/go/issues/37641.
+For backwards compatibility with modules set up before these rules were clear,
+`gofumpt` will treat any import path sharing a prefix with the current module
+path as third party. For example, if the current module is `mycorp/mod1`, then
+all import paths in `mycorp/...` will be considered third party.
 
 > How can I use `gofumpt` if I already use `goimports` to replace `gofmt`?
 

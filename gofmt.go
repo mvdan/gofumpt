@@ -44,6 +44,7 @@ var (
 
 	// gofumpt's own flags
 	langVersion = flag.String("lang", "", "")
+	modulePath  = flag.String("modpath", "", "")
 	extraRules  = flag.Bool("extra", false, "")
 	showVersion = flag.Bool("version", false, "")
 
@@ -92,8 +93,8 @@ func usage() {
 	-w        write result to (source) file instead of stdout
 	-extra    enable extra rules which should be vetted by a human
 
-	-cpuprofile str    write cpu profile to this file
-	-lang       str    target Go version in the form 1.X (default from go.mod)
+	-lang       str    target Go version in the form "1.X" (default from go.mod)
+	-modpath    str    Go module path containing the source file (default from go.mod)
 `)
 }
 
@@ -285,18 +286,33 @@ func processFile(filename string, info fs.FileInfo, in io.Reader, r *reporter, e
 
 	// Apply gofumpt's changes before we print the code in gofumpt's format.
 
-	if *langVersion == "" {
+	// If either -lang or -modpath aren't set, fetch them from go.mod.
+	if *langVersion == "" || *modulePath == "" {
 		out, err := exec.Command("go", "mod", "edit", "-json").Output()
 		if err == nil && len(out) > 0 {
-			var mod struct{ Go string }
+			var mod struct {
+				Go     string
+				Module struct {
+					Path string
+				}
+			}
 			_ = json.Unmarshal(out, &mod)
-			*langVersion = mod.Go
+			if *langVersion == "" {
+				*langVersion = mod.Go
+			}
+			if *modulePath == "" {
+				*modulePath = mod.Module.Path
+			}
 		}
 	}
 
+	// We always apply the gofumpt formatting rules to explicit files, including stdin.
+	// Otherwise, we don't apply them on generated files.
+	// We also skip walking vendor directories entirely, but that happens elsewhere.
 	if explicit || !isGenerated(file) {
 		gformat.File(fileSet, file, gformat.Options{
 			LangVersion: *langVersion,
+			ModulePath:  *modulePath,
 			ExtraRules:  *extraRules,
 		})
 	}

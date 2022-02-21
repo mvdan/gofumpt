@@ -43,12 +43,12 @@ package p
 -- foo.go.golden --
 package p
 
-//gofumpt:diagnose v0.1.1-0.20210524140936-ba6406b58f36 -lang=v1.16
+//gofumpt:diagnose v0.1.1-0.20210524140936-ba6406b58f36 -lang=v1.16 -modpath=test
 -- foo.go.golden-extra --
 package p
 
-//gofumpt:diagnose v0.1.1-0.20210524140936-ba6406b58f36 -lang=v1.16 -extra
+//gofumpt:diagnose v0.1.1-0.20210524140936-ba6406b58f36 -lang=v1.16 -modpath=test -extra
 -- foo.go.golden-lang --
 package p
 
-//gofumpt:diagnose v0.1.1-0.20210524140936-ba6406b58f36 -lang=v1
+//gofumpt:diagnose v0.1.1-0.20210524140936-ba6406b58f36 -lang=v1 -modpath=test
