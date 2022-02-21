@@ -504,6 +504,20 @@ simply configure `gopls` to use `gofumpt`:
 call govim#config#Set("Gofumpt", 1)
 ```
 
+#### Neovim
+
+When using [`lspconfig`](https://github.com/neovim/nvim-lspconfig), pass the `gofumpt` setting to `gopls`:
+
+```lua
+require('lspconfig').gopls.setup({
+    settings = {
+        gopls = {
+            gofumpt = true
+        }
+    }
+})
+```
+
 #### Emacs
 
 For [lsp-mode](https://emacs-lsp.github.io/lsp-mode/) users:
