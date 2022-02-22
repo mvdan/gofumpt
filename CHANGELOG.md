@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.3.0] - 2022-02-22
+
+This is gofumpt's third major release, based on Go 1.18's gofmt.
+The jump from Go 1.17's gofmt should bring a noticeable speed-up,
+as the tool can now format many files concurrently.
+On an 8-core laptop, formatting a large codebase is 4x as fast.
+
+The following [formatting rules](https://github.com/mvdan/gofumpt#Added-rules) are added:
+
+* Functions should separate `) {` where the indentation helps readability
+* Field lists should not have leading or trailing empty lines
+
+The following changes are included as well:
+
+* Generated files are now fully formatted when given as explicit arguments
+* Prepare for Go 1.18's module workspaces, which could cause errors
+* Import paths sharing a prefix with the current module path are no longer
+  grouped with standard library imports
+* `format.Options` gains a `ModulePath` field per the last bullet point
+
 ## [0.2.1] - 2021-12-12
 
 This bugfix release resolves a number of issues:

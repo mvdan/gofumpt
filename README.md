@@ -63,12 +63,18 @@ func foo() {
 
 </details>
 
-Functions using an empty line for readability should use a `) {` line instead
+Functions should separate `) {` where the indentation helps readability
 
 <details><summary><i>example</i></summary>
 
 ```
 func foo(s string,
+	i int) {
+	println("bar")
+}
+
+// With an empty line it's slightly better, but still not great.
+func bar(s string,
 	i int) {
 
 	println("bar")
@@ -77,6 +83,13 @@ func foo(s string,
 
 ```
 func foo(s string,
+	i int,
+) {
+	println("bar")
+}
+
+// With an empty line it's slightly better, but still not great.
+func bar(s string,
 	i int,
 ) {
 	println("bar")
