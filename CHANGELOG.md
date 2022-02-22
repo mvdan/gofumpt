@@ -89,6 +89,7 @@ those building programs with gofumpt.
 Finally, this release adds the `-version` flag, to print the tool's own version.
 The flag will work for "master" builds too.
 
+[0.3.0]: https://github.com/mvdan/gofumpt/releases/tag/v0.3.0
 [0.2.1]: https://github.com/mvdan/gofumpt/releases/tag/v0.2.1
 [0.2.0]: https://github.com/mvdan/gofumpt/releases/tag/v0.2.0
 [0.1.1]: https://github.com/mvdan/gofumpt/releases/tag/v0.1.1
