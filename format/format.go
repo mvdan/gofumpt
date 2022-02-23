@@ -46,8 +46,6 @@ type Options struct {
 
 	// ModulePath corresponds to the Go module path which contains the source
 	// code being formatted. When inside a Go module, ModulePath should be:
-	// rules which require new language features. When inside a Go module,
-	// LangVersion should generally be specified as the result of:
 	//
 	//     go mod edit -json | jq -r '.Module.Path'
 	//
