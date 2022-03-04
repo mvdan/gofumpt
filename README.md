@@ -499,9 +499,7 @@ To avoid unnecessary runs, you should disable all checkboxes in the *Advanced* s
 
 #### Vim-go
 
-Ensure you are at least running version
-[v1.24](https://github.com/fatih/vim-go/blob/master/CHANGELOG.md#v124---september-15-2020),
-and set up `gopls` for formatting code with `gofumpt`:
+To configure `gopls` to use `gofumpt`:
 
 ```vim
 let g:go_fmt_command="gopls"
@@ -510,8 +508,7 @@ let g:go_gopls_gofumpt=1
 
 #### Govim
 
-With a [new enough version of govim](https://github.com/govim/govim/pull/1005),
-simply configure `gopls` to use `gofumpt`:
+To configure `gopls` to use `gofumpt`:
 
 ```vim
 call govim#config#Set("Gofumpt", 1)
@@ -533,13 +530,14 @@ require('lspconfig').gopls.setup({
 
 #### Emacs
 
-For [lsp-mode](https://emacs-lsp.github.io/lsp-mode/) users:
+For [lsp-mode](https://emacs-lsp.github.io/lsp-mode/) users on version 8.0.0 or higher:
 
 ```elisp
 (setq lsp-go-use-gofumpt t)
 ```
 
 For users of `lsp-mode` before `8.0.0`:
+
 ```elisp
 (lsp-register-custom-settings
  '(("gopls.gofumpt" t)))
