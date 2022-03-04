@@ -536,6 +536,11 @@ require('lspconfig').gopls.setup({
 For [lsp-mode](https://emacs-lsp.github.io/lsp-mode/) users:
 
 ```elisp
+(setq lsp-go-use-gofumpt t)
+```
+
+For users of `lsp-mode` before `8.0.0`:
+```elisp
 (lsp-register-custom-settings
  '(("gopls.gofumpt" t)))
 ```
