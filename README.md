@@ -5,7 +5,7 @@
 Enforce a stricter format than `gofmt`, while being backwards compatible.
 That is, `gofumpt` is happy with a subset of the formats that `gofmt` is happy with.
 
-The tool is a modified fork of `gofmt` as of Go 1.18rc1.
+The tool is a modified fork of `gofmt` as of Go 1.18.
 It can be used as a drop-in replacement to format your Go code,
 and running `gofmt` after `gofumpt` should produce no changes.
 For example:
