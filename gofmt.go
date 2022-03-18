@@ -502,9 +502,7 @@ func gofmtMain(s *sequencer) {
 		case !info.IsDir():
 			// Non-directory arguments are always formatted.
 			arg := arg
-			println(arg)
 			s.Add(fileWeight(arg, info), func(r *reporter) error {
-				println(arg)
 				return processFile(arg, info, nil, r, true)
 			})
 		default:
