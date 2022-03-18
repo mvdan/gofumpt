@@ -23,6 +23,7 @@ import (
 	"runtime"
 	"runtime/pprof"
 	"strings"
+	"sync"
 
 	"golang.org/x/sync/semaphore"
 	exec "golang.org/x/sys/execabs"
@@ -287,21 +288,18 @@ func processFile(filename string, info fs.FileInfo, in io.Reader, r *reporter, e
 	// Apply gofumpt's changes before we print the code in gofumpt's format.
 
 	// If either -lang or -modpath aren't set, fetch them from go.mod.
-	if *langVersion == "" || *modulePath == "" {
-		out, err := exec.Command("go", "mod", "edit", "-json").Output()
-		if err == nil && len(out) > 0 {
-			var mod struct {
-				Go     string
-				Module struct {
-					Path string
-				}
+	lang := *langVersion
+	modpath := *modulePath
+	if lang == "" || modpath == "" {
+		dir := filepath.Dir(filename)
+		mod, ok := moduleCacheByDir.Load(dir)
+		if ok && mod != nil {
+			mod := mod.(*module)
+			if lang == "" {
+				lang = mod.Go
 			}
-			_ = json.Unmarshal(out, &mod)
-			if *langVersion == "" {
-				*langVersion = mod.Go
-			}
-			if *modulePath == "" {
-				*modulePath = mod.Module.Path
+			if modpath == "" {
+				modpath = mod.Module.Path
 			}
 		}
 	}
@@ -311,8 +309,8 @@ func processFile(filename string, info fs.FileInfo, in io.Reader, r *reporter, e
 	// We also skip walking vendor directories entirely, but that happens elsewhere.
 	if explicit || !isGenerated(file) {
 		gformat.File(fileSet, file, gformat.Options{
-			LangVersion: *langVersion,
-			ModulePath:  *modulePath,
+			LangVersion: lang,
+			ModulePath:  modpath,
 			ExtraRules:  *extraRules,
 		})
 	}
@@ -532,7 +530,47 @@ func gofmtMain(s *sequencer) {
 	}
 }
 
+type module struct {
+	Go     string
+	Module struct {
+		Path string
+	}
+}
+
+func loadModuleInfo(dir string) interface{} {
+	cmd := exec.Command("go", "mod", "edit", "-json")
+	cmd.Dir = dir
+
+	// Spawning "go mod edit" will open files by design,
+	// such as the named pipe to obtain stdout.
+	// TODO(mvdan): if we run into "too many open files" errors again in the
+	// future, we probably need to turn fdSem into a weighted semaphore so this
+	// operation can acquire a weight larger than 1.
+	fdSem <- true
+	out, err := cmd.Output()
+	defer func() { <-fdSem }()
+
+	if err != nil || len(out) == 0 {
+		return nil
+	}
+	mod := new(module)
+	if err := json.Unmarshal(out, mod); err != nil {
+		return nil
+	}
+	return mod
+}
+
+// Written to by fileWeight, read from fileWeight and processFile.
+// A present but nil value means that loading the module info failed.
+// Note that we don't require the keys to be absolute directories,
+// so duplicates are possible. The same can happen with symlinks.
+var moduleCacheByDir sync.Map // map[dirString]*module
+
 func fileWeight(path string, info fs.FileInfo) int64 {
+	dir := filepath.Dir(path)
+	if _, ok := moduleCacheByDir.Load(dir); !ok {
+		moduleCacheByDir.Store(dir, loadModuleInfo(dir))
+	}
 	if info == nil {
 		return exclusive
 	}
