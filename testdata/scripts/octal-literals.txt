@@ -1,31 +1,33 @@
-cd module
-cp foo.go foo.go.orig
-
 # Initially, the Go language version is too low.
-gofumpt foo.go
-cmp stdout foo.go.orig
+gofumpt -l .
+! stdout .
 
 # We can give an explicitly newer version.
-gofumpt -lang=1.13 foo.go
-cmp stdout foo.go.golden
+gofumpt -lang=1.13 -l .
+stdout -count=1 'foo\.go'
+stdout -count=1 'nested[/\\]nested\.go'
 
 # If we bump the version in go.mod, it should be picked up.
 exec go mod edit -go=1.13
+gofumpt -l .
+stdout -count=1 'foo\.go'
+! stdout 'nested'
+
+# Ensure we produce the output we expect, and that it's stable.
 gofumpt foo.go
 cmp stdout foo.go.golden
-
 gofumpt -d foo.go.golden
 ! stdout .
 
-# We can give an explicitly older version.
-gofumpt -lang=v1 foo.go
-cmp stdout foo.go.orig
+# We can give an explicitly older version, too
+gofumpt -lang=v1 -l .
+! stdout .
 
--- module/go.mod --
+-- go.mod --
 module test
 
 go 1.12
--- module/foo.go --
+-- foo.go --
 package p
 
 const (
@@ -34,12 +36,25 @@ const (
 	k = 0o_7_5_5
 	l = 1022
 )
--- module/foo.go.golden --
+-- foo.go.golden --
 package p
 
 const (
 	i = 0
 	j = 0o22
+	k = 0o_7_5_5
+	l = 1022
+)
+-- nested/go.mod --
+module nested
+
+go 1.11
+-- nested/nested.go --
+package p
+
+const (
+	i = 0
+	j = 022
 	k = 0o_7_5_5
 	l = 1022
 )
