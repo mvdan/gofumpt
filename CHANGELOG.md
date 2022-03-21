@@ -1,6 +1,14 @@
 # Changelog
 
-## [0.3.0] - 2022-02-22
+## [v0.3.1] - 2022-03-21
+
+This bugfix release resolves a number of issues:
+
+* Avoid "too many open files" error regression introduced by [v0.3.0] - [#208]
+* Use the `go.mod` relative to each Go file when deriving flag defaults - [#211]
+* Remove unintentional debug prints when directly formatting files
+
+## [v0.3.0] - 2022-02-22
 
 This is gofumpt's third major release, based on Go 1.18's gofmt.
 The jump from Go 1.17's gofmt should bring a noticeable speed-up,
@@ -20,7 +28,7 @@ The following changes are included as well:
   grouped with standard library imports
 * `format.Options` gains a `ModulePath` field per the last bullet point
 
-## [0.2.1] - 2021-12-12
+## [v0.2.1] - 2021-12-12
 
 This bugfix release resolves a number of issues:
 
@@ -29,13 +37,13 @@ This bugfix release resolves a number of issues:
 * Don't group interface members of different kinds
 * Account for leading comments in composite literals
 
-## [0.2.0] - 2021-11-10
+## [v0.2.0] - 2021-11-10
 
 This is gofumpt's second major release, based on Go 1.17's gofmt.
 The jump from Go 1.15's gofmt should bring a mild speed-up,
 as walking directories with `filepath.WalkDir` uses fewer syscalls.
 
-gofumports is now removed, after being deprecated in [0.1.0].
+gofumports is now removed, after being deprecated in [v0.1.0].
 Its main purpose was IDE integration; it is now recommended to use gopls,
 which in turn implements goimports and supports gofumpt natively.
 IDEs which don't integrate with gopls (such as GoLand) implement goimports too,
@@ -60,7 +68,7 @@ Finally, the following changes are made to the gofumpt tool:
 * The `format` Go API now also applies the `gofmt -s` simplification
 * Add support for `//gofumpt:diagnose` comments
 
-## [0.1.1] - 2021-03-11
+## [v0.1.1] - 2021-03-11
 
 This bugfix release backports fixes for a few issues:
 
@@ -68,7 +76,7 @@ This bugfix release backports fixes for a few issues:
 * Avoid breaking comment alignment on empty field lists
 * Add support for `//go-sumtype:` directives
 
-## [0.1.0] - 2021-01-05
+## [v0.1.0] - 2021-01-05
 
 This is gofumpt's first release, based on Go 1.15.x. It solidifies the features
 which have worked well for over a year.
@@ -89,8 +97,12 @@ those building programs with gofumpt.
 Finally, this release adds the `-version` flag, to print the tool's own version.
 The flag will work for "master" builds too.
 
-[0.3.0]: https://github.com/mvdan/gofumpt/releases/tag/v0.3.0
-[0.2.1]: https://github.com/mvdan/gofumpt/releases/tag/v0.2.1
-[0.2.0]: https://github.com/mvdan/gofumpt/releases/tag/v0.2.0
-[0.1.1]: https://github.com/mvdan/gofumpt/releases/tag/v0.1.1
-[0.1.0]: https://github.com/mvdan/gofumpt/releases/tag/v0.1.0
+[v0.3.1]: https://github.com/mvdan/gofumpt/releases/tag/v0.3.1
+[#208]: https://github.com/mvdan/gofumpt/issues/208
+[#211]: https://github.com/mvdan/gofumpt/pull/211
+
+[v0.3.0]: https://github.com/mvdan/gofumpt/releases/tag/v0.3.0
+[v0.2.1]: https://github.com/mvdan/gofumpt/releases/tag/v0.2.1
+[v0.2.0]: https://github.com/mvdan/gofumpt/releases/tag/v0.2.0
+[v0.1.1]: https://github.com/mvdan/gofumpt/releases/tag/v0.1.1
+[v0.1.0]: https://github.com/mvdan/gofumpt/releases/tag/v0.1.0
