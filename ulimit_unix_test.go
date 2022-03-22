@@ -3,6 +3,7 @@
 
 // TODO: replace with the unix build tag once we require Go 1.19 or later
 //go:build linux
+// +build linux
 
 package main
 
