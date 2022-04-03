@@ -1,0 +1,4 @@
+go test fuzz v1
+string("package A\nvar A A\nvar A A")
+int8(18)
+bool(false)
