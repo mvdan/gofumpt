@@ -50,6 +50,40 @@ func f(r rune) {
 		}
 	}
 }
+
+func s(x int) {
+	switch x {
+	case
+		shortConstant1,
+		shortConstant2:
+		// A comment.
+		fmt.Println(x)
+	case
+		shortConstant3,
+		shortConstant4:
+		// Do nothing.
+	default:
+		// Another comment.
+		fmt.Println(x * 2)
+	}
+}
+
+func s(x int) {
+	switch x {
+	case
+		longerConstantName1,
+		longerConstantName2:
+		// A comment.
+		fmt.Println(x)
+	case
+		longerConstantName3,
+		longerConstantName4:
+		// Do nothing.
+	default:
+		// Another comment.
+		fmt.Println(x * 2)
+	}
+}
 -- foo.go.golden --
 package p
 
@@ -89,5 +123,35 @@ func f(r rune) {
 				}
 			}
 		}
+	}
+}
+
+func s(x int) {
+	switch x {
+	case shortConstant1, shortConstant2:
+		// A comment.
+		fmt.Println(x)
+	case shortConstant3, shortConstant4:
+		// Do nothing.
+	default:
+		// Another comment.
+		fmt.Println(x * 2)
+	}
+}
+
+func s(x int) {
+	switch x {
+	case
+		longerConstantName1,
+		longerConstantName2:
+		// A comment.
+		fmt.Println(x)
+	case
+		longerConstantName3,
+		longerConstantName4:
+		// Do nothing.
+	default:
+		// Another comment.
+		fmt.Println(x * 2)
 	}
 }
