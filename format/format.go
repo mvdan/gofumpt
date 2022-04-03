@@ -594,7 +594,13 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 			// don't move comments
 			break
 		}
-		if f.printLength(node) > shortLineLimit {
+		// check the length excluding the body
+		nodeWithoutBody := &ast.CaseClause{
+			Case:  node.Case,
+			List:  node.List,
+			Colon: node.Colon,
+		}
+		if f.printLength(nodeWithoutBody) > shortLineLimit {
 			// too long to collapse
 			break
 		}
