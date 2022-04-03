@@ -1,0 +1,4 @@
+go test fuzz v1
+string("package A\nfunc A000000000(A000000000000,\nA00000000)(){\"\"}")
+int8(62)
+bool(true)

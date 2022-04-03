@@ -554,7 +554,7 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 					}
 				}
 				handleMultiLine(sign.Params)
-				if sign.Results != nil {
+				if sign.Results != nil && len(sign.Results.List) > 0 {
 					lastResultLine := f.Line(sign.Results.List[len(sign.Results.List)-1].End())
 					isLastResultOnParamClosingLine := sign.Params != nil && lastResultLine == f.Line(sign.Params.Closing)
 					if !isLastResultOnParamClosingLine {
