@@ -361,7 +361,8 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 				pos = comments[0].Pos()
 			}
 
-			multi := f.Line(pos) < f.Line(decl.End())
+			// Note that we want End-1, as End is the character after the node.
+			multi := f.Line(pos) < f.Line(decl.End()-1)
 			if multi && lastMulti && f.Line(lastEnd)+1 == f.Line(pos) {
 				f.addNewline(lastEnd)
 			}
