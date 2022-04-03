@@ -316,23 +316,39 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 	switch node := c.Node().(type) {
 	case *ast.File:
 		// Join contiguous lone var/const/import lines.
-		// Abort if there are empty lines or comments in between,
-		// including a leading comment, which could be a directive.
+		// Abort if there are empty lines in between,
+		// including a leading comment if it's a directive.
 		newDecls := make([]ast.Decl, 0, len(node.Decls))
 		for i := 0; i < len(node.Decls); {
 			newDecls = append(newDecls, node.Decls[i])
 			start, ok := node.Decls[i].(*ast.GenDecl)
-			if !ok || isCgoImport(start) || start.Doc != nil {
+			if !ok || isCgoImport(start) || containsAnyDirective(start.Doc) {
 				i++
 				continue
 			}
 			lastPos := start.Pos()
+		contLoop:
 			for i++; i < len(node.Decls); {
 				cont, ok := node.Decls[i].(*ast.GenDecl)
-				if !ok || cont.Tok != start.Tok || cont.Lparen != token.NoPos ||
-					f.Line(lastPos) < f.Line(cont.Pos())-1 || isCgoImport(cont) {
+				if !ok || cont.Tok != start.Tok || cont.Lparen != token.NoPos || isCgoImport(cont) {
 					break
 				}
+				// Are there things between these two declarations? e.g. empty lines, comments, directives
+				// If so, break the chain on empty lines and directives, continue below for comments.
+				if f.Line(lastPos) < f.Line(cont.Pos())-1 {
+					// break on empty line
+					if cont.Doc == nil {
+						break
+					}
+					// break on directive
+					for i, comment := range cont.Doc.List {
+						if f.Line(comment.Slash) != f.Line(lastPos)+1+i || rxCommentDirective.MatchString(strings.TrimPrefix(comment.Text, "//")) {
+							break contLoop
+						}
+					}
+					// continue below for comments
+				}
+
 				start.Specs = append(start.Specs, cont.Specs...)
 				if c := f.inlineComment(cont.End()); c != nil {
 					// don't move an inline comment outside
@@ -1017,4 +1033,17 @@ func setPos(v reflect.Value, pos token.Pos) {
 			setPos(v.Field(i), pos)
 		}
 	}
+}
+
+func containsAnyDirective(group *ast.CommentGroup) bool {
+	if group == nil {
+		return false
+	}
+	for _, comment := range group.List {
+		body := strings.TrimPrefix(comment.Text, "//")
+		if rxCommentDirective.MatchString(body) {
+			return true
+		}
+	}
+	return false
 }
