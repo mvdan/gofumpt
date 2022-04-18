@@ -20,6 +20,10 @@ package p
 var ()
 
 func f() {
+	make([]int, len, len)
+	make([]int, 0)
+	make(chan int, 0)
+	make(map[int]int, 0)
 	for _ = range v {
 	}
 }
@@ -28,6 +32,10 @@ func f() {
 package p
 
 func f() {
+	make([]int, len)
+	make([]int, 0)
+	make(chan int)
+	make(map[int]int)
 	for range v {
 	}
 }
