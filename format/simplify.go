@@ -94,6 +94,23 @@ func (s simplifier) Visit(node ast.Node) ast.Visitor {
 		if isBlank(n.Key) && n.Value == nil {
 			n.Key = nil
 		}
+
+	case *ast.CallExpr:
+		// - a call expression of the form: make(map[Type]Type, 0)
+		// can be simplified to: make(map[Type]Type)
+		// - a call expression of the form: make(chan Type, 0)
+		// can be simplified to make(chan Type)
+		// - a call expression of the form: make([]Type, len, len)
+		// can be simplified to: make([]Type, len)
+		if n.Fun.(*ast.Ident).Name == "make" {
+			if len(n.Args) == 3 && isEqual(n.Args[1], n.Args[2]) {
+				n.Args = n.Args[:2]
+			} else if len(n.Args) == 2 && isZero(n.Args[1]) {
+				if _, ok := n.Args[0].(*ast.ArrayType); !ok {
+					n.Args = n.Args[:1]
+				}
+			}
+		}
 	}
 
 	return s
@@ -123,6 +140,27 @@ func (s simplifier) simplifyLiteral(typ reflect.Value, astType, x ast.Expr, px *
 			}
 		}
 	}
+}
+
+func isEqual(x ast.Expr, y ast.Expr) bool {
+	xIdent, ok1 := x.(*ast.Ident)
+	yIdent, ok2 := y.(*ast.Ident)
+	if ok1 && ok2 {
+		return xIdent.Name == yIdent.Name
+	}
+
+	xExpr, ok1 := x.(*ast.BasicLit)
+	yExpr, ok2 := y.(*ast.BasicLit)
+	if ok1 && ok2 {
+		return xExpr.Value == yExpr.Value
+	}
+
+	return false
+}
+
+func isZero(x ast.Expr) bool {
+	ident, ok := x.(*ast.BasicLit)
+	return ok && ident.Value == "0"
 }
 
 func isBlank(x ast.Expr) bool {
