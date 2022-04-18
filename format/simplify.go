@@ -102,7 +102,7 @@ func (s simplifier) Visit(node ast.Node) ast.Visitor {
 		// can be simplified to make(chan Type)
 		// - a call expression of the form: make([]Type, len, len)
 		// can be simplified to: make([]Type, len)
-		if n.Fun.(*ast.Ident).Name == "make" {
+		if fn, ok := n.Fun.(*ast.Ident); ok && fn.Name == "make" {
 			if len(n.Args) == 3 && isEqual(n.Args[1], n.Args[2]) {
 				n.Args = n.Args[:2]
 			} else if len(n.Args) == 2 && isZero(n.Args[1]) {
