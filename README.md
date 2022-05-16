@@ -1,5 +1,7 @@
 # gofumpt
 
+[![Go Reference](https://pkg.go.dev/badge/mvdan.cc/gofumpt/format.svg)](https://pkg.go.dev/mvdan.cc/gofumpt/format)
+
 	go install mvdan.cc/gofumpt@latest
 
 Enforce a stricter format than `gofmt`, while being backwards compatible.
