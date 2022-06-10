@@ -68,7 +68,7 @@ func Source(src []byte, opts Options) ([]byte, error) {
 	// to ensure that using token.NoPos+1 will panic.
 	fset.AddFile("gofumpt_base.go", 1, 10)
 
-	file, err := parser.ParseFile(fset, "", src, parser.ParseComments)
+	file, err := parser.ParseFile(fset, "", src, parser.SkipObjectResolution|parser.ParseComments)
 	if err != nil {
 		return nil, err
 	}
