@@ -26,7 +26,7 @@ var update = flag.Bool("u", false, "update testscript output files")
 func TestScripts(t *testing.T) {
 	t.Parallel()
 	p := testscript.Params{
-		Dir:           filepath.Join("testdata", "scripts"),
+		Dir:           filepath.Join("testdata", "script"),
 		UpdateScripts: *update,
 	}
 	err := gotooltest.Setup(&p)
