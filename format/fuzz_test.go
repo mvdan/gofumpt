@@ -20,7 +20,7 @@ import (
 
 func FuzzFormat(f *testing.F) {
 	// Initialize the corpus with the Go files from our test scripts.
-	paths, err := filepath.Glob(filepath.Join("..", "testdata", "scripts", "*.txt"))
+	paths, err := filepath.Glob(filepath.Join("..", "testdata", "script", "*.txtar"))
 	qt.Assert(f, err, qt.IsNil)
 	qt.Assert(f, paths, qt.Not(qt.HasLen), 0)
 	for _, path := range paths {
