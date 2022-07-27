@@ -394,7 +394,9 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 				if comment.Text == "//gofumpt:diagnose" || strings.HasPrefix(comment.Text, "//gofumpt:diagnose ") {
 					slc := []string{
 						"//gofumpt:diagnose",
+						"version:",
 						version.String(),
+						"flags:",
 						"-lang=" + f.LangVersion,
 						"-modpath=" + f.ModulePath,
 					}

@@ -463,7 +463,7 @@ func gofmtMain(s *sequencer) {
 
 	// Print the gofumpt version if the user asks for it.
 	if *showVersion {
-		version.Print()
+		fmt.Println(version.String())
 		return
 	}
 

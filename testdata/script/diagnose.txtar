@@ -1,19 +1,21 @@
-cp foo.go foo.go.orig
-env GOFUMPT_VERSION_TEST=v0.1.1-0.20210524140936-ba6406b58f36
+env GO_VERSION_TEST=go1.18.29
 
-gofumpt -w foo.go
-cmp foo.go foo.go.golden
+# First, test a local build of gofumpt resulting from 'git clone'.
+# Its version will be inferred from VCS, but since we want a stable test,
+# we mock the VCS information. Note that test binaries do not have VCS info.
+# Data obtained from a real build while developing.
+env GARBLE_TEST_BUILDSETTINGS='[{"Key":"vcs","Value":"git"},{"Key":"vcs.revision","Value":"8dda8068d9f339047fc1777b688afb66a0a0db17"},{"Key":"vcs.time","Value":"2022-07-27T15:58:40Z"},{"Key":"vcs.modified","Value":"true"}]'  
+gofumpt foo.go
+cmp stdout foo.go.golden
 
-gofumpt -w outdated.go
-cmp outdated.go foo.go.golden
+gofumpt outdated.go
+cmp stdout foo.go.golden
 
-cp foo.go.orig foo.go
-gofumpt -w -extra foo.go
-cmp foo.go foo.go.golden-extra
+gofumpt -extra foo.go
+cmp stdout foo.go.golden-extra
 
-cp foo.go.orig foo.go
-gofumpt -w -lang=v1 foo.go
-cmp foo.go foo.go.golden-lang
+gofumpt -lang=v1 foo.go
+cmp stdout foo.go.golden-lang
 
 gofumpt -d nochange.go
 ! stdout .
@@ -23,6 +25,40 @@ gofumpt -d foo.go.golden
 
 gofumpt -d -extra foo.go.golden-extra
 ! stdout .
+
+# A local build without VCS information will result in a missing version.
+env GARBLE_TEST_BUILDSETTINGS='[]'
+gofumpt foo.go
+cmp stdout foo.go.golden-devel
+
+[short] stop 'the rest of this test builds gofumpt binaries'
+
+# We want a published version of gofumpt on the public module proxies,
+# because that's the only way that its module version will be included.
+# Using a directory replace directive will not work.
+# This means that any change in how gofumpt reports its own version
+# will require two pull requests, the second one updating the test script.
+# We could consider using go-internal/goproxytest, but then we would need to
+# manually run something like go-internal/cmd/txtar-addmod reguarly.
+# Or teach goproxytest to serve a mock version of gofumpt from its local checkout.
+# Either way, both are relatively overkill for now.
+env GOBIN=${WORK}/bin
+env GOFUMPT_PUBLISHED_VERSION=v0.3.2-0.20220627183521-8dda8068d9f3
+
+# TODO: update these once the library fix hits master
+
+# gofumpt as the main binary with a real module version.
+go install mvdan.cc/gofumpt@${GOFUMPT_PUBLISHED_VERSION}
+exec ${GOBIN}/gofumpt foo.go
+cmp stdout foo.go.golden-released
+
+# gofumpt as a library with a real module version.
+cd ${GOMOD_DIR}/testdata/gofumpt-external
+go install .
+cd ${WORK}
+stdin foo.go
+exec ${GOBIN}/gofumpt-external
+cmp stdout foo.go.golden-external
 
 -- go.mod --
 module test
@@ -43,12 +79,24 @@ package p
 -- foo.go.golden --
 package p
 
-//gofumpt:diagnose v0.1.1-0.20210524140936-ba6406b58f36 -lang=v1.16 -modpath=test
+//gofumpt:diagnose version: v0.0.0-20220727155840-8dda8068d9f3 (go1.18.29) flags: -lang=v1.16 -modpath=test
+-- foo.go.golden-devel --
+package p
+
+//gofumpt:diagnose version: (devel) (go1.18.29) flags: -lang=v1.16 -modpath=test
 -- foo.go.golden-extra --
 package p
 
-//gofumpt:diagnose v0.1.1-0.20210524140936-ba6406b58f36 -lang=v1.16 -modpath=test -extra
+//gofumpt:diagnose version: v0.0.0-20220727155840-8dda8068d9f3 (go1.18.29) flags: -lang=v1.16 -modpath=test -extra
 -- foo.go.golden-lang --
 package p
 
-//gofumpt:diagnose v0.1.1-0.20210524140936-ba6406b58f36 -lang=v1 -modpath=test
+//gofumpt:diagnose version: v0.0.0-20220727155840-8dda8068d9f3 (go1.18.29) flags: -lang=v1 -modpath=test
+-- foo.go.golden-released --
+package p
+
+//gofumpt:diagnose v0.3.2-0.20220627183521-8dda8068d9f3 -lang=v1.16 -modpath=test
+-- foo.go.golden-external --
+package p
+
+//gofumpt:diagnose (devel) -lang=v1.16 -modpath=
