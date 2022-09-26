@@ -5,30 +5,30 @@ env GO_VERSION_TEST=go1.18.29
 # we mock the VCS information. Note that test binaries do not have VCS info.
 # Data obtained from a real build while developing.
 env GARBLE_TEST_BUILDSETTINGS='[{"Key":"vcs","Value":"git"},{"Key":"vcs.revision","Value":"8dda8068d9f339047fc1777b688afb66a0a0db17"},{"Key":"vcs.time","Value":"2022-07-27T15:58:40Z"},{"Key":"vcs.modified","Value":"true"}]'  
-gofumpt foo.go
+exec gofumpt foo.go
 cmp stdout foo.go.golden
 
-gofumpt outdated.go
+exec gofumpt outdated.go
 cmp stdout foo.go.golden
 
-gofumpt -extra foo.go
+exec gofumpt -extra foo.go
 cmp stdout foo.go.golden-extra
 
-gofumpt -lang=v1 foo.go
+exec gofumpt -lang=v1 foo.go
 cmp stdout foo.go.golden-lang
 
-gofumpt -d nochange.go
+exec gofumpt -d nochange.go
 ! stdout .
 
-gofumpt -d foo.go.golden
+exec gofumpt -d foo.go.golden
 ! stdout .
 
-gofumpt -d -extra foo.go.golden-extra
+exec gofumpt -d -extra foo.go.golden-extra
 ! stdout .
 
 # A local build without VCS information will result in a missing version.
 env GARBLE_TEST_BUILDSETTINGS='[]'
-gofumpt foo.go
+exec gofumpt foo.go
 cmp stdout foo.go.golden-devel
 
 [short] stop 'the rest of this test builds gofumpt binaries'

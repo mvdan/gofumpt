@@ -1,14 +1,14 @@
 # Explicitly given generated files are formatted with our rules.
-gofumpt foo.go
+exec gofumpt foo.go
 cmp stdout foo.go.golden
 
 # stdin is still considered an explicit file.
 stdin foo.go
-gofumpt
+exec gofumpt
 cmp stdout foo.go.golden
 
 # Implicitly walked generated files get formatted without the added rules.
-gofumpt -l .
+exec gofumpt -l .
 stdout -count=1 '^badgofmt.go$'
 ! stdout '^foo.go$'
 ! stderr .

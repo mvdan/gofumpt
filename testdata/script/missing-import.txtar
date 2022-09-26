@@ -1,5 +1,5 @@
 # A missing import shouldn't matter nor be fixed by gofumpt.
-gofumpt foo.go
+exec gofumpt foo.go
 cmp stdout foo.go
 
 -- foo.go --

@@ -1,5 +1,5 @@
 # gofumpt changes -s to default to true.
-gofumpt foo.go
+exec gofumpt foo.go
 cmp stdout foo.go.golden
 
 -- foo.go --

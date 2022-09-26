@@ -1,26 +1,26 @@
 # Initially, the Go language version is too low.
-gofumpt -l .
+exec gofumpt -l .
 ! stdout .
 
 # We can give an explicitly newer version.
-gofumpt -lang=1.13 -l .
+exec gofumpt -lang=1.13 -l .
 stdout -count=1 'foo\.go'
 stdout -count=1 'nested[/\\]nested\.go'
 
 # If we bump the version in go.mod, it should be picked up.
 exec go mod edit -go=1.13
-gofumpt -l .
+exec gofumpt -l .
 stdout -count=1 'foo\.go'
 ! stdout 'nested'
 
 # Ensure we produce the output we expect, and that it's stable.
-gofumpt foo.go
+exec gofumpt foo.go
 cmp stdout foo.go.golden
-gofumpt -d foo.go.golden
+exec gofumpt -d foo.go.golden
 ! stdout .
 
 # We can give an explicitly older version, too
-gofumpt -lang=v1 -l .
+exec gofumpt -lang=v1 -l .
 ! stdout .
 
 -- go.mod --
