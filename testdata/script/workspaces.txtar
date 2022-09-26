@@ -4,11 +4,11 @@
 # we should always use the information from its go.mod.
 # We also test that we don't get confused by the presence of go.work.
 
-gofumpt a/go112.go
+exec gofumpt a/go112.go
 cmp stdout a/go113.go
 
 cd a
-gofumpt go112.go
+exec gofumpt go112.go
 cmp stdout go113.go
 
 -- go.work --

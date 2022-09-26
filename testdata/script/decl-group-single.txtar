@@ -1,8 +1,8 @@
-gofumpt -w f1.go f2.go
+exec gofumpt -w f1.go f2.go
 cmp f1.go f1.go.golden
 cmp f2.go f2.go.golden
 
-gofumpt -d f1.go.golden f2.go.golden
+exec gofumpt -d f1.go.golden f2.go.golden
 ! stdout .
 
 -- f1.go --

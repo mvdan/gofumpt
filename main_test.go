@@ -25,7 +25,7 @@ func TestMain(m *testing.M) {
 
 var update = flag.Bool("u", false, "update testscript output files")
 
-func TestScripts(t *testing.T) {
+func TestScript(t *testing.T) {
 	t.Parallel()
 
 	var goEnv struct {
@@ -42,8 +42,9 @@ func TestScripts(t *testing.T) {
 	}
 
 	p := testscript.Params{
-		Dir:           filepath.Join("testdata", "script"),
-		UpdateScripts: *update,
+		Dir:                 filepath.Join("testdata", "script"),
+		UpdateScripts:       *update,
+		RequireExplicitExec: true,
 		Setup: func(env *testscript.Env) error {
 			env.Setenv("GOCACHE", goEnv.GOCACHE)
 			env.Setenv("GOMODCACHE", goEnv.GOMODCACHE)
