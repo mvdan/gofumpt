@@ -1,5 +1,19 @@
 # Changelog
 
+## [v0.4.0] - 2022-09-27
+
+This release is based on Go 1.19's gofmt, and requires Go 1.18 or later.
+We recommend building gofumpt with Go 1.19 for the best formatting results.
+
+The jump from Go 1.18 brings diffing in pure Go, removing the need to exec `diff`,
+and a small parsing speed-up thanks to `go/parser.SkipObjectResolution`.
+
+The following formatting fixes are included as well:
+
+* Allow grouping declarations with comments - [#212]
+* Properly measure the length of case clauses - [#217]
+* Fix a few crashes found by Go's native fuzzing
+
 ## [v0.3.1] - 2022-03-21
 
 This bugfix release resolves a number of issues:
@@ -96,6 +110,10 @@ those building programs with gofumpt.
 
 Finally, this release adds the `-version` flag, to print the tool's own version.
 The flag will work for "master" builds too.
+
+[v0.4.0]: https://github.com/mvdan/gofumpt/releases/tag/v0.4.0
+[#212]: https://github.com/mvdan/gofumpt/issues/212
+[#217]: https://github.com/mvdan/gofumpt/issues/217
 
 [v0.3.1]: https://github.com/mvdan/gofumpt/releases/tag/v0.3.1
 [#208]: https://github.com/mvdan/gofumpt/issues/208
