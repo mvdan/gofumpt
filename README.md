@@ -496,7 +496,12 @@ When a window asks for settings, you can enter the following:
 
 To avoid unnecessary runs, you should disable all checkboxes in the *Advanced* section.
 
-#### Vim-go
+#### Vim
+
+The configuration depends on the plugin you are using: [vim-go](https://github.com/fatih/vim-go)
+or [govim](https://github.com/govim/govim).
+
+##### vim-go
 
 To configure `gopls` to use `gofumpt`:
 
@@ -505,7 +510,7 @@ let g:go_fmt_command="gopls"
 let g:go_gopls_gofumpt=1
 ```
 
-#### Govim
+##### govim
 
 To configure `gopls` to use `gofumpt`:
 
