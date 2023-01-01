@@ -10,7 +10,6 @@ import (
 	"bytes"
 	"fmt"
 	"go/ast"
-	"go/format"
 	"go/parser"
 	"go/token"
 	"os"
@@ -26,6 +25,7 @@ import (
 	"golang.org/x/mod/semver"
 	"golang.org/x/tools/go/ast/astutil"
 
+	"mvdan.cc/gofumpt/go1.19/go/format"
 	"mvdan.cc/gofumpt/internal/version"
 )
 

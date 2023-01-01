@@ -15,6 +15,8 @@ For example:
 	gofumpt -l -w .
 
 Some of the Go source files in this repository belong to the Go project.
+The project includes copies of `go/printer` and `go/doc/comment` as of Go 1.19
+to ensure consistent formatting independent of what Go version is being used.
 The [added formatting rules](#Added-rules) are implemented in the `format` package.
 
 Note that vendor directories are skipped unless given as explicit arguments.
