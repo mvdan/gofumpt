@@ -556,6 +556,16 @@ For [eglot](https://github.com/joaotavora/eglot) users:
  '((:gopls . ((gofumpt . t)))))
 ```
 
+#### Helix
+
+When using the `gopls` language server, modify the Go settings in `~/.config/helix/languages.toml`:
+
+```toml
+[[language]]
+name = "go"
+config = { "formatting.gofumpt" = true }
+```
+
 #### Sublime Text
 
 With ST4, install the Sublime Text LSP extension according to [the documentation](https://github.com/sublimelsp/LSP),
