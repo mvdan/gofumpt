@@ -1,10 +1,6 @@
 // Copyright (c) 2019, Daniel Martí <mvdan@mvdan.cc>
 // See LICENSE for licensing information
 
-// TODO: replace with the unix build tag once we require Go 1.19 or later
-//go:build linux
-// +build linux
-
 package main
 
 import (
