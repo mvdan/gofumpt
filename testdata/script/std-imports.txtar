@@ -90,6 +90,15 @@ import (
 
 	"nodomainother/mod.withdot/pkg1"
 )
+
+// TODO: fix issue 225.
+import (
+	"path/filepath"
+	"time"
+	"github.com/tinkerbell/tink/pkg/apis/core/v1alpha1"
+	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/yaml"
+)
 -- foo.go.golden --
 package p
 
@@ -170,4 +179,15 @@ import (
 import (
 	"io"
 	"nodomainother/mod.withdot/pkg1"
+)
+
+// TODO: fix issue 225.
+import (
+	"path/filepath"
+	"time"
+
+	"github.com/tinkerbell/tink/pkg/apis/core/v1alpha1"
+	"k8s.io/apimachinery/pkg/types"
+
+	"sigs.k8s.io/yaml"
 )
