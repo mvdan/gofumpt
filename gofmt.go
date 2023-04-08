@@ -17,6 +17,7 @@ import (
 	"io"
 	"io/fs"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
 	"runtime"
@@ -24,10 +25,7 @@ import (
 	"strings"
 	"sync"
 
-	// TODO: we can soon use os/exec thanks to
-	// https://go.dev/issue/43724
 	"golang.org/x/sync/semaphore"
-	exec "golang.org/x/sys/execabs"
 
 	gformat "mvdan.cc/gofumpt/format"
 	"mvdan.cc/gofumpt/internal/govendor/diff"

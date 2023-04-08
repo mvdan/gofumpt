@@ -7,11 +7,11 @@ import (
 	"encoding/json"
 	"flag"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"testing"
 
 	qt "github.com/frankban/quicktest"
-	exec "golang.org/x/sys/execabs"
 
 	"github.com/rogpeppe/go-internal/gotooltest"
 	"github.com/rogpeppe/go-internal/testscript"
