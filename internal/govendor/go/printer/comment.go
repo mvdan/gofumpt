@@ -37,16 +37,15 @@ func formatDocComment(list []*ast.Comment) []*ast.Comment {
 		kind = "//"
 		var b strings.Builder
 		for _, c := range list {
-			after, found := strings.CutPrefix(c.Text, "//")
-			if !found {
+			if !strings.HasPrefix(c.Text, "//") {
 				return list
 			}
 			// Accumulate //go:build etc lines separately.
-			if isDirective(after) {
+			if isDirective(c.Text[2:]) {
 				directives = append(directives, c)
 				continue
 			}
-			b.WriteString(strings.TrimPrefix(after, " "))
+			b.WriteString(strings.TrimPrefix(c.Text[2:], " "))
 			b.WriteString("\n")
 		}
 		text = b.String()
