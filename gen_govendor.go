@@ -31,7 +31,9 @@ var toVendor = []string{
 func main() {
 	catch(os.RemoveAll(vendorDir))
 
-	var oldnew []string
+	oldnew := []string{
+		"//go:generate", "//disabled go:generate",
+	}
 	for _, pkgPath := range toVendor {
 		oldnew = append(oldnew, pkgPath, path.Join(modulePath, vendorDir, pkgPath))
 	}
