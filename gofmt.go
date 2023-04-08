@@ -30,7 +30,7 @@ import (
 	gformat "mvdan.cc/gofumpt/format"
 	"mvdan.cc/gofumpt/internal/govendor/diff"
 	"mvdan.cc/gofumpt/internal/govendor/go/printer"
-	"mvdan.cc/gofumpt/internal/version"
+	gversion "mvdan.cc/gofumpt/internal/version"
 )
 
 //go:generate go run gen_govendor.go
@@ -56,6 +56,8 @@ var (
 	rewriteRule = flag.String("r", "", "")
 	simplifyAST = flag.Bool("s", false, "")
 )
+
+var version = ""
 
 // Keep these in sync with go/format/format.go.
 const (
@@ -464,7 +466,7 @@ func gofmtMain(s *sequencer) {
 
 	// Print the gofumpt version if the user asks for it.
 	if *showVersion {
-		fmt.Println(version.String())
+		fmt.Println(gversion.String(version))
 		return
 	}
 

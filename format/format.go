@@ -395,7 +395,7 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 					slc := []string{
 						"//gofumpt:diagnose",
 						"version:",
-						version.String(),
+						version.String(""),
 						"flags:",
 						"-lang=" + f.LangVersion,
 						"-modpath=" + f.ModulePath,
