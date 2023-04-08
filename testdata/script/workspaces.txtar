@@ -1,5 +1,3 @@
-[!go1.18] skip
-
 # Whether we run gofumpt from inside or outside a module,
 # we should always use the information from its go.mod.
 # We also test that we don't get confused by the presence of go.work.

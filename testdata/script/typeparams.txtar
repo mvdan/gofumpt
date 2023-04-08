@@ -1,8 +1,5 @@
-[go1.18] exec gofumpt foo.go
-[!go1.18] ! exec gofumpt foo.go
-
-[go1.18] cmp stdout foo.go.golden
-[!go1.18] stderr 'foo.go:.*expected'
+exec gofumpt foo.go
+cmp stdout foo.go.golden
 
 -- go.mod --
 module test
