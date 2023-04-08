@@ -36,6 +36,22 @@ type CombineEmbeds interface {
 func Caller() {
 	Foo[int,int](1,2)
 }
+
+func Issue235[K interface {
+	comparable
+	constraints.Ordered
+}, V any](m map[K]V) []K {
+	keys := maps.Keys(m)
+	slices.Sort(keys)
+	return keys
+}
+
+func multilineParams[V any](p1 V,
+	p2 V) {
+
+	println("body")
+
+}
 -- foo.go.golden --
 package p
 
@@ -64,4 +80,19 @@ type CombineEmbeds interface {
 
 func Caller() {
 	Foo[int, int](1, 2)
+}
+
+func Issue235[K interface {
+	comparable
+	constraints.Ordered
+}, V any](m map[K]V) []K {
+	keys := maps.Keys(m)
+	slices.Sort(keys)
+	return keys
+}
+
+func multilineParams[V any](p1 V,
+	p2 V,
+) {
+	println("body")
 }

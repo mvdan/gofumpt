@@ -546,12 +546,19 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 
 			if f.Line(sign.Pos()) != endLine {
 				handleMultiLine := func(fl *ast.FieldList) {
+					// Refuse to insert a newline before the closing token
+					// if the list is empty or all in one line.
 					if fl == nil || len(fl.List) == 0 {
 						return
 					}
+					fieldOpeningLine := f.Line(fl.Opening)
+					fieldClosingLine := f.Line(fl.Closing)
+					if fieldOpeningLine == fieldClosingLine {
+						return
+					}
+
 					lastFieldEnd := fl.List[len(fl.List)-1].End()
 					lastFieldLine := f.Line(lastFieldEnd)
-					fieldClosingLine := f.Line(fl.Closing)
 					isLastFieldOnFieldClosingLine := lastFieldLine == fieldClosingLine
 					isLastFieldOnSigClosingLine := lastFieldLine == endLine
 
