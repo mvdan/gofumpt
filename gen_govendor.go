@@ -26,6 +26,7 @@ var toVendor = []string{
 	"go/format",
 	"go/printer",
 	"go/doc/comment",
+	"internal/diff",
 }
 
 func main() {
@@ -62,7 +63,10 @@ func main() {
 		}
 		catch(err)
 
-		dstDir := filepath.Join(vendorDir, filepath.FromSlash(pkg.ImportPath))
+		// Otherwise we can't import it.
+		dstPkg := strings.TrimPrefix(pkg.ImportPath, "internal/")
+
+		dstDir := filepath.Join(vendorDir, filepath.FromSlash(dstPkg))
 		catch(os.MkdirAll(dstDir, 0o777))
 		// TODO: if the packages start using build tags like GOOS or GOARCH,
 		// we will need to vendor IgnoredGoFiles as well.

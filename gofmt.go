@@ -30,7 +30,7 @@ import (
 	exec "golang.org/x/sys/execabs"
 
 	gformat "mvdan.cc/gofumpt/format"
-	"mvdan.cc/gofumpt/internal/diff"
+	"mvdan.cc/gofumpt/internal/govendor/diff"
 	"mvdan.cc/gofumpt/internal/govendor/go/printer"
 	"mvdan.cc/gofumpt/internal/version"
 )
