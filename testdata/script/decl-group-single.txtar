@@ -41,6 +41,12 @@ var (
 		"bar",
 	}
 )
+
+var (
+	foo = "foo"
+	// bar = "bar"
+	// baz = "baz"
+)
 -- f1.go.golden --
 package p
 
@@ -73,6 +79,11 @@ var multiline = []string{
 	"foo",
 	"bar",
 }
+
+var foo = "foo"
+
+// bar = "bar"
+// baz = "baz"
 -- f2.go --
 package p
 

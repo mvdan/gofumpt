@@ -467,13 +467,19 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 			specEnd := node.Specs[0].End()
 
 			if len(f.commentsBetween(node.TokPos, specPos)) > 0 {
-				// If the single spec has any comment, it must
-				// go before the entire declaration now.
+				// If the single spec has a comment on the line above,
+				// the comment must go before the entire declaration now.
 				node.TokPos = specPos
 			} else {
 				f.removeLines(f.Line(node.TokPos), f.Line(specPos))
 			}
-			f.removeLines(f.Line(specEnd), f.Line(node.Rparen))
+			if len(f.commentsBetween(specEnd, node.Rparen)) > 0 {
+				// Leave one newline to not force a comment on the next line to
+				// become an inline comment.
+				f.removeLines(f.Line(specEnd)+1, f.Line(node.Rparen))
+			} else {
+				f.removeLines(f.Line(specEnd), f.Line(node.Rparen))
+			}
 
 			// Remove the parentheses. go/printer will automatically
 			// get rid of the newlines.
