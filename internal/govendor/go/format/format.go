@@ -33,7 +33,7 @@ const (
 	// printerNormalizeNumbers means to canonicalize number literal prefixes
 	// and exponents while printing. See https://golang.org/doc/go1.13#gofmt.
 	//
-	// This value is defined in go/printer specifically for go/format and cmd/gofmt.
+	// This value is defined in mvdan.cc/gofumpt/internal/govendor/go/printer specifically for mvdan.cc/gofumpt/internal/govendor/go/format and cmd/gofmt.
 	printerNormalizeNumbers = 1 << 30
 )
 

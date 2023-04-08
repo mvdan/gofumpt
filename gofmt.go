@@ -30,10 +30,13 @@ import (
 	exec "golang.org/x/sys/execabs"
 
 	gformat "mvdan.cc/gofumpt/format"
-	"mvdan.cc/gofumpt/internal/govendor/go/printer"
 	"mvdan.cc/gofumpt/internal/diff"
+	"mvdan.cc/gofumpt/internal/govendor/go/printer"
 	"mvdan.cc/gofumpt/internal/version"
 )
+
+//go:generate go run gen_govendor.go
+//go:generate go run . -w internal/govendor
 
 var (
 	// main operation modes
