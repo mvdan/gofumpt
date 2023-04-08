@@ -31,6 +31,11 @@ var toVendor = []string{
 func main() {
 	catch(os.RemoveAll(vendorDir))
 
+	catch(os.MkdirAll(vendorDir, 0o777))
+	out, err := exec.Command("go", "env", "GOVERSION").Output()
+	catch(err)
+	catch(os.WriteFile(filepath.Join(vendorDir, "version.txt"), out, 0o666))
+
 	oldnew := []string{
 		"//go:generate", "//disabled go:generate",
 	}
@@ -40,7 +45,7 @@ func main() {
 	replacer := strings.NewReplacer(oldnew...)
 
 	listArgs := append([]string{"list", "-json"}, toVendor...)
-	out, err := exec.Command("go", listArgs...).Output()
+	out, err = exec.Command("go", listArgs...).Output()
 	catch(err)
 
 	type Package struct {
@@ -59,6 +64,8 @@ func main() {
 
 		dstDir := filepath.Join(vendorDir, filepath.FromSlash(pkg.ImportPath))
 		catch(os.MkdirAll(dstDir, 0o777))
+		// TODO: if the packages start using build tags like GOOS or GOARCH,
+		// we will need to vendor IgnoredGoFiles as well.
 		for _, goFile := range pkg.GoFiles {
 			srcBytes, err := os.ReadFile(filepath.Join(pkg.Dir, goFile))
 			catch(err)
