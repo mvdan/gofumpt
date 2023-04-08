@@ -8,7 +8,7 @@ import (
 	"go/ast"
 	"strings"
 
-	"mvdan.cc/gofumpt/go1.19/go/doc/comment"
+	"mvdan.cc/gofumpt/internal/govendor/go/doc/comment"
 )
 
 // formatDocComment reformats the doc comment list,
