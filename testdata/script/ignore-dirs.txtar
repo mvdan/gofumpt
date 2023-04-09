@@ -1,0 +1,55 @@
+exec gofumpt orig.go.golden
+cp stdout formatted.go.golden
+mkdir -p vendor/foo testdata/foo
+cp orig.go.golden vendor/foo/foo.go
+cp orig.go.golden testdata/foo/foo.go
+
+# format explicit dirs
+exec gofumpt -l vendor testdata
+stdout -count=1 'vendor[/\\]foo[/\\]foo.go'
+stdout -count=1 'testdata[/\\]foo[/\\]foo.go'
+! stderr .
+
+# format explicit files
+exec gofumpt -l vendor/foo/foo.go testdata/foo/foo.go
+stdout -count=1 'vendor[/\\]foo[/\\]foo.go'
+stdout -count=1 'testdata[/\\]foo[/\\]foo.go'
+! stderr .
+
+# ignore implicit dirs via fs walking
+exec gofumpt -l .
+! stdout .
+! stderr .
+
+# format explicit pkg while ignoring rest
+mkdir vendor/ignore testdata/ignore
+cp orig.go.golden vendor/ignore/ignore.go
+cp orig.go.golden testdata/ignore/ignore.go
+exec gofumpt -l vendor/foo testdata/foo .
+stdout -count=1 'vendor[/\\]foo[/\\]foo.go'
+stdout -count=1 'testdata[/\\]foo[/\\]foo.go'
+! stderr .
+
+# format explicit dirs without clean paths
+exec gofumpt -l $WORK//vendor ./testdata/./
+stdout -count=1 'vendor[/\\]foo[/\\]foo.go'
+stdout -count=1 'testdata[/\\]foo[/\\]foo.go'
+! stderr .
+
+-- orig.go.golden --
+package p
+
+func f() {
+	if true {
+		// lone comment
+	}
+	{
+
+	}
+
+	{
+
+		// lone comment
+
+	}
+}

@@ -84,9 +84,6 @@ var fdSem = make(chan bool, 200)
 var (
 	fileSet    = token.NewFileSet() // per process FileSet
 	parserMode parser.Mode
-
-	// walkingVendorDir is true if we are explicitly walking a vendor directory.
-	walkingVendorDir bool
 )
 
 func usage() {
@@ -512,11 +509,14 @@ func gofmtMain(s *sequencer) {
 			})
 		default:
 			// Directories are walked, ignoring non-Go files.
-			walkingVendorDir = filepath.Base(arg) == "vendor"
 			err := filepath.WalkDir(arg, func(path string, f fs.DirEntry, err error) error {
-				if !walkingVendorDir && filepath.Base(path) == "vendor" {
+				// vendor and testdata directories are skipped,
+				// unless they are explicitly passed as an argument.
+				base := filepath.Base(path)
+				if path != arg && (base == "vendor" || base == "testdata") {
 					return filepath.SkipDir
 				}
+
 				if err != nil || !isGoFile(f) {
 					return err
 				}

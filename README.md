@@ -19,7 +19,7 @@ The project includes copies of `go/printer` and `go/doc/comment` as of Go 1.20
 to ensure consistent formatting independent of what Go version is being used.
 The [added formatting rules](#Added-rules) are implemented in the `format` package.
 
-Note that vendor directories are skipped unless given as explicit arguments.
+`vendor` and `testdata` directories are skipped unless given as explicit arguments.
 Similarly, the added rules do not apply to generated Go files unless they are
 given as explicit arguments.
 
