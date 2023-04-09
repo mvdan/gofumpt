@@ -140,7 +140,10 @@ Finally, this release adds the `-version` flag, to print the tool's own version.
 The flag will work for "master" builds too.
 
 [v0.5.0]: https://github.com/mvdan/gofumpt/releases/tag/v0.5.0
-[#212]: https://github.com/mvdan/gofumpt/issues/212
+[#235]: https://github.com/mvdan/gofumpt/issues/235
+[#253]: https://github.com/mvdan/gofumpt/issues/253
+[#256]: https://github.com/mvdan/gofumpt/issues/256
+[#260]: https://github.com/mvdan/gofumpt/issues/260
 
 [v0.4.0]: https://github.com/mvdan/gofumpt/releases/tag/v0.4.0
 [#212]: https://github.com/mvdan/gofumpt/issues/212
