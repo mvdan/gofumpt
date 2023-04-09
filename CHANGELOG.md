@@ -1,5 +1,33 @@
 # Changelog
 
+## [v0.5.0] - 2023-04-09
+
+This release is based on Go 1.20's gofmt, and requires Go 1.19 or later.
+
+The biggest change in this release is that we now vendor copies of the packages
+`go/format`, `go/printer`, and `go/doc/comment` on top of `cmd/gofmt` itself.
+This allows for each gofumpt release to format code in exactly the same way
+no matter what Go version is used to build it, as Go versions can change those
+three packages in ways that alter formatting behavior.
+
+This vendoring adds a small amount of duplication when using the
+`mvdan.cc/gofumpt/format` library, but it's the only way to make gofumpt
+versions consistent in their behavior and formatting, just like gofmt.
+
+The jump to Go 1.20's `go/printer` should also bring a small performance
+improvement, as we contributed patches to make printing about 25% faster:
+
+* https://go.dev/cl/412555
+* https://go.dev/cl/412557
+* https://go.dev/cl/424924
+
+The following changes are included as well:
+
+* Skip `testdata` dirs by default like we already do for `vendor` - [#260]
+* Avoid inserting newlines incorrectly in some func signatures - [#235]
+* Avoid joining some comments with the previous line - [#256]
+* Fix `gofumpt -version` for release archives - [#253]
+
 ## [v0.4.0] - 2022-09-27
 
 This release is based on Go 1.19's gofmt, and requires Go 1.18 or later.
@@ -110,6 +138,9 @@ those building programs with gofumpt.
 
 Finally, this release adds the `-version` flag, to print the tool's own version.
 The flag will work for "master" builds too.
+
+[v0.5.0]: https://github.com/mvdan/gofumpt/releases/tag/v0.5.0
+[#212]: https://github.com/mvdan/gofumpt/issues/212
 
 [v0.4.0]: https://github.com/mvdan/gofumpt/releases/tag/v0.4.0
 [#212]: https://github.com/mvdan/gofumpt/issues/212
