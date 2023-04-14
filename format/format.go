@@ -305,10 +305,11 @@ func (f *fumpter) lineEnd(line int) token.Pos {
 //	//sys(nb)?     | syscall function wrapper prototypes
 //	//nolint       | nolint directive for golangci
 //	//noinspection | noinspection directive for GoLand and friends
+//	//NOSONAR      | NOSONAR directive for SonarQube
 //
 // Note that the "some-words:" matching expects a letter afterward, such as
 // "go:generate", to prevent matching false positives like "https://site".
-var rxCommentDirective = regexp.MustCompile(`^([a-z-]+:[a-z]+|line\b|export\b|extern\b|sys(nb)?\b|no(lint|inspection)\b)`)
+var rxCommentDirective = regexp.MustCompile(`^([a-z-]+:[a-z]+|line\b|export\b|extern\b|sys(nb)?\b|no(lint|inspection)\b)|NOSONAR\b`)
 
 func (f *fumpter) applyPre(c *astutil.Cursor) {
 	f.splitLongLine(c)

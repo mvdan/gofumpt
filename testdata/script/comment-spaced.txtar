@@ -24,6 +24,10 @@ package p
 
 //nolint:somelinter // explanation
 
+//NOSONAR
+
+//NOSONAR // explanation
+
 //noinspection ALL
 
 //noinspection foo,bar
@@ -86,6 +90,10 @@ package p
 //nolint // explanation
 
 //nolint:somelinter // explanation
+
+//NOSONAR
+
+//NOSONAR // explanation
 
 //noinspection ALL
 
