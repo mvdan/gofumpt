@@ -561,9 +561,8 @@ For [eglot](https://github.com/joaotavora/eglot) users:
 When using the `gopls` language server, modify the Go settings in `~/.config/helix/languages.toml`:
 
 ```toml
-[[language]]
-name = "go"
-config = { "formatting.gofumpt" = true }
+[language-server.gopls.config]
+"formatting.gofumpt" = true
 ```
 
 #### Sublime Text
