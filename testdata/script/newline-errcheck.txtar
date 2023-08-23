@@ -53,6 +53,12 @@ func f() {
 			panic(err)
 		}
 	}
+
+	n5, err = Do2()
+
+	if err != nil {
+		panic(err)
+	}
 }
 -- foo.go.golden --
 package p
@@ -100,5 +106,10 @@ func f() {
 		if err != nil {
 			panic(err)
 		}
+	}
+
+	n5, err = Do2()
+	if err != nil {
+		panic(err)
 	}
 }

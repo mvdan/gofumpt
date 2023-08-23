@@ -866,9 +866,9 @@ func (f *fumpter) stmts(list []ast.Stmt) {
 			continue // not an if following another statement
 		}
 		as, ok := list[i-1].(*ast.AssignStmt)
-		if !ok || as.Tok != token.DEFINE ||
+		if !ok || (as.Tok != token.DEFINE && as.Tok != token.ASSIGN) ||
 			!identEqual(as.Lhs[len(as.Lhs)-1], "err") {
-			continue // not "..., err := ..."
+			continue // not ", err :=" nor ", err ="
 		}
 		be, ok := ifs.Cond.(*ast.BinaryExpr)
 		if !ok || ifs.Init != nil || ifs.Else != nil {
