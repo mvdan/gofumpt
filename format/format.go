@@ -217,6 +217,7 @@ func (f *fumpter) inlineComment(pos token.Pos) *ast.Comment {
 func (f *fumpter) addNewline(at token.Pos) {
 	offset := f.Offset(at)
 
+	// TODO: replace with the new Lines method once we require Go 1.21 or later
 	field := reflect.ValueOf(f.File).Elem().FieldByName("lines")
 	n := field.Len()
 	lines := make([]int, 0, n+1)
