@@ -706,7 +706,12 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 			if fields := parentResults.NumFields(); fields > 0 { // The function has return values; let's clothe the return
 				node.Results = make([]ast.Expr, fields)
 				for i, result := range parentResults.List {
-					node.Results[i] = ast.NewIdent(result.Names[0].Name)
+					name := result.Names[0].Name
+					if name == "_" { // we can't handle blank names just yet, abort the transform
+						node.Results = nil
+						break
+					}
+					node.Results[i] = ast.NewIdent(name)
 				}
 				c.Replace(node)
 			}
