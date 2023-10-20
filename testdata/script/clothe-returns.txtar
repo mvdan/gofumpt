@@ -1,0 +1,34 @@
+exec gofumpt -w foo.go
+cmp foo.go foo.go.golden
+
+exec gofumpt -d foo.go.golden
+! stdout .
+
+-- foo.go --
+package p
+
+func foo() (err error) {
+	if true {
+		return
+	}
+	if false {
+		return func() (err2 error) {
+			return
+		}
+	}
+	return
+}
+-- foo.go.golden --
+package p
+
+func foo() (err error) {
+	if true {
+		return err
+	}
+	if false {
+		return func() (err2 error) {
+			return err2
+		}
+	}
+	return err
+}
