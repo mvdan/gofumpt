@@ -22,6 +22,10 @@ func foo() (err error) {
 func bar() (_ int, err error) {
 	return
 }
+
+func baz() (a, b, c int) {
+	return
+}
 -- foo.go.golden --
 package p
 
@@ -39,4 +43,8 @@ func foo() (err error) {
 
 func bar() (_ int, err error) {
 	return
+}
+
+func baz() (a, b, c int) {
+	return a, b, c
 }

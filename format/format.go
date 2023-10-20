@@ -690,28 +690,31 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 	case *ast.ReturnStmt:
 		if node.Results == nil { // We have either a naked return, or a function with no return values
 			parents, _ := astutil.PathEnclosingInterval(f.astFile, node.Pos(), node.End())
-			var parentResults *ast.FieldList
+			var results *ast.FieldList
 			// Find the nearest ancestor that is either a func declaration or func literal
 		parentLoop:
 			for _, parent := range parents {
 				switch p := parent.(type) {
 				case *ast.FuncDecl:
-					parentResults = p.Type.Results
+					results = p.Type.Results
 					break parentLoop
 				case *ast.FuncLit:
-					parentResults = p.Type.Results
+					results = p.Type.Results
 					break parentLoop
 				}
 			}
-			if fields := parentResults.NumFields(); fields > 0 { // The function has return values; let's clothe the return
-				node.Results = make([]ast.Expr, fields)
-				for i, result := range parentResults.List {
-					name := result.Names[0].Name
-					if name == "_" { // we can't handle blank names just yet, abort the transform
-						node.Results = nil
-						break
+			if fields := results.NumFields(); fields > 0 { // The function has return values; let's clothe the return
+				node.Results = make([]ast.Expr, 0, fields)
+			nameLoop:
+				for _, result := range results.List {
+					for _, ident := range result.Names {
+						name := ident.Name
+						if name == "_" { // we can't handle blank names just yet, abort the transform
+							node.Results = nil
+							break nameLoop
+						}
+						node.Results = append(node.Results, ast.NewIdent(name))
 					}
-					node.Results[i] = ast.NewIdent(name)
 				}
 				c.Replace(node)
 			}
