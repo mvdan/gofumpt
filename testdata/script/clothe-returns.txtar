@@ -26,6 +26,15 @@ func bar() (_ int, err error) {
 func baz() (a, b, c int) {
 	return
 }
+
+func qux() (file string, b int, err error) {
+	if err == nil {
+		return
+	}
+
+	// A comment
+	return
+}
 -- foo.go.golden --
 package p
 
@@ -47,4 +56,13 @@ func bar() (_ int, err error) {
 
 func baz() (a, b, c int) {
 	return a, b, c
+}
+
+func qux() (file string, b int, err error) {
+	if err == nil {
+		return file, b, err
+	}
+
+	// A comment
+	return file, b, err
 }
