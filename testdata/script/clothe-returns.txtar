@@ -35,6 +35,9 @@ func qux() (file string, b int, err error) {
 	// A comment
 	return
 }
+
+// quux does quuxy things
+func quux() {}
 -- foo.go.golden --
 package p
 
@@ -66,3 +69,6 @@ func qux() (file string, b int, err error) {
 	// A comment
 	return file, b, err
 }
+
+// quux does quuxy things
+func quux() {}
