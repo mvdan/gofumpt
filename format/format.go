@@ -685,6 +685,32 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 	case *ast.AssignStmt:
 		// Only remove lines between the assignment token and the first right-hand side expression
 		f.removeLines(f.Line(node.TokPos), f.Line(node.Rhs[0].Pos()))
+
+	// Clothe naked returns
+	case *ast.ReturnStmt:
+		if node.Results == nil { // We have either a naked return, or a function with no return values
+			parents, _ := astutil.PathEnclosingInterval(f.astFile, node.Pos(), node.End())
+			var parentResults *ast.FieldList
+			// Find the nearest ancestor that is either a func declaration or func literal
+		parentLoop:
+			for _, parent := range parents {
+				switch p := parent.(type) {
+				case *ast.FuncDecl:
+					parentResults = p.Type.Results
+					break parentLoop
+				case *ast.FuncLit:
+					parentResults = p.Type.Results
+					break parentLoop
+				}
+			}
+			if fields := parentResults.NumFields(); fields > 0 { // The function has return values; let's clothe the return
+				node.Results = make([]ast.Expr, fields)
+				for i, result := range parentResults.List {
+					node.Results[i] = ast.NewIdent(result.Names[0].Name)
+				}
+				c.Replace(node)
+			}
+		}
 	}
 }
 
