@@ -704,7 +704,6 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 				}
 			}
 			if fields := results.NumFields(); fields > 0 { // The function has return values; let's clothe the return
-				var offset int
 				node.Results = make([]ast.Expr, 0, fields)
 			nameLoop:
 				for _, result := range results.List {
@@ -712,19 +711,15 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 						name := ident.Name
 						if name == "_" { // we can't handle blank names just yet, abort the transform
 							node.Results = nil
-							offset = 0
 							break nameLoop
 						}
-						offset += len(name)
-						node.Results = append(node.Results, ast.NewIdent(name))
+						node.Results = append(node.Results, &ast.Ident{
+							NamePos: node.Pos(), // Use the Pos of the return statement, to not interfere with comment placement
+							Name:    name,
+						})
 					}
 				}
 				if len(node.Results) > 0 {
-					// An ugly hack to update the Pos of any comment that immediately
-					// follows a rewritten return statement.
-					for _, comment := range f.commentsBetween(node.End(), c.Parent().End()) {
-						comment.List[0].Slash = comment.Pos() + token.Pos(offset)
-					}
 					c.Replace(node)
 				}
 			}
