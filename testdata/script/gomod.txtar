@@ -1,5 +1,7 @@
 # Test various edge cases with go.mod files.
 
+[!go1.21] skip 'Go 1.20 or older cannot parse these go.mod files'
+
 exec gofumpt toolchain-stable/a.go
 stdout '//gofumpt:diagnose.* -lang=v1.21'
 
