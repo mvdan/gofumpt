@@ -20,7 +20,7 @@ exec gofumpt -d foo.go.golden
 ! stdout .
 
 # We can give an explicitly older version, too
-exec gofumpt -lang=v1 -l .
+exec gofumpt -lang=1.0 -l .
 ! stdout .
 
 -- go.mod --

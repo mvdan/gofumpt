@@ -31,17 +31,20 @@ import (
 
 // Options is the set of formatting options which affect gofumpt.
 type Options struct {
-	// LangVersion corresponds to the Go language version a piece of code is
-	// written in. The version is used to decide whether to apply formatting
-	// rules which require new language features. When inside a Go module,
-	// LangVersion should be:
-	//
-	//     go mod edit -json | jq -r '.Go'
+	// TODO: link to the go/version docs once Go 1.22 is out.
+	// The old semver docs said:
 	//
 	// LangVersion is treated as a semantic version, which may start with a "v"
 	// prefix. Like Go versions, it may also be incomplete; "1.14" is equivalent
 	// to "1.14.0". When empty, it is equivalent to "v1", to not use language
 	// features which could break programs.
+
+	// LangVersion is the Go version a piece of code is written in.
+	// The version is used to decide whether to apply formatting
+	// rules which require new language features.
+	// When inside a Go module, LangVersion should typically be:
+	//
+	//     go mod edit -json | jq -r '.Go'
 	LangVersion string
 
 	// ModulePath corresponds to the Go module path which contains the source
@@ -82,20 +85,26 @@ func Source(src []byte, opts Options) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+var rxGoVersionMajorMinor = regexp.MustCompile(`^(v|go)?([1-9]+)\.([0-9]+)`)
+
 // File modifies a file and fset in place to follow gofumpt's format. The
 // changes might include manipulating adding or removing newlines in fset,
 // modifying the position of nodes, or modifying literal values.
 func File(fset *token.FileSet, file *ast.File, opts Options) {
 	simplify(file)
 
+	// TODO: replace this hacky mess with go/version once we can rely on Go 1.22,
+	// as well as replacing our uses of the semver package.
+	// In particular, we likely want to allow any of 1.21, 1.21.2, or go1.21rc3,
+	// but we can rely on go/version.Lang to validate and normalize.
 	if opts.LangVersion == "" {
-		opts.LangVersion = "v1"
-	} else if opts.LangVersion[0] != 'v' {
-		opts.LangVersion = "v" + opts.LangVersion
+		opts.LangVersion = "v1.0"
 	}
-	if !semver.IsValid(opts.LangVersion) {
-		panic(fmt.Sprintf("invalid semver string: %q", opts.LangVersion))
+	m := rxGoVersionMajorMinor.FindStringSubmatch(opts.LangVersion)
+	if m == nil {
+		panic(fmt.Sprintf("invalid Go version: %q", opts.LangVersion))
 	}
+	opts.LangVersion = "v" + m[2] + "." + m[3]
 	f := &fumpter{
 		File:    fset.File(file.Pos()),
 		fset:    fset,

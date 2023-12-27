@@ -14,7 +14,7 @@ cmp stdout foo.go.golden
 exec gofumpt -extra foo.go
 cmp stdout foo.go.golden-extra
 
-exec gofumpt -lang=v1 foo.go
+exec gofumpt -lang=1.0 foo.go
 cmp stdout foo.go.golden-lang
 
 exec gofumpt -d nochange.go
@@ -91,7 +91,7 @@ package p
 -- foo.go.golden-lang --
 package p
 
-//gofumpt:diagnose version: v0.0.0-20220727155840-8dda8068d9f3 (go1.18.29) flags: -lang=v1 -modpath=test
+//gofumpt:diagnose version: v0.0.0-20220727155840-8dda8068d9f3 (go1.18.29) flags: -lang=v1.0 -modpath=test
 -- foo.go.golden-released --
 package p
 
