@@ -106,7 +106,7 @@ func File(fset *token.FileSet, file *ast.File, opts Options) {
 	}
 	opts.LangVersion = "v" + m[2] + "." + m[3]
 	f := &fumpter{
-		File:    fset.File(file.Pos()),
+		file:    fset.File(file.Pos()),
 		fset:    fset,
 		astFile: file,
 		Options: opts,
@@ -179,7 +179,7 @@ var rxOctalInteger = regexp.MustCompile(`\A0[0-7_]+\z`)
 type fumpter struct {
 	Options
 
-	*token.File
+	file *token.File
 	fset *token.FileSet
 
 	astFile *ast.File
@@ -227,7 +227,7 @@ func (f *fumpter) addNewline(at token.Pos) {
 	offset := f.Offset(at)
 
 	// TODO: replace with the new Lines method once we require Go 1.21 or later
-	field := reflect.ValueOf(f.File).Elem().FieldByName("lines")
+	field := reflect.ValueOf(f.file).Elem().FieldByName("lines")
 	n := field.Len()
 	lines := make([]int, 0, n+1)
 	for i := 0; i < n; i++ {
@@ -246,7 +246,7 @@ func (f *fumpter) addNewline(at token.Pos) {
 	if offset >= 0 {
 		lines = append(lines, offset)
 	}
-	if !f.SetLines(lines) {
+	if !f.file.SetLines(lines) {
 		panic(fmt.Sprintf("could not set lines to %v", lines))
 	}
 }
@@ -255,7 +255,7 @@ func (f *fumpter) addNewline(at token.Pos) {
 // up on the same line.
 func (f *fumpter) removeLines(fromLine, toLine int) {
 	for fromLine < toLine {
-		f.MergeLine(fromLine)
+		f.file.MergeLine(fromLine)
 		toLine--
 	}
 }
@@ -264,6 +264,18 @@ func (f *fumpter) removeLines(fromLine, toLine int) {
 // two positions.
 func (f *fumpter) removeLinesBetween(from, to token.Pos) {
 	f.removeLines(f.Line(from)+1, f.Line(to))
+}
+
+func (f *fumpter) Position(p token.Pos) token.Position {
+	return f.file.PositionFor(p, false)
+}
+
+func (f *fumpter) Line(p token.Pos) int {
+	return f.Position(p).Line
+}
+
+func (f *fumpter) Offset(p token.Pos) int {
+	return f.file.Offset(p)
 }
 
 type byteCounter int
@@ -295,14 +307,14 @@ func (f *fumpter) lineEnd(line int) token.Pos {
 	if line < 1 {
 		panic("illegal line number")
 	}
-	total := f.LineCount()
+	total := f.file.LineCount()
 	if line > total {
 		panic("illegal line number")
 	}
 	if line == total {
 		return f.astFile.End()
 	}
-	return f.LineStart(line+1) - 1
+	return f.file.LineStart(line+1) - 1
 }
 
 // rxCommentDirective covers all common Go comment directives:
