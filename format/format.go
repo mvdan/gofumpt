@@ -185,6 +185,11 @@ type fumpter struct {
 	blockLevel int
 
 	minSplitFactor float64
+
+	// parentFuncs is a stack of parent function declarations or
+	// literals, used to determine return type information when clothing
+	// naked returns.
+	parentFuncs []ast.Node
 }
 
 func (f *fumpter) commentsBetween(p1, p2 token.Pos) []*ast.CommentGroup {
@@ -318,6 +323,16 @@ var rxCommentDirective = regexp.MustCompile(`^([a-z-]+:[a-z]+|line\b|export\b|ex
 
 func (f *fumpter) applyPre(c *astutil.Cursor) {
 	f.splitLongLine(c)
+
+	if c.Node() != nil && len(f.parentFuncs) > 0 {
+		// "pop" the last parent if it's no longer valid.
+		for i := len(f.parentFuncs) - 1; i >= 0; i-- {
+			if f.parentFuncs[i].End() < c.Node().Pos() {
+				f.parentFuncs = f.parentFuncs[:i]
+				break
+			}
+		}
+	}
 
 	switch node := c.Node().(type) {
 	case *ast.File:
@@ -686,6 +701,10 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 		// Only remove lines between the assignment token and the first right-hand side expression
 		f.removeLines(f.Line(node.TokPos), f.Line(node.Rhs[0].Pos()))
 
+	case *ast.FuncDecl, *ast.FuncLit:
+		// Track the current function declaration or literal, to access
+		// return type information for clothing of naked returns.
+		f.parentFuncs = append(f.parentFuncs, node)
 	// Clothe naked returns
 	case *ast.ReturnStmt:
 		if node.Results != nil {
@@ -693,12 +712,11 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 		}
 
 		// We have either a naked return, or a function with no return values
-		parents, _ := astutil.PathEnclosingInterval(f.astFile, node.Pos(), node.End())
 		var results *ast.FieldList
 		// Find the nearest ancestor that is either a func declaration or func literal
 	parentLoop:
-		for _, parent := range parents {
-			switch p := parent.(type) {
+		for i := len(f.parentFuncs) - 1; i >= 0; i-- {
+			switch p := f.parentFuncs[i].(type) {
 			case *ast.FuncDecl:
 				results = p.Type.Results
 				break parentLoop
