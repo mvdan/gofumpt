@@ -1,0 +1,7 @@
+*.out
+*.test
+/bin/
+/build/
+gofumpt
+gofumpt.exe
+coverage.txt
