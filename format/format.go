@@ -688,41 +688,47 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 
 	// Clothe naked returns
 	case *ast.ReturnStmt:
-		if node.Results == nil { // We have either a naked return, or a function with no return values
-			parents, _ := astutil.PathEnclosingInterval(f.astFile, node.Pos(), node.End())
-			var results *ast.FieldList
-			// Find the nearest ancestor that is either a func declaration or func literal
-		parentLoop:
-			for _, parent := range parents {
-				switch p := parent.(type) {
-				case *ast.FuncDecl:
-					results = p.Type.Results
-					break parentLoop
-				case *ast.FuncLit:
-					results = p.Type.Results
-					break parentLoop
-				}
+		if node.Results != nil {
+			break
+		}
+
+		// We have either a naked return, or a function with no return values
+		parents, _ := astutil.PathEnclosingInterval(f.astFile, node.Pos(), node.End())
+		var results *ast.FieldList
+		// Find the nearest ancestor that is either a func declaration or func literal
+	parentLoop:
+		for _, parent := range parents {
+			switch p := parent.(type) {
+			case *ast.FuncDecl:
+				results = p.Type.Results
+				break parentLoop
+			case *ast.FuncLit:
+				results = p.Type.Results
+				break parentLoop
 			}
-			if fields := results.NumFields(); fields > 0 { // The function has return values; let's clothe the return
-				node.Results = make([]ast.Expr, 0, fields)
-			nameLoop:
-				for _, result := range results.List {
-					for _, ident := range result.Names {
-						name := ident.Name
-						if name == "_" { // we can't handle blank names just yet, abort the transform
-							node.Results = nil
-							break nameLoop
-						}
-						node.Results = append(node.Results, &ast.Ident{
-							NamePos: node.Pos(), // Use the Pos of the return statement, to not interfere with comment placement
-							Name:    name,
-						})
-					}
+		}
+		if results.NumFields() == 0 {
+			break
+		}
+
+		// The function has return values; let's clothe the return
+		node.Results = make([]ast.Expr, 0, results.NumFields())
+	nameLoop:
+		for _, result := range results.List {
+			for _, ident := range result.Names {
+				name := ident.Name
+				if name == "_" { // we can't handle blank names just yet, abort the transform
+					node.Results = nil
+					break nameLoop
 				}
-				if len(node.Results) > 0 {
-					c.Replace(node)
-				}
+				node.Results = append(node.Results, &ast.Ident{
+					NamePos: node.Pos(), // Use the Pos of the return statement, to not interfere with comment placement
+					Name:    name,
+				})
 			}
+		}
+		if len(node.Results) > 0 {
+			c.Replace(node)
 		}
 	}
 }
