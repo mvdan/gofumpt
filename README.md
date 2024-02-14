@@ -229,6 +229,24 @@ import (
 
 </details>
 
+**Redundant package aliases are removed**
+
+<details><summary><i>Example</i></summary>
+
+```go
+import (
+	math "math"
+)
+```
+
+```go
+import (
+	"math"
+)
+```
+
+</details>
+
 **Short case clauses should take a single line**
 
 <details><summary><i>Example</i></summary>

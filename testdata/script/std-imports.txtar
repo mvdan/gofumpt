@@ -48,7 +48,7 @@ import (
 import (
 	"foo.local"
 	"foo.local/three"
-	math "math"
+	maths "math"
 )
 
 import (
@@ -99,6 +99,12 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/yaml"
 )
+
+// Redundant package aliases are removed.
+import (
+	filepath "path/filepath"
+	"time"
+)
 -- foo.go.golden --
 package p
 
@@ -135,7 +141,7 @@ import (
 
 // We need to split std vs non-std in this case too.
 import (
-	math "math"
+	maths "math"
 
 	"foo.local"
 	"foo.local/three"
@@ -190,4 +196,10 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 
 	"sigs.k8s.io/yaml"
+)
+
+// Redundant package aliases are removed.
+import (
+	"path/filepath"
+	"time"
 )

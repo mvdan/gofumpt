@@ -24,6 +24,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"golang.org/x/mod/semver"
 	"golang.org/x/tools/go/ast/astutil"
+	"golang.org/x/tools/go/packages"
 
 	"mvdan.cc/gofumpt/internal/govendor/go/format"
 	"mvdan.cc/gofumpt/internal/version"
@@ -479,7 +480,7 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 
 	case *ast.GenDecl:
 		if node.Tok == token.IMPORT && node.Lparen.IsValid() {
-			f.joinStdImports(node)
+			f.tidyImports(node)
 		}
 
 		// Single var declarations shouldn't use parentheses, unless
@@ -930,9 +931,10 @@ func isCgoImport(decl *ast.GenDecl) bool {
 	return v == "C"
 }
 
-// joinStdImports ensures that all standard library imports are together and at
-// the top of the imports list.
-func (f *fumpter) joinStdImports(d *ast.GenDecl) {
+// tidyImports ensures that:
+// - all standard library imports are together and at the top of the imports list, and
+// - any redundant package aliases are removed.
+func (f *fumpter) tidyImports(d *ast.GenDecl) {
 	var std, other []ast.Spec
 	firstGroup := true
 	lastEnd := d.Pos()
@@ -956,6 +958,23 @@ func (f *fumpter) joinStdImports(d *ast.GenDecl) {
 
 	for i, spec := range d.Specs {
 		spec := spec.(*ast.ImportSpec)
+		path, err := strconv.Unquote(spec.Path.Value)
+		if err != nil {
+			panic(err) // should never error
+		}
+
+		// If we import a package with an alias (i.e., if spec.Name is non-nil), and
+		// if the alias is the same as the package's name, then we remove the alias.
+		if spec.Name != nil {
+			packages, err := packages.Load(&packages.Config{Mode: packages.NeedName}, path)
+			if err != nil || len(packages) != 1 {
+				panic(fmt.Sprintf("loading the package %q: %v", path, err)) // should never error
+			}
+			if packages[0].Name == spec.Name.Name {
+				spec.Name = nil
+			}
+		}
+
 		if coms := f.commentsBetween(lastEnd, spec.Pos()); len(coms) > 0 {
 			lastEnd = coms[len(coms)-1].End()
 		}
@@ -966,10 +985,6 @@ func (f *fumpter) joinStdImports(d *ast.GenDecl) {
 			lastEnd = spec.End()
 		}
 
-		path, err := strconv.Unquote(spec.Path.Value)
-		if err != nil {
-			panic(err) // should never error
-		}
 		periodIndex := strings.IndexByte(path, '.')
 		slashIndex := strings.IndexByte(path, '/')
 		switch {
