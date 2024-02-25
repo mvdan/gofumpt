@@ -1,6 +1,6 @@
 module mvdan.cc/gofumpt
 
-go 1.20
+go 1.21
 
 require (
 	github.com/frankban/quicktest v1.14.6
