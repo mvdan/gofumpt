@@ -6,7 +6,7 @@ package format_test
 import (
 	"testing"
 
-	qt "github.com/frankban/quicktest"
+	"github.com/go-quicktest/qt"
 
 	"mvdan.cc/gofumpt/format"
 )
@@ -33,6 +33,6 @@ func f() {
 }
 `[1:])
 	got, err := format.Source(in, format.Options{})
-	qt.Assert(t, err, qt.IsNil)
-	qt.Assert(t, string(got), qt.Equals, string(want))
+	qt.Assert(t, qt.IsNil(err))
+	qt.Assert(t, qt.Equals(string(got), string(want)))
 }

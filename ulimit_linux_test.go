@@ -12,7 +12,7 @@ import (
 	"strconv"
 	"testing"
 
-	qt "github.com/frankban/quicktest"
+	"github.com/go-quicktest/qt"
 	"golang.org/x/sys/unix"
 )
 
@@ -37,7 +37,7 @@ func TestWithLowOpenFileLimit(t *testing.T) {
 
 	tempDir := t.TempDir()
 	testBinary, err := os.Executable()
-	qt.Assert(t, err, qt.IsNil)
+	qt.Assert(t, qt.IsNil(err))
 
 	const (
 		// Enough directories to run into the ulimit.
@@ -55,18 +55,18 @@ func TestWithLowOpenFileLimit(t *testing.T) {
 		dirName := fmt.Sprintf("p%03d", i)
 		dirPath := filepath.Join(tempDir, dirName)
 		err := os.MkdirAll(dirPath, 0o777)
-		qt.Assert(t, err, qt.IsNil)
+		qt.Assert(t, qt.IsNil(err))
 
 		err = os.WriteFile(filepath.Join(dirPath, "go.mod"),
 			[]byte(fmt.Sprintf("module %s\n\ngo 1.16", dirName)), 0o666)
-		qt.Assert(t, err, qt.IsNil)
+		qt.Assert(t, qt.IsNil(err))
 
 		for j := 0; j < numberFilesPerDir; j++ {
 			filePath := filepath.Join(dirPath, fmt.Sprintf("%03d.go", j))
 			err := os.WriteFile(filePath,
 				// Extra newlines so that "-l" prints all paths.
 				[]byte(fmt.Sprintf("package %s\n\n\n", dirName)), 0o666)
-			qt.Assert(t, err, qt.IsNil)
+			qt.Assert(t, qt.IsNil(err))
 			allGoFiles = append(allGoFiles, filePath)
 		}
 	}
@@ -83,8 +83,8 @@ func TestWithLowOpenFileLimit(t *testing.T) {
 		if err, _ := err.(*exec.ExitError); err != nil {
 			stderr = err.Stderr
 		}
-		qt.Assert(t, err, qt.IsNil, qt.Commentf("stderr:\n%s", stderr))
-		qt.Assert(t, bytes.Count(out, []byte("\n")), qt.Equals, len(allGoFiles))
+		qt.Assert(t, qt.IsNil(err), qt.Commentf("stderr:\n%s", stderr))
+		qt.Assert(t, qt.Equals(bytes.Count(out, []byte("\n")), len(allGoFiles)))
 	}
 	runGofmt(tempDir)
 	runGofmt(allGoFiles...)

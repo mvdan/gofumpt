@@ -11,18 +11,18 @@ import (
 	"strings"
 	"testing"
 
-	qt "github.com/frankban/quicktest"
+	"github.com/go-quicktest/qt"
 	"golang.org/x/tools/txtar"
 )
 
 func FuzzFormat(f *testing.F) {
 	// Initialize the corpus with the Go files from our test scripts.
 	paths, err := filepath.Glob(filepath.Join("..", "testdata", "script", "*.txtar"))
-	qt.Assert(f, err, qt.IsNil)
-	qt.Assert(f, paths, qt.Not(qt.HasLen), 0)
+	qt.Assert(f, qt.IsNil(err))
+	qt.Assert(f, qt.Not(qt.HasLen(paths, 0)))
 	for _, path := range paths {
 		archive, err := txtar.ParseFile(path)
-		qt.Assert(f, err, qt.IsNil)
+		qt.Assert(f, qt.IsNil(err))
 		for _, file := range archive.Files {
 			f.Logf("adding %s from %s", file.Name, path)
 			if strings.HasSuffix(file.Name, ".go") || strings.Contains(file.Name, ".go.") {
@@ -48,7 +48,7 @@ func FuzzFormat(f *testing.F) {
 		if errors.As(err, &scanner.ErrorList{}) {
 			return // invalid syntax from parsing
 		}
-		qt.Assert(t, err, qt.IsNil)
+		qt.Assert(t, qt.IsNil(err))
 		_ = formatted
 
 		// TODO: verify that the result is idempotent
@@ -58,7 +58,7 @@ func FuzzFormat(f *testing.F) {
 
 		// TODO: check calling format.Node directly as well
 
-		qt.Assert(t, string(orig), qt.Equals, src,
+		qt.Assert(t, qt.Equals(string(orig), src),
 			qt.Commentf("input source bytes were modified"))
 	})
 }

@@ -3,7 +3,7 @@ module mvdan.cc/gofumpt
 go 1.21
 
 require (
-	github.com/frankban/quicktest v1.14.6
+	github.com/go-quicktest/qt v1.101.0
 	github.com/google/go-cmp v0.6.0
 	github.com/rogpeppe/go-internal v1.12.0
 	golang.org/x/mod v0.14.0

@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	qt "github.com/frankban/quicktest"
+	"github.com/go-quicktest/qt"
 
 	"github.com/rogpeppe/go-internal/gotooltest"
 	"github.com/rogpeppe/go-internal/testscript"
@@ -53,6 +53,6 @@ func TestScript(t *testing.T) {
 		},
 	}
 	err = gotooltest.Setup(&p)
-	qt.Assert(t, err, qt.IsNil)
+	qt.Assert(t, qt.IsNil(err))
 	testscript.Run(t, p)
 }
