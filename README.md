@@ -451,6 +451,26 @@ func Foo(bar, baz string) {}
 
 </details>
 
+#### Clothe naked returns
+
+**Naked returns are rewritten to include explicit return values**
+
+<details><summary><i>Example</i></summary>
+
+```go
+func Foo() (err error) {
+	return
+}
+```
+
+```go
+func Foo() (err error) {
+	return err
+}
+```
+
+</details>
+
 ### Installation
 
 `gofumpt` is a replacement for `gofmt`, so you can simply `go install` it as

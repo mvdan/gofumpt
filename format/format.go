@@ -190,6 +190,11 @@ type fumpter struct {
 	blockLevel int
 
 	minSplitFactor float64
+
+	// parentFuncs is a stack of parent function declarations or
+	// literals, used to determine return type information when clothing
+	// naked returns.
+	parentFuncs []ast.Node
 }
 
 func (f *fumpter) commentsBetween(p1, p2 token.Pos) []*ast.CommentGroup {
@@ -335,6 +340,16 @@ var rxCommentDirective = regexp.MustCompile(`^([a-z-]+:[a-z]+|line\b|export\b|ex
 
 func (f *fumpter) applyPre(c *astutil.Cursor) {
 	f.splitLongLine(c)
+
+	if c.Node() != nil && len(f.parentFuncs) > 0 {
+		// "pop" the last parent if it's no longer valid.
+		for i := len(f.parentFuncs) - 1; i >= 0; i-- {
+			if f.parentFuncs[i].End() < c.Node().Pos() {
+				f.parentFuncs = f.parentFuncs[:i]
+				break
+			}
+		}
+	}
 
 	switch node := c.Node().(type) {
 	case *ast.File:
@@ -702,6 +717,54 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 	case *ast.AssignStmt:
 		// Only remove lines between the assignment token and the first right-hand side expression
 		f.removeLines(f.Line(node.TokPos), f.Line(node.Rhs[0].Pos()))
+
+	case *ast.FuncDecl, *ast.FuncLit:
+		// Track the current function declaration or literal, to access
+		// return type information for clothing of naked returns.
+		f.parentFuncs = append(f.parentFuncs, node)
+	// Clothe naked returns
+	case *ast.ReturnStmt:
+		if node.Results != nil {
+			break
+		}
+
+		// We have either a naked return, or a function with no return values
+		var results *ast.FieldList
+		// Find the nearest ancestor that is either a func declaration or func literal
+	parentLoop:
+		for i := len(f.parentFuncs) - 1; i >= 0; i-- {
+			switch p := f.parentFuncs[i].(type) {
+			case *ast.FuncDecl:
+				results = p.Type.Results
+				break parentLoop
+			case *ast.FuncLit:
+				results = p.Type.Results
+				break parentLoop
+			}
+		}
+		if results.NumFields() == 0 {
+			break
+		}
+
+		// The function has return values; let's clothe the return
+		node.Results = make([]ast.Expr, 0, results.NumFields())
+	nameLoop:
+		for _, result := range results.List {
+			for _, ident := range result.Names {
+				name := ident.Name
+				if name == "_" { // we can't handle blank names just yet, abort the transform
+					node.Results = nil
+					break nameLoop
+				}
+				node.Results = append(node.Results, &ast.Ident{
+					NamePos: node.Pos(), // Use the Pos of the return statement, to not interfere with comment placement
+					Name:    name,
+				})
+			}
+		}
+		if len(node.Results) > 0 {
+			c.Replace(node)
+		}
 	}
 }
 
