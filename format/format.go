@@ -978,10 +978,8 @@ func (f *fumpter) joinStdImports(d *ast.GenDecl) {
 		case periodIndex > 0 && (slashIndex == -1 || periodIndex < slashIndex),
 
 			// "test" and "example" are reserved as per golang.org/issue/37641.
-			// "internal" is unreachable.
 			strings.HasPrefix(path, "test/"),
 			strings.HasPrefix(path, "example/"),
-			strings.HasPrefix(path, "internal/"),
 
 			// See if we match modulePrefix; see its documentation above.
 			// We match either exactly or with a slash suffix,

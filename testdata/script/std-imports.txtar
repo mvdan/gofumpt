@@ -160,10 +160,11 @@ import (
 // All of the extra imports below are known to not belong in std.
 // For example/ and test/, see https://golang.org/issue/37641.
 import (
+	"internal/bar"
 	"io"
 
 	"example/foo"
-	"internal/bar"
+
 	"test/baz"
 )
 
