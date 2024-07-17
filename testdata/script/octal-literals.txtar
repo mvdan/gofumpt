@@ -3,7 +3,7 @@ exec gofumpt -l .
 ! stdout .
 
 # We can give an explicitly newer version.
-exec gofumpt -lang=1.13 -l .
+exec gofumpt -lang=go1.13 -l .
 stdout -count=1 'foo\.go'
 stdout -count=1 'nested[/\\]nested\.go'
 
@@ -20,7 +20,7 @@ exec gofumpt -d foo.go.golden
 ! stdout .
 
 # We can give an explicitly older version, too
-exec gofumpt -lang=1.0 -l .
+exec gofumpt -lang=go1.0 -l .
 ! stdout .
 
 -- go.mod --

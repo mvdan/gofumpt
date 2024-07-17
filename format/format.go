@@ -12,6 +12,7 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	goversion "go/version"
 	"os"
 	"reflect"
 	"regexp"
@@ -23,7 +24,6 @@ import (
 	"unicode/utf8"
 
 	"github.com/google/go-cmp/cmp"
-	"golang.org/x/mod/semver"
 	"golang.org/x/tools/go/ast/astutil"
 
 	"mvdan.cc/gofumpt/internal/govendor/go/format"
@@ -32,26 +32,25 @@ import (
 
 // Options is the set of formatting options which affect gofumpt.
 type Options struct {
-	// TODO: link to the go/version docs once Go 1.22 is out.
-	// The old semver docs said:
-	//
-	// LangVersion is treated as a semantic version, which may start with a "v"
-	// prefix. Like Go versions, it may also be incomplete; "1.14" is equivalent
-	// to "1.14.0". When empty, it is equivalent to "v1", to not use language
-	// features which could break programs.
-
 	// LangVersion is the Go version a piece of code is written in.
 	// The version is used to decide whether to apply formatting
 	// rules which require new language features.
-	// When inside a Go module, LangVersion should typically be:
+	// When empty, a default of go1 is assumed.
+	// Otherwise, the version must satisfy [go/version.IsValid].
 	//
-	//     go mod edit -json | jq -r '.Go'
+	// When formatting a Go module, LangVersion should typically be
+	//
+	//     go list -m -f {{.GoVersion}}
+	//
+	// with a "go" prefix, or the equivalent from `go mod edit -json`.
 	LangVersion string
 
 	// ModulePath corresponds to the Go module path which contains the source
-	// code being formatted. When inside a Go module, ModulePath should be:
+	// code being formatted. When formatting a Go module, ModulePath should be
 	//
-	//     go mod edit -json | jq -r '.Module.Path'
+	//     go list -m -f {{.Path}}
+	//
+	// or the equivalent from `go mod edit -json`.
 	//
 	// ModulePath is used for formatting decisions like what import paths are
 	// considered to be not part of the standard library. When empty, the source
@@ -86,26 +85,21 @@ func Source(src []byte, opts Options) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-var rxGoVersionMajorMinor = regexp.MustCompile(`^(v|go)?([1-9]+)\.([0-9]+)`)
-
 // File modifies a file and fset in place to follow gofumpt's format. The
 // changes might include manipulating adding or removing newlines in fset,
 // modifying the position of nodes, or modifying literal values.
 func File(fset *token.FileSet, file *ast.File, opts Options) {
 	simplify(file)
 
-	// TODO: replace this hacky mess with go/version once we can rely on Go 1.22,
-	// as well as replacing our uses of the semver package.
-	// In particular, we likely want to allow any of 1.21, 1.21.2, or go1.21rc3,
-	// but we can rely on go/version.Lang to validate and normalize.
 	if opts.LangVersion == "" {
-		opts.LangVersion = "v1.0"
+		opts.LangVersion = "go1"
+	} else {
+		lang := goversion.Lang(opts.LangVersion)
+		if lang == "" {
+			panic(fmt.Sprintf("invalid Go version: %q", opts.LangVersion))
+		}
+		opts.LangVersion = lang
 	}
-	m := rxGoVersionMajorMinor.FindStringSubmatch(opts.LangVersion)
-	if m == nil {
-		panic(fmt.Sprintf("invalid Go version: %q", opts.LangVersion))
-	}
-	opts.LangVersion = "v" + m[2] + "." + m[3]
 	f := &fumpter{
 		file:    fset.File(file.Pos()),
 		fset:    fset,
@@ -680,8 +674,8 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 		}
 
 	case *ast.BasicLit:
-		// Octal number literals were introduced in 1.13.
-		if semver.Compare(f.LangVersion, "v1.13") >= 0 {
+		// Octal number literals were introduced in Go 1.13.
+		if goversion.Compare(f.LangVersion, "go1.13") >= 0 {
 			if node.Kind == token.INT && rxOctalInteger.MatchString(node.Value) {
 				node.Value = "0o" + node.Value[1:]
 				c.Replace(node)

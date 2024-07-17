@@ -26,9 +26,9 @@ func FuzzFormat(f *testing.F) {
 		for _, file := range archive.Files {
 			f.Logf("adding %s from %s", file.Name, path)
 			if strings.HasSuffix(file.Name, ".go") || strings.Contains(file.Name, ".go.") {
-				f.Add(string(file.Data), int8(18), false) // -lang=1.18
-				f.Add(string(file.Data), int8(1), false)  // -lang=1.1
-				f.Add(string(file.Data), int8(18), true)  // -lang=1.18 -extra
+				f.Add(string(file.Data), int8(18), false) // -lang=go1.18
+				f.Add(string(file.Data), int8(1), false)  // -lang=go1.1
+				f.Add(string(file.Data), int8(18), true)  // -lang=go1.18 -extra
 			}
 		}
 	}
@@ -40,7 +40,7 @@ func FuzzFormat(f *testing.F) {
 		// TODO: also fuzz Options.ModulePath
 		opts := Options{ExtraRules: extraRules}
 		if majorVersion >= 0 {
-			opts.LangVersion = fmt.Sprintf("1.%d", majorVersion)
+			opts.LangVersion = fmt.Sprintf("go1.%d", majorVersion)
 		}
 
 		orig := []byte(src)

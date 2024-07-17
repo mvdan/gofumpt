@@ -651,7 +651,7 @@ package p
 $ gofumpt f.go
 package p
 
-//gofumpt:diagnose v0.1.1-0.20211103104632-bdfa3b02e50a -lang=v1.16
+//gofumpt:diagnose v0.1.1-0.20211103104632-bdfa3b02e50a -lang=go1.16
 ```
 
 ### License

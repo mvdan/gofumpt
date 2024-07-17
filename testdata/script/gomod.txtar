@@ -1,10 +1,10 @@
 # Test various edge cases with go.mod files.
 
 exec gofumpt toolchain-stable/a.go
-stdout '//gofumpt:diagnose.* -lang=v1.21'
+stdout '//gofumpt:diagnose.* -lang=go1.21'
 
 exec gofumpt toolchain-unstable/a.go
-stdout '//gofumpt:diagnose.* -lang=v1.21'
+stdout '//gofumpt:diagnose.* -lang=go1.21'
 
 -- toolchain-stable/go.mod --
 module a

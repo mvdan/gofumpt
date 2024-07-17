@@ -96,7 +96,7 @@ func usage() {
 	-w        write result to (source) file instead of stdout
 	-extra    enable extra rules which should be vetted by a human
 
-	-lang       str    target Go version in the form "1.X" (default from go.mod)
+	-lang       str    target Go version in the form "go1.X" (default from go.mod)
 	-modpath    str    Go module path containing the source file (default from go.mod)
 `)
 }
@@ -298,7 +298,7 @@ func processFile(filename string, info fs.FileInfo, in io.Reader, r *reporter, e
 		if ok && mod != nil {
 			mod := mod.(*module)
 			if lang == "" {
-				lang = mod.Go
+				lang = "go" + mod.Go
 			}
 			if modpath == "" {
 				modpath = mod.Module.Path
