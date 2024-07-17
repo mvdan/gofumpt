@@ -15,6 +15,7 @@ import (
 	"os"
 	"reflect"
 	"regexp"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -226,26 +227,14 @@ func (f *fumpter) inlineComment(pos token.Pos) *ast.Comment {
 func (f *fumpter) addNewline(at token.Pos) {
 	offset := f.Offset(at)
 
-	// TODO: replace with the new Lines method once we require Go 1.21 or later
-	field := reflect.ValueOf(f.file).Elem().FieldByName("lines")
-	n := field.Len()
-	lines := make([]int, 0, n+1)
-	for i := 0; i < n; i++ {
-		cur := int(field.Index(i).Int())
-		if offset == cur {
-			// This newline already exists; do nothing. Duplicate
-			// newlines can't exist.
-			return
-		}
-		if offset >= 0 && offset < cur {
-			lines = append(lines, offset)
-			offset = -1
-		}
-		lines = append(lines, cur)
+	lines := f.file.Lines()
+	i, exists := slices.BinarySearch(lines, offset)
+	if exists {
+		// This newline already exists; do nothing. Duplicate
+		// newlines can't exist.
+		return
 	}
-	if offset >= 0 {
-		lines = append(lines, offset)
-	}
+	lines = slices.Insert(lines, i, offset)
 	if !f.file.SetLines(lines) {
 		panic(fmt.Sprintf("could not set lines to %v", lines))
 	}
