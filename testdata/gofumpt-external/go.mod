@@ -1,11 +1,11 @@
 module test/gofumpt-external
 
-go 1.19
+go 1.22
 
-require mvdan.cc/gofumpt v0.3.2-0.20220627183521-8dda8068d9f3
+require mvdan.cc/gofumpt v0.6.1-0.20240717113859-88a300bbd6dc
 
 require (
-	github.com/google/go-cmp v0.5.8 // indirect
-	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
-	golang.org/x/tools v0.1.11 // indirect
+	github.com/google/go-cmp v0.6.0 // indirect
+	golang.org/x/mod v0.14.0 // indirect
+	golang.org/x/tools v0.17.0 // indirect
 )

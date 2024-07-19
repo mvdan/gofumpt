@@ -13,7 +13,7 @@ func main() {
 		panic(err)
 	}
 	formatted, err := format.Source(orig, format.Options{
-		LangVersion: "v1.16",
+		LangVersion: "go1.16",
 	})
 	if err != nil {
 		panic(err)

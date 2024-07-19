@@ -42,8 +42,9 @@ cmp stdout foo.go.golden-devel
 # manually run something like go-internal/cmd/txtar-addmod reguarly.
 # Or teach goproxytest to serve a mock version of gofumpt from its local checkout.
 # Either way, both are relatively overkill for now.
+# Update this pseudo-version to master from time to time as needed.
 env GOBIN=${WORK}/bin
-env GOFUMPT_PUBLISHED_VERSION=v0.3.2-0.20220627183521-8dda8068d9f3
+env GOFUMPT_PUBLISHED_VERSION=v0.6.1-0.20240717113859-88a300bbd6dc
 
 # TODO: update these once the library fix hits master
 
@@ -95,8 +96,8 @@ package p
 -- foo.go.golden-released --
 package p
 
-//gofumpt:diagnose v0.3.2-0.20220627183521-8dda8068d9f3 -lang=go1.16 -modpath=test
+//gofumpt:diagnose version: v0.6.1-0.20240717113859-88a300bbd6dc (go1.18.29) flags: -lang=go1.16 -modpath=test
 -- foo.go.golden-external --
 package p
 
-//gofumpt:diagnose (devel) -lang=go1.16 -modpath=
+//gofumpt:diagnose version: v0.6.1-0.20240717113859-88a300bbd6dc (go1.18.29) flags: -lang=go1.16 -modpath=
