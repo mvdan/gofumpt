@@ -1,5 +1,13 @@
 # Changelog
 
+## [v0.7.0] - 2024-08-16
+
+This release is based on Go 1.23.0's gofmt, and requires Go 1.22 or later.
+
+The following changes are included:
+
+* Group `internal/...` imported packages as standard library - #307
+
 ## [v0.6.0] - 2024-01-28
 
 This release is based on Go 1.21's gofmt, and requires Go 1.20 or later.
@@ -148,6 +156,8 @@ those building programs with gofumpt.
 
 Finally, this release adds the `-version` flag, to print the tool's own version.
 The flag will work for "master" builds too.
+
+[v0.7.0]: https://github.com/mvdan/gofumpt/releases/tag/v0.7.0
 
 [v0.6.0]: https://github.com/mvdan/gofumpt/releases/tag/v0.6.0
 [#271]: https://github.com/mvdan/gofumpt/issues/271
