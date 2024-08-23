@@ -53,6 +53,13 @@ func f() {
 
 		println()
 	}
+	if true &&
+		true {
+		println()
+
+	} else if true {
+		println()
+	}
 	for true &&
 		true {
 
@@ -102,6 +109,13 @@ func f() {
 	if true &&
 		true {
 
+		println()
+	}
+	if true &&
+		true {
+		println()
+
+	} else if true {
 		println()
 	}
 	for true &&
