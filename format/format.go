@@ -514,7 +514,9 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 		}
 
 		var sign *ast.FuncType
+		var elseIf *ast.IfStmt
 		var cond ast.Expr
+
 		switch parent := c.Parent().(type) {
 		case *ast.FuncDecl:
 			sign = parent.Type
@@ -522,15 +524,13 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 			sign = parent.Type
 		case *ast.IfStmt:
 			cond = parent.Cond
+			if e, ok := parent.Else.(*ast.IfStmt); ok {
+				elseIf = e
+			}
 		case *ast.ForStmt:
 			cond = parent.Cond
 		}
 
-		if len(node.List) > 1 && sign == nil {
-			// only if we have a single statement, or if
-			// it's a func body.
-			break
-		}
 		var bodyPos, bodyEnd token.Pos
 
 		if len(node.List) > 0 {
@@ -545,8 +545,6 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 				bodyEnd = pos
 			}
 		}
-
-		f.removeLinesBetween(bodyEnd, node.Rbrace)
 
 		if cond != nil && f.Line(cond.Pos()) != f.Line(cond.End()) {
 			// The body is preceded by a multi-line condition, so an
@@ -602,6 +600,14 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 		}
 
 		f.removeLinesBetween(node.Lbrace, bodyPos)
+
+		if elseIf != nil {
+			// The body is succeded by an else-if statement
+			// so an empty line can be useful for readability.
+			return
+		}
+
+		f.removeLinesBetween(bodyEnd, node.Rbrace)
 
 	case *ast.CaseClause:
 		f.stmts(node.Body)
