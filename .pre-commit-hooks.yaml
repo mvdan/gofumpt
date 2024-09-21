@@ -1,0 +1,7 @@
+- id: gofumpt-format
+  name: Go Code Formatter
+  description: "Automatically formats Go code using gofumpt. Requires Go and gofumpt to be installed."
+  entry: hooks/run-go-fumpt.sh
+  language: script
+  types: [go]
+  files: '\.go$'
