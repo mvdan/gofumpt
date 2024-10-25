@@ -23,7 +23,6 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/google/go-cmp/cmp"
 	"golang.org/x/tools/go/ast/astutil"
 
 	"mvdan.cc/gofumpt/internal/govendor/go/format"
@@ -1037,8 +1036,7 @@ func (f *fumpter) shouldMergeAdjacentFields(f1, f2 *ast.Field) bool {
 	}
 
 	// Only merge if the types are equal.
-	opt := cmp.Comparer(func(x, y token.Pos) bool { return true })
-	return cmp.Equal(f1.Type, f2.Type, opt)
+	return reflect.TypeOf(f1.Type) == reflect.TypeOf(f2.Type)
 }
 
 var posType = reflect.TypeOf(token.NoPos)
