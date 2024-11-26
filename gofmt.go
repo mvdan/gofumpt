@@ -297,6 +297,11 @@ func processFile(filename string, info fs.FileInfo, in io.Reader, r *reporter, e
 		mod, ok := moduleCacheByDir.Load(dir)
 		if ok && mod != nil {
 			mod := mod.(*module)
+			if mod.Go == "" {
+				// If the go directive is missing, go 1.16 is assumed.
+				// https://go.dev/ref/mod#go-mod-file-go
+				mod.Go = "1.16"
+			}
 			if lang == "" {
 				lang = "go" + mod.Go
 			}

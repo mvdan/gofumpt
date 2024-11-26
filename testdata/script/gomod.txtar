@@ -6,6 +6,9 @@ stdout '//gofumpt:diagnose.* -lang=go1.21'
 exec gofumpt toolchain-unstable/a.go
 stdout '//gofumpt:diagnose.* -lang=go1.21'
 
+exec gofumpt missing-go-directive/a.go
+stdout '//gofumpt:diagnose.* -lang=go1.16'
+
 -- toolchain-stable/go.mod --
 module a
 
@@ -20,6 +23,14 @@ module a
 
 go 1.21rc3
 -- toolchain-unstable/a.go --
+package a
+
+//gofumpt:diagnose
+
+-- missing-go-directive/go.mod --
+module a
+
+-- missing-go-directive/a.go --
 package a
 
 //gofumpt:diagnose
