@@ -27,7 +27,7 @@ func init() {
 		if err := unix.Setrlimit(unix.RLIMIT_NOFILE, &rlimit); err != nil {
 			panic(err)
 		}
-		os.Exit(main1())
+		main()
 	}
 }
 

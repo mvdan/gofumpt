@@ -6,7 +6,6 @@ package main
 import (
 	"encoding/json"
 	"flag"
-	"os"
 	"os/exec"
 	"path/filepath"
 	"testing"
@@ -18,9 +17,9 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	os.Exit(testscript.RunMain(m, map[string]func() int{
-		"gofumpt": main1,
-	}))
+	testscript.Main(m, map[string]func(){
+		"gofumpt": main,
+	})
 }
 
 var update = flag.Bool("u", false, "update testscript output files")

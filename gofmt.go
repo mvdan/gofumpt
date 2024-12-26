@@ -427,9 +427,7 @@ func readFile(filename string, info fs.FileInfo, in io.Reader) ([]byte, error) {
 	return src[:n], nil
 }
 
-func main() { os.Exit(main1()) }
-
-func main1() int {
+func main() {
 	// Arbitrarily limit in-flight work to 2MiB times the number of threads.
 	//
 	// The actual overhead for the parse tree and output will depend on the
@@ -442,7 +440,7 @@ func main1() int {
 	// so that it can use defer and have them
 	// run before the exit.
 	gofmtMain(s)
-	return s.GetExitCode()
+	os.Exit(s.GetExitCode())
 }
 
 func gofmtMain(s *sequencer) {
