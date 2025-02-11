@@ -7,7 +7,7 @@
 Enforce a stricter format than `gofmt`, while being backwards compatible.
 That is, `gofumpt` is happy with a subset of the formats that `gofmt` is happy with.
 
-The tool is a fork of `gofmt` as of Go 1.23.0, and requires Go 1.22 or later.
+The tool is a fork of `gofmt` as of Go 1.24.0, and requires Go 1.23 or later.
 It can be used as a drop-in replacement to format your Go code,
 and running `gofmt` after `gofumpt` should produce no changes.
 For example:
@@ -15,7 +15,7 @@ For example:
 	gofumpt -l -w .
 
 Some of the Go source files in this repository belong to the Go project.
-The project includes copies of `go/printer` and `go/doc/comment` as of Go 1.23.0
+The project includes copies of `go/printer` and `go/doc/comment` as of Go 1.24.0
 to ensure consistent formatting independent of what Go version is being used.
 The [added formatting rules](#Added-rules) are implemented in the `format` package.
 
