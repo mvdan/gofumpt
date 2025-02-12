@@ -11,9 +11,15 @@ func f() {
 	if true {
 
 		println()
+		println()
+
+		println()
 	}
 
 	for true {
+		println()
+		println()
+
 		println()
 
 	}
@@ -25,12 +31,20 @@ func f() {
 			3, 4, `foo
 			bar`)
 
+		println(1, 2,
+			3, 4, `foo
+			bar`)
+
+
 
 	}
 
 	{
 
 		// comment directly before
+		println()
+		println()
+
 		println()
 
 		// comment after
@@ -40,6 +54,9 @@ func f() {
 	{
 
 		// comment before
+
+		println()
+		println()
 
 		println()
 		// comment directly after
@@ -52,23 +69,38 @@ func f() {
 		true {
 
 		println()
+		println()
+
+		println()
 	}
 	if true &&
 		true {
 		println()
+		println()
+
+		println()
 
 	} else if true {
+		println()
+		println()
+
 		println()
 	}
 	for true &&
 		true {
 
 		println()
+		println()
+
+		println()
 	}
 	if true &&
 		true {
 
-		// documented single statement
+		// documented multi statement
+		println()
+		println()
+
 		println()
 	}
 }
@@ -78,13 +110,23 @@ package p
 func f() {
 	if true {
 		println()
+		println()
+
+		println()
 	}
 
 	for true {
 		println()
+		println()
+
+		println()
 	}
 
 	{
+		println(1, 2,
+			3, 4, `foo
+			bar`)
+
 		println(1, 2,
 			3, 4, `foo
 			bar`)
@@ -93,12 +135,18 @@ func f() {
 	{
 		// comment directly before
 		println()
+		println()
+
+		println()
 
 		// comment after
 	}
 
 	{
 		// comment before
+
+		println()
+		println()
 
 		println()
 		// comment directly after
@@ -110,23 +158,38 @@ func f() {
 		true {
 
 		println()
+		println()
+
+		println()
 	}
 	if true &&
 		true {
 		println()
+		println()
+
+		println()
 
 	} else if true {
+		println()
+		println()
+
 		println()
 	}
 	for true &&
 		true {
 
 		println()
+		println()
+
+		println()
 	}
 	if true &&
 		true {
 
-		// documented single statement
+		// documented multi statement
+		println()
+		println()
+
 		println()
 	}
 }
