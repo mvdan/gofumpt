@@ -48,7 +48,7 @@ func TestWithLowOpenFileLimit(t *testing.T) {
 	)
 	t.Logf("writing %d tiny Go files", numberFilesTotal)
 	var allGoFiles []string
-	for i := 0; i < numberDirs; i++ {
+	for i := range numberDirs {
 		// Prefix "p", so the package name is a valid identifier.
 		// Add one go.mod file per directory as well,
 		// which will help catch data races when loading module info.
@@ -58,14 +58,14 @@ func TestWithLowOpenFileLimit(t *testing.T) {
 		qt.Assert(t, qt.IsNil(err))
 
 		err = os.WriteFile(filepath.Join(dirPath, "go.mod"),
-			[]byte(fmt.Sprintf("module %s\n\ngo 1.16", dirName)), 0o666)
+			fmt.Appendf(nil, "module %s\n\ngo 1.16", dirName), 0o666)
 		qt.Assert(t, qt.IsNil(err))
 
-		for j := 0; j < numberFilesPerDir; j++ {
+		for j := range numberFilesPerDir {
 			filePath := filepath.Join(dirPath, fmt.Sprintf("%03d.go", j))
 			err := os.WriteFile(filePath,
 				// Extra newlines so that "-l" prints all paths.
-				[]byte(fmt.Sprintf("package %s\n\n\n", dirName)), 0o666)
+				fmt.Appendf(nil, "package %s\n\n\n", dirName), 0o666)
 			qt.Assert(t, qt.IsNil(err))
 			allGoFiles = append(allGoFiles, filePath)
 		}

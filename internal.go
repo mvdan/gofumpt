@@ -138,7 +138,7 @@ func format(
 	if indent == 0 && hasSpace {
 		indent = 1
 	}
-	for i := 0; i < indent; i++ {
+	for range indent {
 		res = append(res, '\t')
 	}
 

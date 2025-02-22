@@ -89,7 +89,7 @@ func match(m map[string]reflect.Value, pattern, val reflect.Value) bool {
 		if p.Len() != v.Len() {
 			return false
 		}
-		for i := 0; i < p.Len(); i++ {
+		for i := range p.Len() {
 			if !match(m, p.Index(i), v.Index(i)) {
 				return false
 			}
@@ -97,7 +97,7 @@ func match(m map[string]reflect.Value, pattern, val reflect.Value) bool {
 		return true
 
 	case reflect.Struct:
-		for i := 0; i < p.NumField(); i++ {
+		for i := range p.NumField() {
 			if !match(m, p.Field(i), v.Field(i)) {
 				return false
 			}
