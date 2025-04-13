@@ -1,5 +1,14 @@
 # Changelog
 
+## [v0.8.0] - 2025-04-13
+
+This release is based on Go 1.24's gofmt, and requires Go 1.23 or later.
+
+The following changes are included:
+
+* Fail with `-d` if formatting any file resulted in a diff - #114
+* Do not panic when a `go.mod` file is missing a `go` directive - #317
+
 ## [v0.7.0] - 2024-08-16
 
 This release is based on Go 1.23.0's gofmt, and requires Go 1.22 or later.
