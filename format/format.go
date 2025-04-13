@@ -23,7 +23,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	// "github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp"
 	"golang.org/x/tools/go/ast/astutil"
 
 	"mvdan.cc/gofumpt/internal/govendor/go/format"
@@ -1036,16 +1036,22 @@ func (f *fumpter) shouldMergeAdjacentFields(f1, f2 *ast.Field) bool {
 		return false
 	}
 
-	// Only merge if the types are equal.
-	// opt := cmp.Comparer(func(x, y token.Pos) bool { return true })
-	return true
+	// Only merge if the types that the syntax nodes represent are equal,
+	// e.g. two *ast.Ident nodes "int" are equal, but the two *ast.Ident nodes
+	// "string" and "bool" are not. Hence we use go-cmp to do deep comparisons
+	// while ignoring position information, as it is irrelevant.
+	//
+	// Note that we could in theory use go/types here, but in practice gofumpt
+	// needs to be fast, hence it shouldn't rely on expensive typechecking.
+	opt := cmp.Comparer(func(x, y token.Pos) bool { return true })
+	return cmp.Equal(f1.Type, f2.Type, opt)
 }
 
 var posType = reflect.TypeOf(token.NoPos)
 
 // setPos recursively sets all position fields in the node v to pos.
 func setPos(v reflect.Value, pos token.Pos) {
-	if v.Kind() == reflect.Ptr {
+	if v.Kind() == reflect.Pointer {
 		v = v.Elem()
 	}
 	if !v.IsValid() {

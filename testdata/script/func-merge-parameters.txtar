@@ -51,6 +51,10 @@ func dontMergeMultipleLines2(
 	z int,
 ) {
 }
+
+func dontMergeDifferentKinds(format string, args ...string) {}
+
+func dontMergeDifferentTypesReturn() (n int, err error) {}
 -- foo.go.golden --
 package p
 
@@ -93,3 +97,7 @@ func dontMergeMultipleLines2(
 	z int,
 ) {
 }
+
+func dontMergeDifferentKinds(format string, args ...string) {}
+
+func dontMergeDifferentTypesReturn() (n int, err error) {}
