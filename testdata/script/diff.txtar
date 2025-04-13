@@ -1,10 +1,10 @@
-# gofumpt fails with -d if there is a diff (TODO).
+# gofumpt fails with -d if there is a diff.
 
 exec gofumpt -d good.go
 ! stdout .
 ! stderr .
 
-exec gofumpt -d bad.go
+! exec gofumpt -d bad.go
 cmp stdout bad.go.diff
 ! stderr .
 

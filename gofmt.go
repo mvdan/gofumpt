@@ -257,13 +257,22 @@ func (r *reporter) Report(err error) {
 		panic("Report with nil error")
 	}
 	st := r.getState()
-	scanner.PrintError(st.err, err)
-	st.exitCode = 2
+	switch err.(type) {
+	case printedDiff:
+		st.exitCode = 1
+	default:
+		scanner.PrintError(st.err, err)
+		st.exitCode = 2
+	}
 }
 
 func (r *reporter) ExitCode() int {
 	return r.getState().exitCode
 }
+
+type printedDiff struct{}
+
+func (printedDiff) Error() string { return "printed a diff, exiting with status code 1" }
 
 // If info == nil, we are formatting stdin instead of a file.
 // If in == nil, the source is the contents of the file with the given filename.
@@ -358,6 +367,7 @@ func processFile(filename string, info fs.FileInfo, in io.Reader, r *reporter, e
 			newName := filepath.ToSlash(filename)
 			oldName := newName + ".orig"
 			r.Write(diff.Diff(oldName, src, newName, res))
+			return printedDiff{}
 		}
 	}
 
