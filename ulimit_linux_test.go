@@ -32,6 +32,9 @@ func init() {
 }
 
 func TestWithLowOpenFileLimit(t *testing.T) {
+	if testing.Short() {
+		t.Skip("this test creates thousands of files")
+	}
 	// Safe to run in parallel, as we only change the limit for child processes.
 	t.Parallel()
 
