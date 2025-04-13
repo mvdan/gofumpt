@@ -114,6 +114,9 @@ func File(fset *token.FileSet, file *ast.File, opts Options) {
 		switch node := c.Node().(type) {
 		case *ast.FuncDecl:
 			topFuncType = node.Type
+			f.parentFuncTypes = append(f.parentFuncTypes, node.Type)
+		case *ast.FuncLit:
+			f.parentFuncTypes = append(f.parentFuncTypes, node.Type)
 		case *ast.FieldList:
 			ft, _ := c.Parent().(*ast.FuncType)
 			if ft == nil || ft != topFuncType {
@@ -149,6 +152,8 @@ func File(fset *token.FileSet, file *ast.File, opts Options) {
 
 		// Reset minSplitFactor and blockLevel.
 		switch node := c.Node().(type) {
+		case *ast.FuncDecl, *ast.FuncLit:
+			f.parentFuncTypes = f.parentFuncTypes[:len(f.parentFuncTypes)-1]
 		case *ast.FuncType:
 			if node == topFuncType {
 				f.minSplitFactor = 0.4
@@ -186,10 +191,9 @@ type fumpter struct {
 
 	minSplitFactor float64
 
-	// parentFuncs is a stack of parent function declarations or
-	// literals, used to determine return type information when clothing
-	// naked returns.
-	parentFuncs []ast.Node
+	// parentFuncTypes is a stack of parent function types,
+	// used to determine return type information when clothing naked returns.
+	parentFuncTypes []*ast.FuncType
 }
 
 func (f *fumpter) commentsBetween(p1, p2 token.Pos) []*ast.CommentGroup {
@@ -323,16 +327,6 @@ var rxCommentDirective = regexp.MustCompile(`^([a-z-]+:[a-z]+|line\b|export\b|ex
 
 func (f *fumpter) applyPre(c *astutil.Cursor) {
 	f.splitLongLine(c)
-
-	if c.Node() != nil && len(f.parentFuncs) > 0 {
-		// "pop" the last parent if it's no longer valid.
-		for i := len(f.parentFuncs) - 1; i >= 0; i-- {
-			if f.parentFuncs[i].End() < c.Node().Pos() {
-				f.parentFuncs = f.parentFuncs[:i]
-				break
-			}
-		}
-	}
 
 	switch node := c.Node().(type) {
 	case *ast.File:
@@ -701,30 +695,13 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 		// Only remove lines between the assignment token and the first right-hand side expression
 		f.removeLines(f.Line(node.TokPos), f.Line(node.Rhs[0].Pos()))
 
-	case *ast.FuncDecl, *ast.FuncLit:
-		// Track the current function declaration or literal, to access
-		// return type information for clothing of naked returns.
-		f.parentFuncs = append(f.parentFuncs, node)
 	// Clothe naked returns
 	case *ast.ReturnStmt:
 		if node.Results != nil {
 			break
 		}
 
-		// We have either a naked return, or a function with no return values
-		var results *ast.FieldList
-		// Find the nearest ancestor that is either a func declaration or func literal
-	parentLoop:
-		for i := len(f.parentFuncs) - 1; i >= 0; i-- {
-			switch p := f.parentFuncs[i].(type) {
-			case *ast.FuncDecl:
-				results = p.Type.Results
-				break parentLoop
-			case *ast.FuncLit:
-				results = p.Type.Results
-				break parentLoop
-			}
-		}
+		results := f.parentFuncTypes[len(f.parentFuncTypes)-1].Results
 		if results.NumFields() == 0 {
 			break
 		}
