@@ -1,0 +1,33 @@
+# gofumpt fails with -d if there is a diff (TODO).
+
+exec gofumpt -d good.go
+! stdout .
+! stderr .
+
+exec gofumpt -d bad.go
+cmp stdout bad.go.diff
+! stderr .
+
+-- good.go --
+package p
+
+func f() {
+	println("well formatted")
+}
+-- bad.go --
+package p
+
+func f() {
+println("not well formatted")
+}
+-- bad.go.diff --
+diff bad.go.orig bad.go
+--- bad.go.orig
++++ bad.go
+@@ -1,5 +1,5 @@
+ package p
+ 
+ func f() {
+-println("not well formatted")
++	println("not well formatted")
+ }
