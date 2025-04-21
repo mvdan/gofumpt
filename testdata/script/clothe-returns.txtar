@@ -1,0 +1,74 @@
+exec gofumpt -w foo.go
+cmp foo.go foo.go.golden
+
+exec gofumpt -d foo.go.golden
+! stdout .
+
+-- foo.go --
+package p
+
+func foo() (err error) {
+	if true {
+		return
+	}
+	if false {
+		return func() (err2 error) {
+			return
+		}
+	}
+	return
+}
+
+func bar() (_ int, err error) {
+	return
+}
+
+func baz() (a, b, c int) {
+	return
+}
+
+func qux() (file string, b int, err error) {
+	if err == nil {
+		return
+	}
+
+	// A comment
+	return
+}
+
+// quux does quuxy things
+func quux() {}
+-- foo.go.golden --
+package p
+
+func foo() (err error) {
+	if true {
+		return err
+	}
+	if false {
+		return func() (err2 error) {
+			return err2
+		}
+	}
+	return err
+}
+
+func bar() (_ int, err error) {
+	return
+}
+
+func baz() (a, b, c int) {
+	return a, b, c
+}
+
+func qux() (file string, b int, err error) {
+	if err == nil {
+		return file, b, err
+	}
+
+	// A comment
+	return file, b, err
+}
+
+// quux does quuxy things
+func quux() {}

@@ -435,7 +435,25 @@ type ZeroFields struct {
 
 </details>
 
-#### Extra rules behind `-extra`
+**Avoid naked returns for the sake of clarity**
+
+<details><summary><i>Example</i></summary>
+
+```go
+func Foo() (err error) {
+	return
+}
+```
+
+```go
+func Foo() (err error) {
+	return err
+}
+```
+
+</details>
+
+### Extra rules behind `-extra`
 
 **Adjacent parameters with the same type should be grouped together**
 
