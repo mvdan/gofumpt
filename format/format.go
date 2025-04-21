@@ -114,6 +114,9 @@ func File(fset *token.FileSet, file *ast.File, opts Options) {
 		switch node := c.Node().(type) {
 		case *ast.FuncDecl:
 			topFuncType = node.Type
+			f.parentFuncTypes = append(f.parentFuncTypes, node.Type)
+		case *ast.FuncLit:
+			f.parentFuncTypes = append(f.parentFuncTypes, node.Type)
 		case *ast.FieldList:
 			ft, _ := c.Parent().(*ast.FuncType)
 			if ft == nil || ft != topFuncType {
@@ -149,6 +152,8 @@ func File(fset *token.FileSet, file *ast.File, opts Options) {
 
 		// Reset minSplitFactor and blockLevel.
 		switch node := c.Node().(type) {
+		case *ast.FuncDecl, *ast.FuncLit:
+			f.parentFuncTypes = f.parentFuncTypes[:len(f.parentFuncTypes)-1]
 		case *ast.FuncType:
 			if node == topFuncType {
 				f.minSplitFactor = 0.4
@@ -185,6 +190,10 @@ type fumpter struct {
 	blockLevel int
 
 	minSplitFactor float64
+
+	// parentFuncTypes is a stack of parent function types,
+	// used to determine return type information when clothing naked returns.
+	parentFuncTypes []*ast.FuncType
 }
 
 func (f *fumpter) commentsBetween(p1, p2 token.Pos) []*ast.CommentGroup {
@@ -685,6 +694,36 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 	case *ast.AssignStmt:
 		// Only remove lines between the assignment token and the first right-hand side expression
 		f.removeLines(f.Line(node.TokPos), f.Line(node.Rhs[0].Pos()))
+
+	case *ast.ReturnStmt:
+		if len(node.Results) > 0 {
+			break
+		}
+		results := f.parentFuncTypes[len(f.parentFuncTypes)-1].Results
+		if results.NumFields() == 0 {
+			break
+		}
+
+		// The function has return values; let's clothe the return.
+		node.Results = make([]ast.Expr, 0, results.NumFields())
+	nameLoop:
+		for _, result := range results.List {
+			for _, ident := range result.Names {
+				name := ident.Name
+				if name == "_" { // we can't handle blank names just yet
+					node.Results = nil
+					break nameLoop
+				}
+				node.Results = append(node.Results, &ast.Ident{
+					// Use the Pos of the return statement, to not interfere with comment placement.
+					NamePos: node.Pos(),
+					Name:    name,
+				})
+			}
+		}
+		if len(node.Results) > 0 {
+			c.Replace(node)
+		}
 	}
 }
 
