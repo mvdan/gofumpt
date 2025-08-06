@@ -313,17 +313,26 @@ func (f *fumpter) lineEnd(line int) token.Pos {
 //
 //	//go:          | standard Go directives, like go:noinline
 //	//some-words:  | similar to the syntax above, like lint:ignore or go-sumtype:decl
-//	//line         | inserted line information for cmd/compile
 //	//export       | to mark cgo funcs for exporting
 //	//extern       | C function declarations for gccgo
-//	//sys(nb)?     | syscall function wrapper prototypes
-//	//nolint       | nolint directive for golangci
+//	//line         | inserted line information for cmd/compile
 //	//noinspection | noinspection directive for GoLand and friends
+//	//nolint       | nolint directive for golangci
 //	//NOSONAR      | NOSONAR directive for SonarQube
+//	//sys(nb)?     | syscall function wrapper prototypes
 //
 // Note that the "some-words:" matching expects a letter afterward, such as
 // "go:generate", to prevent matching false positives like "https://site".
-var rxCommentDirective = regexp.MustCompile(`^([a-z-]+:[a-z]+|line\b|export\b|extern\b|sys(nb)?\b|no(lint|inspection)\b)|NOSONAR\b`)
+var rxCommentDirective = regexp.MustCompile(
+	`^(?:` +
+		`[a-z-]+:[a-z]+` +
+		`|export` +
+		`|extern` +
+		`|line` +
+		`|no(?:inspection|lint)` +
+		`|NOSONAR` +
+		`|sys(?:nb)?` +
+		`)\b`)
 
 func (f *fumpter) applyPre(c *astutil.Cursor) {
 	f.splitLongLine(c)
