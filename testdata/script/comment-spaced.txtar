@@ -32,6 +32,10 @@ package p
 
 //noinspection foo,bar
 
+//#nosec
+
+//#nosec G000 G999 -- explanation
+
 //not actually: a directive
 
 //https://just.one/url
@@ -98,6 +102,10 @@ package p
 //noinspection ALL
 
 //noinspection foo,bar
+
+//#nosec
+
+//#nosec G000 G999 -- explanation
 
 // not actually: a directive
 

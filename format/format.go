@@ -318,6 +318,7 @@ func (f *fumpter) lineEnd(line int) token.Pos {
 //	//line         | inserted line information for cmd/compile
 //	//noinspection | noinspection directive for GoLand and friends
 //	//nolint       | nolint directive for golangci
+//	//#nosec       | #nosec directive for gosec
 //	//NOSONAR      | NOSONAR directive for SonarQube
 //	//sys(nb)?     | syscall function wrapper prototypes
 //
@@ -330,6 +331,7 @@ var rxCommentDirective = regexp.MustCompile(
 		`|extern` +
 		`|line` +
 		`|no(?:inspection|lint)` +
+		`|#nosec` +
 		`|NOSONAR` +
 		`|sys(?:nb)?` +
 		`)\b`)
