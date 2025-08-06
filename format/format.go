@@ -436,11 +436,16 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 				}
 			}
 			// If none of the comment group's lines look like a
-			// directive or code, add spaces, if needed.
+			// directive or code, add or remove spaces, as appropriate.
 			for _, comment := range group.List {
 				body := strings.TrimPrefix(comment.Text, "//")
 				r, _ := utf8.DecodeRuneInString(body)
-				if !unicode.IsSpace(r) {
+				if unicode.IsSpace(r) {
+					body = strings.TrimLeftFunc(body, unicode.IsSpace)
+					if rxCommentDirective.MatchString(body) {
+						comment.Text = "//" + body
+					}
+				} else {
 					comment.Text = "// " + body
 				}
 			}

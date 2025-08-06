@@ -32,6 +32,8 @@ package p
 
 //noinspection foo,bar
 
+// directive:withleadingspace
+
 //not actually: a directive
 
 //https://just.one/url
@@ -98,6 +100,8 @@ package p
 //noinspection ALL
 
 //noinspection foo,bar
+
+//directive:withleadingspace
 
 // not actually: a directive
 
