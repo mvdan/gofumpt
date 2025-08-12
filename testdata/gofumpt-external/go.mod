@@ -1,6 +1,6 @@
 module test/gofumpt-external
 
-go 1.23
+go 1.24
 
 require mvdan.cc/gofumpt v0.6.1-0.20240717113859-88a300bbd6dc
 
