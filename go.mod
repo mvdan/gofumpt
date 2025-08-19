@@ -1,6 +1,6 @@
 module mvdan.cc/gofumpt
 
-go 1.24.0
+go 1.25.0
 
 require (
 	github.com/go-quicktest/qt v1.101.0
