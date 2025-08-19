@@ -25,6 +25,7 @@ import (
 	"strings"
 	"sync"
 
+	"golang.org/x/mod/modfile"
 	"golang.org/x/sync/semaphore"
 
 	gformat "mvdan.cc/gofumpt/format"
@@ -128,6 +129,46 @@ func isGenerated(file *ast.File) bool {
 		}
 	}
 	return false
+}
+
+func shouldSkipPath(ignoredPaths []*modfile.Ignore, path string) bool {
+	base := filepath.Base(path)
+	// vendor and testdata directories are skipped,
+	// unless they are explicitly passed as an argument.
+	if base == "vendor" || base == "testdata" {
+		return true
+	}
+
+	// ignore paths that specified in go.mod's ignore directive
+	for _, i := range ignoredPaths {
+		if path == i.Path {
+			return true
+		}
+		if isSubPath(i.Path, path) {
+			return true
+		}
+	}
+	return false
+}
+
+// if isSubPath returns true, then childPath is a subpath of parentPath.
+func isSubPath(parentPath, childPath string) bool {
+	absParent, err := filepath.Abs(parentPath)
+	if err != nil {
+		return false
+	}
+
+	absChild, err := filepath.Abs(childPath)
+	if err != nil {
+		return false
+	}
+
+	rel, err := filepath.Rel(absParent, absChild)
+	if err != nil {
+		return false
+	}
+
+	return !strings.HasPrefix(rel, "..")
 }
 
 // A sequencer performs concurrent tasks that may write output, but emits that
@@ -510,6 +551,16 @@ func gofmtMain(s *sequencer) {
 		return
 	}
 
+	// To keep previous behavior, we read and parse go.mod only if it exists and valid.
+	var ignoredPaths []*modfile.Ignore
+	data, err := os.ReadFile("go.mod")
+	if err == nil {
+		f, err := modfile.Parse("go.mod", data, nil)
+		if err == nil {
+			ignoredPaths = f.Ignore
+		}
+	}
+
 	for _, arg := range args {
 		switch info, err := os.Stat(arg); {
 		case err != nil:
@@ -523,10 +574,7 @@ func gofmtMain(s *sequencer) {
 		default:
 			// Directories are walked, ignoring non-Go files.
 			err := filepath.WalkDir(arg, func(path string, f fs.DirEntry, err error) error {
-				// vendor and testdata directories are skipped,
-				// unless they are explicitly passed as an argument.
-				base := filepath.Base(path)
-				if path != arg && (base == "vendor" || base == "testdata") {
+				if path != arg && shouldSkipPath(ignoredPaths, path) {
 					return filepath.SkipDir
 				}
 
