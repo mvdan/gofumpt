@@ -1,0 +1,34 @@
+exec gofumpt test_input.go.golden
+cp stdout formatted.go.golden
+
+mkdir -p generated utils
+cp test_input.go.golden generated/main.go
+cp test_input.go.golden utils/helper.go
+
+# Test that gofumpt does not crush and files are formatted correctly
+exec gofumpt -l .
+stdout -count=1 'generated[/\\]main\.go'
+stdout -count=1 'utils[/\\]helper\.go'
+! stderr .
+
+-- test_input.go.golden --
+package test
+
+func ExampleFunction() {
+	if true {
+		// comment
+	}
+	{
+
+	}
+
+	{
+
+		// another comment
+
+	}
+}
+
+-- go.mod --
+invalid go.mod content
+this is not valid syntax
