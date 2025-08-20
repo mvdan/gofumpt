@@ -151,7 +151,7 @@ func shouldSkipPath(ignoredPaths []*modfile.Ignore, path string) bool {
 	return false
 }
 
-// if isSubPath returns true, then childPath is a subpath of parentPath.
+// isSubPath returns true when childPath is a subpath of parentPath.
 func isSubPath(parentPath, childPath string) bool {
 	absParent, err := filepath.Abs(parentPath)
 	if err != nil {
