@@ -603,6 +603,19 @@ including setting `lsp_format_on_save` to `true`.
 }
 ```
 
+### Zed
+For `gofumpt` to be used in Zed, you need to set the `gofumpt` option in the LSP settings. This is done by providing the `"gofumpt": true` in `initialization_options`.
+
+```json
+"lsp": {
+  "gopls": {
+    "initialization_options": {
+      "gofumpt": true
+    }
+  }
+}
+```
+
 ### Roadmap
 
 This tool is a place to experiment. In the long term, the features that work
