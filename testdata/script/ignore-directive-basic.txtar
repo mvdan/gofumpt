@@ -1,0 +1,38 @@
+exec gofumpt test_input.go.golden
+cp stdout formatted.go.golden
+
+mkdir -p generated utils
+cp test_input.go.golden generated/main.go
+cp test_input.go.golden utils/helper.go
+
+exec gofumpt -l .
+! stdout 'generated[/\\]main\.go'
+stdout -count=1 'utils[/\\]helper\.go'
+! stderr .
+
+-- test_input.go.golden --
+package test
+
+func ExampleFunction() {
+	if true {
+		// comment
+	}
+	{
+
+	}
+
+	{
+
+		// another comment
+
+	}
+}
+
+-- go.mod --
+module test
+
+go 1.25.0
+
+ignore (
+	generated/main.go
+)
