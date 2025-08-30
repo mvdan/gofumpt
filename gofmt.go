@@ -7,7 +7,7 @@ package main
 import (
 	"bytes"
 	"context"
-	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"go/ast"
@@ -17,7 +17,6 @@ import (
 	"io"
 	"io/fs"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"regexp"
 	"runtime"
@@ -25,6 +24,7 @@ import (
 	"strings"
 	"sync"
 
+	"golang.org/x/mod/modfile"
 	"golang.org/x/sync/semaphore"
 
 	gformat "mvdan.cc/gofumpt/format"
@@ -300,20 +300,22 @@ func processFile(filename string, info fs.FileInfo, in io.Reader, r *reporter, e
 	lang := *langVersion
 	modpath := *modulePath
 	if lang == "" || modpath == "" {
-		dir := filepath.Dir(filename)
-		mod, ok := moduleCacheByDir.Load(dir)
-		if ok && mod != nil {
-			mod := mod.(*module)
-			if mod.Go == "" {
-				// If the go directive is missing, go 1.16 is assumed.
-				// https://go.dev/ref/mod#go-mod-file-go
-				mod.Go = "1.16"
-			}
+		path, err := filepath.Abs(filename)
+		if err != nil {
+			return err
+		}
+		if mod := loadModule(filepath.Dir(path)); mod != nil {
 			if lang == "" {
-				lang = "go" + mod.Go
+				if mod.file.Go == nil {
+					// If the go directive is missing, go 1.16 is assumed.
+					// https://go.dev/ref/mod#go-mod-file-go
+					lang = "go1.16"
+				} else {
+					lang = "go" + mod.file.Go.Version
+				}
 			}
 			if modpath == "" {
-				modpath = mod.Module.Path
+				modpath = mod.file.Module.Mod.Path
 			}
 		}
 	}
@@ -545,43 +547,57 @@ func gofmtMain(s *sequencer) {
 	}
 }
 
-type module struct {
-	Go     string
-	Module struct {
-		Path string
-	}
+// A nil entry means the directory is not part of a Go module,
+// or a go.mod file was found but it's invalid.
+// A non-nil entry means this directory, or a parent, is in a valid Go module.
+var cachedModuleByDir sync.Map // map[dirString]*cachedModfile
+
+type cachedModule struct {
+	absDir string // the directory where the go.mod file was found
+	file   *modfile.File
 }
 
-func loadModuleInfo(dir string) any {
-	// TODO: using `go mod edit -json` here works, but is fairly expensive.
-	// Moreover, we run this once per directory, and often a module will have
-	// many directories, meaning we are duplicating work.
-	// Instead, we should implement the simple logic to find go.mod files
-	// and then use x/mod/modfile directly to parse each go.mod file once.
-	cmd := exec.Command("go", "mod", "edit", "-json")
-	cmd.Dir = dir
-	out, err := cmd.Output()
-	if err != nil || len(out) == 0 {
-		return nil
+func loadModule(dir string) *cachedModule {
+	if cached, ok := cachedModuleByDir.Load(dir); ok {
+		mf, _ := cached.(*cachedModule)
+		return mf
 	}
-	mod := new(module)
-	if err := json.Unmarshal(out, mod); err != nil {
-		return nil
+	mod := func() *cachedModule {
+		path := filepath.Join(dir, "go.mod")
+		fdSem <- true
+		data, err := os.ReadFile(path)
+		<-fdSem
+		if errors.Is(err, fs.ErrNotExist) {
+			parent := filepath.Dir(dir)
+			if parent == "." {
+				panic("loadModule was not given an absolute path?")
+			}
+			if parent == dir {
+				return nil // reached the filesystem root
+			}
+			return loadModule(parent) // try the parent directory
+		}
+		if err != nil {
+			return nil // some other file reading error
+		}
+		file, err := modfile.Parse(filepath.Join(dir, "go.mod"), data, nil)
+		if err != nil {
+			return nil // invalid go.mod file
+		}
+		return &cachedModule{
+			absDir: dir,
+			file:   file,
+		}
+	}()
+	if mod != nil {
+		cachedModuleByDir.Store(dir, mod)
+	} else {
+		cachedModuleByDir.Store(dir, nil)
 	}
 	return mod
 }
 
-// Written to by fileWeight, read from fileWeight and processFile.
-// A present but nil value means that loading the module info failed.
-// Note that we don't require the keys to be absolute directories,
-// so duplicates are possible. The same can happen with symlinks.
-var moduleCacheByDir sync.Map // map[dirString]*module
-
 func fileWeight(path string, info fs.FileInfo) int64 {
-	dir := filepath.Dir(path)
-	if _, ok := moduleCacheByDir.Load(dir); !ok {
-		moduleCacheByDir.Store(dir, loadModuleInfo(dir))
-	}
 	if info == nil {
 		return exclusive
 	}
