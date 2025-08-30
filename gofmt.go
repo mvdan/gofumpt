@@ -552,18 +552,14 @@ type module struct {
 }
 
 func loadModuleInfo(dir string) any {
+	// TODO: using `go mod edit -json` here works, but is fairly expensive.
+	// Moreover, we run this once per directory, and often a module will have
+	// many directories, meaning we are duplicating work.
+	// Instead, we should implement the simple logic to find go.mod files
+	// and then use x/mod/modfile directly to parse each go.mod file once.
 	cmd := exec.Command("go", "mod", "edit", "-json")
 	cmd.Dir = dir
-
-	// Spawning "go mod edit" will open files by design,
-	// such as the named pipe to obtain stdout.
-	// TODO(mvdan): if we run into "too many open files" errors again in the
-	// future, we probably need to turn fdSem into a weighted semaphore so this
-	// operation can acquire a weight larger than 1.
-	fdSem <- true
 	out, err := cmd.Output()
-	defer func() { <-fdSem }()
-
 	if err != nil || len(out) == 0 {
 		return nil
 	}
