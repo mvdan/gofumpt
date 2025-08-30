@@ -24,8 +24,8 @@ vendor${/}foo${/}foo.go
 testdata${/}bar${/}bar.go
 testdata${/}foo${/}foo.go
 -- explicit-files.stdout --
-vendor/foo/foo.go
-testdata/foo/foo.go
+vendor${/}foo${/}foo.go
+testdata${/}foo${/}foo.go
 -- implicit-dot.stdout --
 -- explicit-dirs-unclean.stdout --
 ${WORK}${/}vendor${/}bar${/}bar.go

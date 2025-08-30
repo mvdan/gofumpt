@@ -512,6 +512,7 @@ func gofmtMain(s *sequencer) {
 		// Walk each given argument as a directory tree.
 		// If the argument is not a directory, it's always formatted as a Go file.
 		// If the argument is a directory, we walk it, ignoring non-Go files.
+		arg = filepath.Clean(arg) // ensure consistency
 		if err := filepath.WalkDir(arg, func(path string, d fs.DirEntry, err error) error {
 			explicit := path == arg
 			switch {
