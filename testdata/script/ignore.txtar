@@ -1,10 +1,10 @@
 # format explicit dirs
-exec gofumpt -l vendor testdata
+exec gofumpt -l vendor testdata module/ignore/dir
 cmpenv stdout explicit-dirs.stdout
 ! stderr .
 
 # format explicit files
-exec gofumpt -l vendor/foo/foo.go testdata/foo/foo.go
+exec gofumpt -l vendor/foo/foo.go testdata/foo/foo.go module/ignore/dir/ignore.go
 cmpenv stdout explicit-files.stdout
 ! stderr .
 
@@ -14,7 +14,7 @@ cmpenv stdout implicit-dot.stdout
 ! stderr .
 
 # format explicit dirs without clean paths
-exec gofumpt -l $WORK//vendor ./testdata/./
+exec gofumpt -l $WORK//vendor ./testdata/./ $WORK/module/ignore//dir/.
 cmpenv stdout explicit-dirs-unclean.stdout
 ! stderr .
 
@@ -23,15 +23,60 @@ vendor${/}bar${/}bar.go
 vendor${/}foo${/}foo.go
 testdata${/}bar${/}bar.go
 testdata${/}foo${/}foo.go
+module${/}ignore${/}dir${/}ignore.go
+module${/}ignore${/}dir${/}subdir${/}ignore.go
 -- explicit-files.stdout --
 vendor${/}foo${/}foo.go
 testdata${/}foo${/}foo.go
+module${/}ignore${/}dir${/}ignore.go
 -- implicit-dot.stdout --
+ignore${/}dir${/}outsidemodule.go
+module${/}ignore${/}dir${/}ignore.go
+module${/}ignore${/}dir${/}subdir${/}ignore.go
+module${/}ignore${/}dirsuffix${/}nomatch.go
+module${/}ignore${/}nomatch.go
+module${/}ignoreroot${/}dir${/}ignore.go
+module${/}ignoreroot${/}dir${/}subdir${/}ignore.go
+module${/}ignoreroot${/}nomatch.go
+module${/}prefixignore${/}dir${/}nomatch.go
+module${/}subdir${/}ignore${/}dir${/}ignore.go
+module${/}subdir${/}ignoreroot${/}dir${/}notatroot.go
 -- explicit-dirs-unclean.stdout --
 ${WORK}${/}vendor${/}bar${/}bar.go
 ${WORK}${/}vendor${/}foo${/}foo.go
 testdata${/}bar${/}bar.go
 testdata${/}foo${/}foo.go
+${WORK}${/}module${/}ignore${/}dir${/}ignore.go
+${WORK}${/}module${/}ignore${/}dir${/}subdir${/}ignore.go
+-- module/go.mod --
+module test
+
+ignore (
+	ignore/dir
+	./ignoreroot/dir
+)
+-- ignore/dir/outsidemodule.go --
+package p; func badlyformatted() {}
+-- module/ignoreroot/dir/ignore.go --
+package p; func badlyformatted() {}
+-- module/ignoreroot/dir/subdir/ignore.go --
+package p; func badlyformatted() {}
+-- module/ignore/dir/ignore.go --
+package p; func badlyformatted() {}
+-- module/ignore/dir/subdir/ignore.go --
+package p; func badlyformatted() {}
+-- module/ignore/dirsuffix/nomatch.go --
+package p; func badlyformatted() {}
+-- module/prefixignore/dir/nomatch.go --
+package p; func badlyformatted() {}
+-- module/subdir/ignoreroot/dir/notatroot.go --
+package p; func badlyformatted() {}
+-- module/subdir/ignore/dir/ignore.go --
+package p; func badlyformatted() {}
+-- module/ignore/nomatch.go --
+package p; func badlyformatted() {}
+-- module/ignoreroot/nomatch.go --
+package p; func badlyformatted() {}
 -- vendor/foo/foo.go --
 package p; func badlyformatted() {}
 -- vendor/bar/bar.go --
