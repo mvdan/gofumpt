@@ -108,10 +108,8 @@ func initParserMode() {
 	}
 }
 
-func isGoFile(f fs.DirEntry) bool {
-	// ignore non-Go files
-	name := f.Name()
-	return !strings.HasPrefix(name, ".") && strings.HasSuffix(name, ".go") && !f.IsDir()
+func isGoFilename(name string) bool {
+	return !strings.HasPrefix(name, ".") && strings.HasSuffix(name, ".go")
 }
 
 var rxCodeGenerated = regexp.MustCompile(`^// Code generated .* DO NOT EDIT\.$`)
@@ -511,41 +509,37 @@ func gofmtMain(s *sequencer) {
 	}
 
 	for _, arg := range args {
-		switch info, err := os.Stat(arg); {
-		case err != nil:
-			s.AddReport(err)
-		case !info.IsDir():
-			// Non-directory arguments are always formatted.
-			arg := arg
-			s.Add(fileWeight(arg, info), func(r *reporter) error {
-				return processFile(arg, info, nil, r, true)
-			})
-		default:
-			// Directories are walked, ignoring non-Go files.
-			err := filepath.WalkDir(arg, func(path string, f fs.DirEntry, err error) error {
-				// vendor and testdata directories are skipped,
-				// unless they are explicitly passed as an argument.
-				base := filepath.Base(path)
-				if path != arg && (base == "vendor" || base == "testdata") {
-					return filepath.SkipDir
+		// Walk each given argument as a directory tree.
+		// If the argument is not a directory, it's always formatted as a Go file.
+		// If the argument is a directory, we walk it, ignoring non-Go files.
+		if err := filepath.WalkDir(arg, func(path string, d fs.DirEntry, err error) error {
+			explicit := path == arg
+			switch {
+			case err != nil:
+				return err
+			case d.IsDir():
+				if !explicit {
+					switch filepath.Base(path) {
+					case "vendor", "testdata":
+						return filepath.SkipDir
+					}
 				}
-
-				if err != nil || !isGoFile(f) {
-					return err
-				}
-				info, err := f.Info()
-				if err != nil {
-					s.AddReport(err)
-					return nil
-				}
-				s.Add(fileWeight(path, info), func(r *reporter) error {
-					return processFile(path, info, nil, r, false)
-				})
-				return nil
-			})
-			if err != nil {
-				s.AddReport(err)
+				return nil // simply recurse into directories
+			case explicit:
+				// non-directories given as explicit arguments are always formatted
+			case !isGoFilename(d.Name()):
+				return nil // skip walked non-Go files
 			}
+			info, err := d.Info()
+			if err != nil {
+				return err
+			}
+			s.Add(fileWeight(path, info), func(r *reporter) error {
+				return processFile(path, info, nil, r, explicit)
+			})
+			return nil
+		}); err != nil {
+			s.AddReport(err)
 		}
 	}
 }
