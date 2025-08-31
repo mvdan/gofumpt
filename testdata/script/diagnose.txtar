@@ -1,10 +1,7 @@
+# Note that `go test` binaries don't get stamped with versions,
+# so the local tests below end up with a "devel" gofumpt version.
 env GO_VERSION_TEST=go1.18.29
 
-# First, test a local build of gofumpt resulting from 'git clone'.
-# Its version will be inferred from VCS, but since we want a stable test,
-# we mock the VCS information. Note that test binaries do not have VCS info.
-# Data obtained from a real build while developing.
-env GARBLE_TEST_BUILDSETTINGS='[{"Key":"vcs","Value":"git"},{"Key":"vcs.revision","Value":"8dda8068d9f339047fc1777b688afb66a0a0db17"},{"Key":"vcs.time","Value":"2022-07-27T15:58:40Z"},{"Key":"vcs.modified","Value":"true"}]'  
 exec gofumpt foo.go
 cmp stdout foo.go.golden
 
@@ -25,11 +22,6 @@ exec gofumpt -d foo.go.golden
 
 exec gofumpt -d -extra foo.go.golden-extra
 ! stdout .
-
-# A local build without VCS information will result in a missing version.
-env GARBLE_TEST_BUILDSETTINGS='[]'
-exec gofumpt foo.go
-cmp stdout foo.go.golden-devel
 
 [short] stop 'the rest of this test builds gofumpt binaries'
 
@@ -80,19 +72,15 @@ package p
 -- foo.go.golden --
 package p
 
-//gofumpt:diagnose version: v0.0.0-20220727155840-8dda8068d9f3 (go1.18.29) flags: -lang=go1.16 -modpath=test
--- foo.go.golden-devel --
-package p
-
 //gofumpt:diagnose version: (devel) (go1.18.29) flags: -lang=go1.16 -modpath=test
 -- foo.go.golden-extra --
 package p
 
-//gofumpt:diagnose version: v0.0.0-20220727155840-8dda8068d9f3 (go1.18.29) flags: -lang=go1.16 -modpath=test -extra
+//gofumpt:diagnose version: (devel) (go1.18.29) flags: -lang=go1.16 -modpath=test -extra
 -- foo.go.golden-lang --
 package p
 
-//gofumpt:diagnose version: v0.0.0-20220727155840-8dda8068d9f3 (go1.18.29) flags: -lang=go1 -modpath=test
+//gofumpt:diagnose version: (devel) (go1.18.29) flags: -lang=go1 -modpath=test
 -- foo.go.golden-released --
 package p
 
