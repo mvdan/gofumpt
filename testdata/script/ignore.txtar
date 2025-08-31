@@ -31,15 +31,10 @@ testdata${/}foo${/}foo.go
 module${/}ignore${/}dir${/}ignore.go
 -- implicit-dot.stdout --
 ignore${/}dir${/}outsidemodule.go
-module${/}ignore${/}dir${/}ignore.go
-module${/}ignore${/}dir${/}subdir${/}ignore.go
 module${/}ignore${/}dirsuffix${/}nomatch.go
 module${/}ignore${/}nomatch.go
-module${/}ignoreroot${/}dir${/}ignore.go
-module${/}ignoreroot${/}dir${/}subdir${/}ignore.go
 module${/}ignoreroot${/}nomatch.go
 module${/}prefixignore${/}dir${/}nomatch.go
-module${/}subdir${/}ignore${/}dir${/}ignore.go
 module${/}subdir${/}ignoreroot${/}dir${/}notatroot.go
 -- explicit-dirs-unclean.stdout --
 ${WORK}${/}vendor${/}bar${/}bar.go

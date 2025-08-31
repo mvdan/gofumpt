@@ -23,6 +23,9 @@ The [added formatting rules](#Added-rules) are implemented in the `format` packa
 Similarly, the added rules do not apply to generated Go files unless they are
 given as explicit arguments.
 
+[`ignore` directives](https://go.dev/ref/mod#go-mod-file-ignore) in `go.mod` files are obeyed as well,
+unless directories or files within them are given as explicit arguments.
+
 Finally, note that the `-r` rewrite flag is removed in favor of `gofmt -r`,
 and the `-s` flag is hidden as it is always enabled.
 

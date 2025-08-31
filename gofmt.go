@@ -521,11 +521,8 @@ func gofmtMain(s *sequencer) {
 			case err != nil:
 				return err
 			case d.IsDir():
-				if !explicit {
-					switch filepath.Base(path) {
-					case "vendor", "testdata":
-						return filepath.SkipDir
-					}
+				if !explicit && shouldIgnore(path) {
+					return filepath.SkipDir
 				}
 				return nil // simply recurse into directories
 			case explicit:
@@ -545,6 +542,56 @@ func gofmtMain(s *sequencer) {
 			s.AddReport(err)
 		}
 	}
+}
+
+func shouldIgnore(path string) bool {
+	switch filepath.Base(path) {
+	case "vendor", "testdata":
+		return true
+	}
+	path, err := filepath.Abs(path)
+	if err != nil {
+		return false // unclear how this could happen; don't ignore in any case
+	}
+	mod := loadModule(path)
+	if mod == nil {
+		return false // no module file to declare ignore paths
+	}
+	relPath, err := filepath.Rel(mod.absDir, path)
+	if err != nil {
+		return false // unclear how this could happen; don't ignore in any case
+	}
+	relPath = normalizePath(relPath)
+	for _, ignore := range mod.file.Ignore {
+		if matchIgnore(ignore.Path, relPath) {
+			return true
+		}
+	}
+	return false
+}
+
+// normalizePath adds slashes to the front and end of the given path.
+func normalizePath(path string) string {
+	path = filepath.ToSlash(path) // ensure Windows support
+	if !strings.HasPrefix(path, "/") {
+		path = "/" + path
+	}
+	if !strings.HasSuffix(path, "/") {
+		path += "/"
+	}
+	return path
+}
+
+func matchIgnore(ignore, relPath string) bool {
+	ignore, rooted := strings.CutPrefix(ignore, "./")
+	ignore = normalizePath(ignore)
+	// Note that we only match the directory to be ignored itself,
+	// and not any directories underneath it.
+	// This way, using `gofumpt -w ignored` allows `ignored/subdir` to be formatted.
+	if rooted {
+		return relPath == ignore
+	}
+	return strings.HasSuffix(relPath, ignore)
 }
 
 // A nil entry means the directory is not part of a Go module,
