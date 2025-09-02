@@ -1,5 +1,21 @@
 # Changelog
 
+## [v0.9.0] - 2025-09-02
+
+This release is based on Go 1.25's gofmt, and requires Go 1.24 or later.
+
+A new rule is introduced to "clothe" naked returns for the sake of clarity.
+While there is nothing wrong with naming results in function signatures,
+using lone `return` statements can be confusing to the reader.
+
+Go 1.25's `ignore` directives in `go.mod` files are now obeyed;
+any directories within the module matching any of the patterns
+are now omitted when walking directories, such as with `gofumpt -w .`.
+
+Module information is now loaded via Go's [`x/mod/modfile` package](https://pkg.go.dev/golang.org/x/mod/modfile)
+rather than executing `go mod edit -json`, which is way faster.
+This should result in moderate speed-ups when formatting many directories.
+
 ## [v0.8.0] - 2025-04-13
 
 This release is based on Go 1.24's gofmt, and requires Go 1.23 or later.
@@ -166,6 +182,8 @@ those building programs with gofumpt.
 Finally, this release adds the `-version` flag, to print the tool's own version.
 The flag will work for "master" builds too.
 
+[v0.9.0]: https://github.com/mvdan/gofumpt/releases/tag/v0.9.0
+[v0.8.0]: https://github.com/mvdan/gofumpt/releases/tag/v0.8.0
 [v0.7.0]: https://github.com/mvdan/gofumpt/releases/tag/v0.7.0
 
 [v0.6.0]: https://github.com/mvdan/gofumpt/releases/tag/v0.6.0
