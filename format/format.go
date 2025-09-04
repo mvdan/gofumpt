@@ -309,7 +309,7 @@ func (f *fumpter) lineEnd(line int) token.Pos {
 	return f.file.LineStart(line+1) - 1
 }
 
-// rxCommentDirective covers all common Go comment directives:
+// rxCommentDirective covers all common Go comment directives, such as:
 //
 //	//go:          | standard Go directives, like go:noinline
 //	//some-words:  | similar to the syntax above, like lint:ignore or go-sumtype:decl
@@ -321,15 +321,16 @@ func (f *fumpter) lineEnd(line int) token.Pos {
 //	//#nosec       | #nosec directive for gosec
 //	//NOSONAR      | NOSONAR directive for SonarQube
 //	//sys(nb)?     | syscall function wrapper prototypes
-//
-// Note that the "some-words:" matching expects a letter afterward, such as
-// "go:generate", to prevent matching false positives like "https://site".
 var rxCommentDirective = regexp.MustCompile(
 	`^(?:` +
-		`[a-z-]+:[a-z]+` +
-		`|export\b` +
-		`|extern\b` +
-		`|line\b` +
+		// Patterns directly from https://go.dev/doc/comment#syntax.
+		// Note that we adjust the first pattern to allow for //go-sumtype:decl,
+		// which is a tool that existed before the Go convention was documented.
+		`[a-z0-9-]+:[a-z0-9]` +
+		`|export ` +
+		`|extern ` +
+		`|line ` +
+		// Third-party patterns; we generally assume they end with a word boundary.
 		`|no(?:inspection|lint)\b` +
 		`|#nosec\b` +
 		`|NOSONAR\b` +
