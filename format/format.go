@@ -327,14 +327,14 @@ func (f *fumpter) lineEnd(line int) token.Pos {
 var rxCommentDirective = regexp.MustCompile(
 	`^(?:` +
 		`[a-z-]+:[a-z]+` +
-		`|export` +
-		`|extern` +
-		`|line` +
-		`|no(?:inspection|lint)` +
-		`|#nosec` +
-		`|NOSONAR` +
-		`|sys(?:nb)?` +
-		`)\b`)
+		`|export\b` +
+		`|extern\b` +
+		`|line\b` +
+		`|no(?:inspection|lint)\b` +
+		`|#nosec\b` +
+		`|NOSONAR\b` +
+		`|sys(?:nb)?\b` +
+		`)`)
 
 func (f *fumpter) applyPre(c *astutil.Cursor) {
 	f.splitLongLine(c)

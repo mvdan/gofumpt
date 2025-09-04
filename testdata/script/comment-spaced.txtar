@@ -53,6 +53,16 @@ func c_open(name *byte, mode int, perm int) int
 
 //sysnb	Getpid() (pid int)
 
+//foo:bar_one
+
+//foo:bar-two
+
+//foo:bar01
+
+//foo:barOne
+
+//foo:barTwo
+
 //foo is foo.
 type foo int
 
@@ -123,6 +133,16 @@ func c_open(name *byte, mode int, perm int) int
 //sys   Unlink(path string) (err error)
 
 //sysnb	Getpid() (pid int)
+
+//foo:bar_one
+
+//foo:bar-two
+
+//foo:bar01
+
+//foo:barOne
+
+//foo:barTwo
 
 // foo is foo.
 type foo int
