@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.9.1] - 2025-09-07
+
+This is a bugfix release to address a regression in detecting
+comment directives with special characters such as `//golangcitest:config_path`.
+
 ## [v0.9.0] - 2025-09-02
 
 This release is based on Go 1.25's gofmt, and requires Go 1.24 or later.
