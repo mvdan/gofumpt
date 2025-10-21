@@ -711,6 +711,10 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 		if len(node.Results) > 0 {
 			break
 		}
+		// Clothing naked returns is disabled by default.
+		if !f.ExtraRules {
+			break
+		}
 		results := f.parentFuncTypes[len(f.parentFuncTypes)-1].Results
 		if results.NumFields() == 0 {
 			break

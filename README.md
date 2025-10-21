@@ -438,6 +438,22 @@ type ZeroFields struct {
 
 </details>
 
+### Extra rules behind `-extra`
+
+**Adjacent parameters with the same type should be grouped together**
+
+<details><summary><i>Example</i></summary>
+
+```go
+func Foo(bar string, baz string) {}
+```
+
+```go
+func Foo(bar, baz string) {}
+```
+
+</details>
+
 **Avoid naked returns for the sake of clarity**
 
 <details><summary><i>Example</i></summary>
@@ -452,22 +468,6 @@ func Foo() (err error) {
 func Foo() (err error) {
 	return err
 }
-```
-
-</details>
-
-### Extra rules behind `-extra`
-
-**Adjacent parameters with the same type should be grouped together**
-
-<details><summary><i>Example</i></summary>
-
-```go
-func Foo(bar string, baz string) {}
-```
-
-```go
-func Foo(bar, baz string) {}
 ```
 
 </details>

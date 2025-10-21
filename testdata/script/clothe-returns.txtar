@@ -1,7 +1,10 @@
-exec gofumpt -w foo.go
+exec gofumpt -d foo.go.golden
+! stdout .
+
+exec gofumpt -extra -w foo.go
 cmp foo.go foo.go.golden
 
-exec gofumpt -d foo.go.golden
+exec gofumpt -extra -d foo.go.golden
 ! stdout .
 
 -- foo.go --
