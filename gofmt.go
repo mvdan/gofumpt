@@ -52,6 +52,10 @@ var (
 	extraRules  = flag.Bool("extra", false, "")
 	showVersion = flag.Bool("version", false, "")
 
+	ignoreImports  = flag.Bool("ignore_imports", false, "do not touch imports")
+	shortLineLimit = flag.Int("short_line_limit", 60, "Multiline nodes which could easily fit on a single line under this many bytes may be collapsed onto a single line. Default is 60.")
+	longLineLimit  = flag.Int("long_line_limit", 100, "Single-line nodes which take over this many bytes, and could easily be split into two lines of at least its minSplitFactor factor, may be split. Default is 100.")
+
 	// DEPRECATED
 	rewriteRule = flag.String("r", "", "")
 	simplifyAST = flag.Bool("s", false, "")
@@ -98,6 +102,10 @@ func usage() {
 
 	-lang       str    target Go version in the form "go1.X" (default from go.mod)
 	-modpath    str    Go module path containing the source file (default from go.mod)
+
+	-ignore_imports Do not touch imports.
+	-short_line_limit int Multiline nodes which could easily fit on a single line under this many bytes may be collapsed onto a single line. Default is 60.
+	-long_line_limit int Single-line nodes which take over this many bytes, and could easily be split into two lines of at least its minSplitFactor factor, may be split. Default is 100.
 `)
 }
 
@@ -325,9 +333,12 @@ func processFile(filename string, info fs.FileInfo, in io.Reader, r *reporter, e
 	// We also skip walking vendor directories entirely, but that happens elsewhere.
 	if explicit || !isGenerated(file) {
 		gformat.File(fileSet, file, gformat.Options{
-			LangVersion: lang,
-			ModulePath:  modpath,
-			ExtraRules:  *extraRules,
+			LangVersion:    lang,
+			ModulePath:     modpath,
+			ExtraRules:     *extraRules,
+			IgnoreImports:  *ignoreImports,
+			ShortLineLimit: *shortLineLimit,
+			LongLineLimit:  *longLineLimit,
 		})
 	}
 

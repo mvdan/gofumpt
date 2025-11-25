@@ -60,6 +60,28 @@ type Options struct {
 	// ExtraRules enables extra formatting rules, such as grouping function
 	// parameters with repeated types together.
 	ExtraRules bool
+
+	// Do not touch imports.
+	IgnoreImports bool
+
+	// Multiline nodes which could easily fit on a single line under this many bytes
+	// may be collapsed onto a single line. Default is 60.
+	ShortLineLimit int
+
+	// Single-line nodes which take over this many bytes, and could easily be split
+	// into two lines of at least its minSplitFactor factor, may be split. Default is 100.
+	LongLineLimit int
+}
+
+// Defaults sets default values for unset options.
+func (o *Options) Defaults() {
+	if o.ShortLineLimit == 0 {
+		o.ShortLineLimit = 60
+	}
+
+	if o.LongLineLimit == 0 {
+		o.LongLineLimit = 100
+	}
 }
 
 // Source formats src in gofumpt's format, assuming that src holds a valid Go
@@ -89,6 +111,8 @@ func Source(src []byte, opts Options) ([]byte, error) {
 // changes might include manipulating adding or removing newlines in fset,
 // modifying the position of nodes, or modifying literal values.
 func File(fset *token.FileSet, file *ast.File, opts Options) {
+	opts.Defaults()
+
 	simplify(file)
 
 	if opts.LangVersion == "" {
@@ -165,14 +189,6 @@ func File(fset *token.FileSet, file *ast.File, opts Options) {
 	}
 	astutil.Apply(file, pre, post)
 }
-
-// Multiline nodes which could easily fit on a single line under this many bytes
-// may be collapsed onto a single line.
-const shortLineLimit = 60
-
-// Single-line nodes which take over this many bytes, and could easily be split
-// into two lines of at least its minSplitFactor factor, may be split.
-const longLineLimit = 100
 
 var rxOctalInteger = regexp.MustCompile(`\A0[0-7_]+\z`)
 
@@ -482,7 +498,7 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 		})
 
 	case *ast.GenDecl:
-		if node.Tok == token.IMPORT && node.Lparen.IsValid() {
+		if node.Tok == token.IMPORT && node.Lparen.IsValid() && !f.IgnoreImports {
 			f.joinStdImports(node)
 		}
 
@@ -642,7 +658,7 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 			List:  node.List,
 			Colon: node.Colon,
 		}
-		if f.printLength(nodeWithoutBody) > shortLineLimit {
+		if f.printLength(nodeWithoutBody) > f.ShortLineLimit {
 			// too long to collapse
 			break
 		}
@@ -881,7 +897,7 @@ func (f *fumpter) splitLongLine(c *astutil.Cursor) {
 	}
 
 	// If the start position is too short, we definitely won't split the line.
-	if startCol <= shortLineLimit {
+	if startCol <= f.ShortLineLimit {
 		return
 	}
 
@@ -901,8 +917,8 @@ func (f *fumpter) splitLongLine(c *astutil.Cursor) {
 	// If the line ends past the long line limit,
 	// and both splits are estimated to take at least minSplitFactor of the limit,
 	// then split the line.
-	minSplitLength := int(f.minSplitFactor * longLineLimit)
-	if endCol > longLineLimit &&
+	minSplitLength := int(f.minSplitFactor * float64(f.LongLineLimit))
+	if endCol > f.LongLineLimit &&
 		firstLength >= minSplitLength && secondLength >= minSplitLength {
 		f.addNewline(newlinePos)
 	}
