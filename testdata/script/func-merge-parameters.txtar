@@ -55,6 +55,14 @@ func dontMergeMultipleLines2(
 func dontMergeDifferentKinds(format string, args ...string) {}
 
 func dontMergeDifferentTypesReturn() (n int, err error) {}
+
+func mergeIgnoresPositions(a func(x int), b func(
+	x int)) {
+}
+
+type xint int
+
+func dontMergeDistinguishedTypes(a func(x int), b func(xint)) {}
 -- foo.go.golden --
 package p
 
@@ -101,3 +109,11 @@ func dontMergeMultipleLines2(
 func dontMergeDifferentKinds(format string, args ...string) {}
 
 func dontMergeDifferentTypesReturn() (n int, err error) {}
+
+func mergeIgnoresPositions(a, b func(x int),
+) {
+}
+
+type xint int
+
+func dontMergeDistinguishedTypes(a func(x int), b func(xint)) {}
