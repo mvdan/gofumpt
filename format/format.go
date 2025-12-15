@@ -11,7 +11,6 @@ import (
 	"fmt"
 	"go/ast"
 	"go/parser"
-	"go/scanner"
 	"go/token"
 	goversion "go/version"
 	"os"
@@ -1093,42 +1092,25 @@ func (f *fumpter) shouldMergeAdjacentFields(f1, f2 *ast.Field) bool {
 
 	// Only merge if the types that the syntax nodes represent are equal,
 	// e.g. two *ast.Ident nodes "int" are equal, but the two *ast.Ident nodes
-	// "string" and "bool" are not.
+	// "string" and "bool" are not. We use reflection to quickly discard most cases.
+	//
+	// We use an empty [token.FileSet] so that positions are ignored when printing,
+	// and two syntax nodes with different uses of newlines end up the same.
 	//
 	// Note that we could in theory use go/types here, but in practice gofumpt
 	// needs to be fast, hence it shouldn't rely on expensive typechecking.
 	if reflect.TypeOf(f1.Type) != reflect.TypeOf(f2.Type) {
 		return false
 	}
+	emptyFset := token.NewFileSet()
 	var b1, b2 bytes.Buffer
-	if err := format.Node(&b1, f.fset, f1.Type); err != nil {
+	if err := format.Node(&b1, emptyFset, f1.Type); err != nil {
 		return false
 	}
-	if err := format.Node(&b2, f.fset, f2.Type); err != nil {
+	if err := format.Node(&b2, emptyFset, f2.Type); err != nil {
 		return false
 	}
-	return equalTokens(b1.Bytes(), b2.Bytes())
-}
-
-func equalTokens(a, b []byte) bool {
-	if bytes.Equal(a, b) {
-		return true
-	}
-
-	var s1, s2 scanner.Scanner
-	fset := token.NewFileSet()
-	s1.Init(fset.AddFile("", fset.Base(), len(a)), a, nil, 0)
-	s2.Init(fset.AddFile("", fset.Base(), len(b)), b, nil, 0)
-	for {
-		_, tok1, lit1 := s1.Scan()
-		_, tok2, lit2 := s2.Scan()
-		if tok1 != tok2 || lit1 != lit2 {
-			return false
-		}
-		if tok1 == token.EOF {
-			return true
-		}
-	}
+	return bytes.Equal(b1.Bytes(), b2.Bytes())
 }
 
 var posType = reflect.TypeOf(token.NoPos)
