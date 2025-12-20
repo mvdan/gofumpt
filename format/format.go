@@ -56,10 +56,70 @@ type Options struct {
 	// is formatted as if it weren't inside a module.
 	ModulePath string
 
-	// ExtraRules enables extra formatting rules, such as grouping function
+	// ExtraRules enables all extra formatting rules, such as grouping function
 	// parameters with repeated types together.
+	//
+	// Deprecated: use [Options.Extra] instead.
 	ExtraRules bool
+
+	// Extra allows enabling extra formatting rules which are disabled by default.
+	Extra Extra
 }
+
+// Extra is the set of extra formatting rules which are available.
+//
+// As the formatter evolves, we might add or remove boolean fields here.
+// Go API users who wish to avoid build errors in such cases
+// can use the string API in [Extra.Set].
+type Extra struct {
+	// TODO: should we have "All" to turn them all on,
+	// akin to how the CLI has -extra=true for historical reasons?
+	// I lean against it, as it should be a conscious choice to turn on
+	// each of these extra rules, and we should be able to add more rules
+	// without fear of causing unexpected changes for users.
+
+	// GroupParams groups function parameters with repeated types.
+	GroupParams bool
+
+	// ClotheReturns clothes naked returns in functions with named results.
+	ClotheReturns bool
+}
+
+func (e *Extra) String() string {
+	var active []string
+	if e.GroupParams {
+		active = append(active, "group_params")
+	}
+	if e.ClotheReturns {
+		active = append(active, "clothe_returns")
+	}
+	return strings.Join(active, ",")
+}
+
+func (e *Extra) Set(v string) error {
+	if v == "true" {
+		e.GroupParams = true
+		e.ClotheReturns = true
+		return nil
+	}
+	*e = Extra{}
+	if v == "false" {
+		return nil
+	}
+	for s := range strings.SplitSeq(v, ",") {
+		switch s {
+		case "group_params":
+			e.GroupParams = true
+		case "clothe_returns":
+			e.ClotheReturns = true
+		default:
+			return fmt.Errorf("unknown rule: %q", s)
+		}
+	}
+	return nil
+}
+
+func (e *Extra) IsBoolFlag() bool { return true }
 
 // Source formats src in gofumpt's format, assuming that src holds a valid Go
 // source file.
@@ -89,6 +149,10 @@ func Source(src []byte, opts Options) ([]byte, error) {
 // modifying the position of nodes, or modifying literal values.
 func File(fset *token.FileSet, file *ast.File, opts Options) {
 	simplify(file)
+
+	if opts.ExtraRules {
+		opts.Extra.Set("true") // enable all the extra rules
+	}
 
 	if opts.LangVersion == "" {
 		opts.LangVersion = "go1"
@@ -426,8 +490,8 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 						"-lang=" + f.LangVersion,
 						"-modpath=" + f.ModulePath,
 					}
-					if f.ExtraRules {
-						slc = append(slc, "-extra")
+					if s := f.Extra.String(); s != "" {
+						slc = append(slc, "-extra="+s)
 					}
 					comment.Text = strings.Join(slc, " ")
 				}
@@ -681,8 +745,7 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 			f.removeLinesBetween(bodyEnd, node.End())
 		}
 
-		// Merging adjacent fields (e.g. parameters) is disabled by default.
-		if !f.ExtraRules {
+		if !f.Extra.GroupParams {
 			break
 		}
 		switch c.Parent().(type) {
@@ -710,8 +773,7 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 		if len(node.Results) > 0 {
 			break
 		}
-		// Clothing naked returns is disabled by default.
-		if !f.ExtraRules {
+		if !f.Extra.ClotheReturns {
 			break
 		}
 		results := f.parentFuncTypes[len(f.parentFuncTypes)-1].Results

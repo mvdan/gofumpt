@@ -11,6 +11,12 @@ cmp stdout foo.go.golden
 exec gofumpt -extra foo.go
 cmp stdout foo.go.golden-extra
 
+exec gofumpt -extra=false foo.go
+cmp stdout foo.go.golden-extra-false
+
+exec gofumpt -extra=group_params foo.go
+cmp stdout foo.go.golden-extra-group-params
+
 exec gofumpt -lang=go1 foo.go
 cmp stdout foo.go.golden-lang
 
@@ -76,7 +82,15 @@ package p
 -- foo.go.golden-extra --
 package p
 
-//gofumpt:diagnose version: (devel) (go1.18.29) flags: -lang=go1.16 -modpath=test -extra
+//gofumpt:diagnose version: (devel) (go1.18.29) flags: -lang=go1.16 -modpath=test -extra=group_params,clothe_returns
+-- foo.go.golden-extra-false --
+package p
+
+//gofumpt:diagnose version: (devel) (go1.18.29) flags: -lang=go1.16 -modpath=test
+-- foo.go.golden-extra-group-params --
+package p
+
+//gofumpt:diagnose version: (devel) (go1.18.29) flags: -lang=go1.16 -modpath=test -extra=group_params
 -- foo.go.golden-lang --
 package p
 

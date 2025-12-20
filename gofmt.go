@@ -49,13 +49,15 @@ var (
 	// gofumpt's own flags
 	langVersion = flag.String("lang", "", "")
 	modulePath  = flag.String("modpath", "", "")
-	extraRules  = flag.Bool("extra", false, "")
+	extraRules  gformat.Extra
 	showVersion = flag.Bool("version", false, "")
 
-	// DEPRECATED
+	// Deprecated
 	rewriteRule = flag.String("r", "", "")
 	simplifyAST = flag.Bool("s", false, "")
 )
+
+func init() { flag.Var(&extraRules, "extra", "") }
 
 var version = ""
 
@@ -94,7 +96,7 @@ func usage() {
 	-e        report all errors (not just the first 10 on different lines)
 	-l        list files whose formatting differs from gofumpt's
 	-w        write result to (source) file instead of stdout
-	-extra    enable extra rules which should be vetted by a human
+	-extra    enable extra rules, e.g. -extra=group_params,clothe_returns
 
 	-lang       str    target Go version in the form "go1.X" (default from go.mod)
 	-modpath    str    Go module path containing the source file (default from go.mod)
@@ -327,7 +329,7 @@ func processFile(filename string, info fs.FileInfo, in io.Reader, r *reporter, e
 		gformat.File(fileSet, file, gformat.Options{
 			LangVersion: lang,
 			ModulePath:  modpath,
-			ExtraRules:  *extraRules,
+			Extra:       extraRules,
 		})
 	}
 

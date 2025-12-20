@@ -2,11 +2,11 @@
 exec gofumpt foo.go
 cmp stdout foo.go
 
-# It's run with -extra.
-exec gofumpt -extra foo.go
+exec gofumpt -extra=group_params foo.go
 cmp stdout foo.go.golden
 
 exec gofumpt -d foo.go.golden
+exec gofumpt -extra=group_params -d foo.go.golden
 ! stdout .
 
 -- foo.go --
