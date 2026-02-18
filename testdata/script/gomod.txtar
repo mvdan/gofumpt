@@ -9,6 +9,9 @@ stdout '//gofumpt:diagnose.* -lang=go1.21'
 exec gofumpt missing-go-directive/a.go
 stdout '//gofumpt:diagnose.* -lang=go1.16'
 
+exec gofumpt missing-module/a.go
+stdout '//gofumpt:diagnose.* -lang=go1.16'
+
 -- toolchain-stable/go.mod --
 module a
 
@@ -31,6 +34,12 @@ package a
 module a
 
 -- missing-go-directive/a.go --
+package a
+
+//gofumpt:diagnose
+
+-- missing-module/go.mod --
+-- missing-module/a.go --
 package a
 
 //gofumpt:diagnose

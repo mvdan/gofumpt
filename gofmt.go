@@ -316,8 +316,8 @@ func processFile(filename string, info fs.FileInfo, in io.Reader, r *reporter, e
 					lang = "go" + mod.file.Go.Version
 				}
 			}
-			if modpath == "" {
-				modpath = mod.file.Module.Mod.Path
+			if m := mod.file.Module; m != nil && modpath == "" {
+				modpath = m.Mod.Path
 			}
 		}
 	}
