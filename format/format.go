@@ -610,11 +610,6 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 			cond = parent.Cond
 		}
 
-		if len(node.List) > 1 && sign == nil {
-			// only if we have a single statement, or if
-			// it's a func body.
-			break
-		}
 		var bodyPos, bodyEnd token.Pos
 
 		if len(node.List) > 0 {
