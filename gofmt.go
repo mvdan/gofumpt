@@ -89,7 +89,7 @@ var (
 )
 
 func usage() {
-	fmt.Fprintf(os.Stderr, `usage: gofumpt [flags] [path ...]
+	_, _ = fmt.Fprintf(os.Stderr, `usage: gofumpt [flags] [path ...]
 	-version  show version and exit
 
 	-d        display diffs instead of rewriting files

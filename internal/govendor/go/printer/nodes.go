@@ -18,6 +18,8 @@ import (
 	"unicode/utf8"
 )
 
+const maxArgsInFunctionSignature = 3
+
 // Formatting issues:
 // - better comment formatting for /*-style comments at the end of a line (e.g. a declaration)
 //   when the comment spans multiple lines; if such a comment is just two lines, formatting is
@@ -330,6 +332,7 @@ func (p *printer) parameters(fields *ast.FieldList, mode paramMode) {
 	if mode != funcParam {
 		openTok, closeTok = token.LBRACK, token.RBRACK
 	}
+	eachArgOnNewLine := len(fields.List) > maxArgsInFunctionSignature
 	p.setPos(fields.Opening)
 	p.print(openTok)
 	if len(fields.List) > 0 {
@@ -342,7 +345,7 @@ func (p *printer) parameters(fields *ast.FieldList, mode paramMode) {
 			parLineBeg := p.lineFor(par.Pos())
 			parLineEnd := p.lineFor(par.End())
 			// separating "," if needed
-			needsLinebreak := 0 < prevLine && prevLine < parLineBeg
+			needsLinebreak := eachArgOnNewLine || (0 < prevLine && prevLine < parLineBeg)
 			if i > 0 {
 				// use position of parameter following the comma as
 				// comma position for correct comma placement, but
@@ -353,7 +356,7 @@ func (p *printer) parameters(fields *ast.FieldList, mode paramMode) {
 				p.print(token.COMMA)
 			}
 			// separator if needed (linebreak or blank)
-			if needsLinebreak && p.linebreak(parLineBeg, 0, ws, true) > 0 {
+			if needsLinebreak && p.linebreak(parLineBeg, 1, ws, true) > 0 {
 				// break line if the opening "(" or previous parameter ended on a different line
 				ws = ignore
 			} else if i > 0 {
@@ -377,9 +380,10 @@ func (p *printer) parameters(fields *ast.FieldList, mode paramMode) {
 
 		// if the closing ")" is on a separate line from the last parameter,
 		// print an additional "," and line break
-		if closing := p.lineFor(fields.Closing); 0 < prevLine && prevLine < closing {
+		closing := p.lineFor(fields.Closing)
+		if eachArgOnNewLine || (0 < prevLine && prevLine < closing) {
 			p.print(token.COMMA)
-			p.linebreak(closing, 0, ignore, true)
+			p.linebreak(closing, 1, ignore, true)
 		} else if mode == typeTParam && fields.NumFields() == 1 && combinesWithName(stripParensAlways(fields.List[0].Type)) {
 			// A type parameter list [P T] where the name P and the type expression T syntactically
 			// combine to another valid (value) expression requires a trailing comma, as in [P *T,]
