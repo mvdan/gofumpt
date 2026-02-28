@@ -100,7 +100,7 @@ func (p *printer) internalError(msg ...any) {
 	if debug {
 		fmt.Print(p.pos.String() + ": ")
 		fmt.Println(msg...)
-		panic("mvdan.cc/gofumpt/internal/govendor/go/printer")
+		panic("github.com/jessehersch/gofumpt/internal/govendor/go/printer")
 	}
 }
 
@@ -199,7 +199,7 @@ func (p *printer) writeLineDirective(pos token.Position) {
 	if pos.IsValid() && (p.out.Line != pos.Line || p.out.Filename != pos.Filename) {
 		if strings.ContainsAny(pos.Filename, "\r\n") {
 			if p.sourcePosErr == nil {
-				p.sourcePosErr = fmt.Errorf("mvdan.cc/gofumpt/internal/govendor/go/printer: source filename contains unexpected newline character: %q", pos.Filename)
+				p.sourcePosErr = fmt.Errorf("github.com/jessehersch/gofumpt/internal/govendor/go/printer: source filename contains unexpected newline character: %q", pos.Filename)
 			}
 			return
 		}
@@ -992,7 +992,7 @@ func (p *printer) print(args ...any) {
 
 		default:
 			fmt.Fprintf(os.Stderr, "print: unsupported argument %v (%T)\n", arg, arg)
-			panic("mvdan.cc/gofumpt/internal/govendor/go/printer type")
+			panic("github.com/jessehersch/gofumpt/internal/govendor/go/printer type")
 		}
 		// data != ""
 
@@ -1176,7 +1176,7 @@ func (p *printer) printNode(node any) error {
 	return p.sourcePosErr
 
 unsupported:
-	return fmt.Errorf("mvdan.cc/gofumpt/internal/govendor/go/printer: unsupported node type %T", node)
+	return fmt.Errorf("github.com/jessehersch/gofumpt/internal/govendor/go/printer: unsupported node type %T", node)
 }
 
 // ----------------------------------------------------------------------------
@@ -1299,13 +1299,13 @@ const (
 // The mode below is not included in printer's public API because
 // editing code text is deemed out of scope. Because this mode is
 // unexported, it's also possible to modify or remove it based on
-// the evolving needs of mvdan.cc/gofumpt/internal/govendor/go/format and cmd/gofmt without breaking
+// the evolving needs of github.com/jessehersch/gofumpt/internal/govendor/go/format and cmd/gofmt without breaking
 // users. See discussion in CL 240683.
 const (
 	// normalizeNumbers means to canonicalize number
 	// literal prefixes and exponents while printing.
 	//
-	// This value is known in and used by mvdan.cc/gofumpt/internal/govendor/go/format and cmd/gofmt.
+	// This value is known in and used by github.com/jessehersch/gofumpt/internal/govendor/go/format and cmd/gofmt.
 	// It is currently more convenient and performant for those
 	// packages to apply number normalization during printing,
 	// rather than by modifying the AST in advance.
@@ -1426,7 +1426,7 @@ func (cfg *Config) Fprint(output io.Writer, fset *token.FileSet, node any) error
 // Fprint "pretty-prints" an AST node to output.
 // It calls [Config.Fprint] with default settings.
 // Note that gofmt uses tabs for indentation but spaces for alignment;
-// use format.Node (package mvdan.cc/gofumpt/internal/govendor/go/format) for output that matches gofmt.
+// use format.Node (package github.com/jessehersch/gofumpt/internal/govendor/go/format) for output that matches gofmt.
 func Fprint(output io.Writer, fset *token.FileSet, node any) error {
 	return (&Config{Tabwidth: 8}).Fprint(output, fset, node)
 }

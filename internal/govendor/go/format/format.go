@@ -22,7 +22,7 @@ import (
 	"go/token"
 	"io"
 
-	"mvdan.cc/gofumpt/internal/govendor/go/printer"
+	"github.com/jessehersch/gofumpt/internal/govendor/go/printer"
 )
 
 // Keep these in sync with cmd/gofmt/gofmt.go.
@@ -33,7 +33,7 @@ const (
 	// printerNormalizeNumbers means to canonicalize number literal prefixes
 	// and exponents while printing. See https://golang.org/doc/go1.13#gofmt.
 	//
-	// This value is defined in mvdan.cc/gofumpt/internal/govendor/go/printer specifically for mvdan.cc/gofumpt/internal/govendor/go/format and cmd/gofmt.
+	// This value is defined in github.com/jessehersch/gofumpt/internal/govendor/go/printer specifically for github.com/jessehersch/gofumpt/internal/govendor/go/format and cmd/gofmt.
 	printerNormalizeNumbers = 1 << 30
 )
 

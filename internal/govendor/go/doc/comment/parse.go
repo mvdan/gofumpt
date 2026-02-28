@@ -301,7 +301,7 @@ func (p *Parser) Parse(text string) *Doc {
 		var b Block
 		switch s.kind {
 		default:
-			panic("mvdan.cc/gofumpt/internal/govendor/go/doc/comment: internal error: unknown span kind")
+			panic("github.com/jessehersch/gofumpt/internal/govendor/go/doc/comment: internal error: unknown span kind")
 		case spanList:
 			b = d.list(lines[s.start:s.end], prev.end < s.start)
 		case spanCode:
@@ -381,7 +381,7 @@ Spans:
 			break
 		}
 		if watchdog--; watchdog < 0 {
-			panic("mvdan.cc/gofumpt/internal/govendor/go/doc/comment: internal error: not making progress")
+			panic("github.com/jessehersch/gofumpt/internal/govendor/go/doc/comment: internal error: not making progress")
 		}
 
 		var kind spanKind

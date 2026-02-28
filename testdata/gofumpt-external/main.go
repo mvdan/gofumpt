@@ -4,7 +4,7 @@ import (
 	"io"
 	"os"
 
-	"mvdan.cc/gofumpt/format"
+	"github.com/jessehersch/gofumpt/format"
 )
 
 func main() {

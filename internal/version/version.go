@@ -10,7 +10,7 @@ import (
 	"runtime/debug"
 )
 
-const ourModulePath = "mvdan.cc/gofumpt"
+const ourModulePath = "github.com/jessehersch/gofumpt"
 
 func findModule(info *debug.BuildInfo, modulePath string) *debug.Module {
 	if info.Main.Path == modulePath {
