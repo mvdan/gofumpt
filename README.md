@@ -438,6 +438,27 @@ type ZeroFields struct {
 
 </details>
 
+**Definitely useless parentheses should be removed**
+
+<details><summary><i>Example</i></summary>
+
+```go
+type C chan (int)
+
+var _ = f((3))
+```
+
+```go
+type C chan int
+
+var _ = f(3)
+```
+
+Parentheses around binary or unary expressions, as well as around types
+which require them (such as `chan (<-chan T)`), are kept as is.
+
+</details>
+
 ### Extra rules behind `-extra`
 
 **Adjacent parameters with the same type should be grouped together**

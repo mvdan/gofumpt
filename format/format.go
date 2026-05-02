@@ -756,6 +756,14 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 			// Do not merge adjacent fields in structs.
 		}
 
+	case *ast.ParenExpr:
+		// Unwrap any chain of redundant inner parens first,
+		// since astutil.Apply does not walk replacement nodes.
+		node.X = ast.Unparen(node.X)
+		if f.canRemoveParens(node) {
+			c.Replace(node.X)
+		}
+
 	case *ast.BasicLit:
 		// Octal number literals were introduced in Go 1.13.
 		if goversion.Compare(f.LangVersion, "go1.13") >= 0 {
@@ -967,6 +975,26 @@ func (f *fumpter) splitLongLine(c *astutil.Cursor) {
 		firstLength >= minSplitLength && secondLength >= minSplitLength {
 		f.addNewline(newlinePos)
 	}
+}
+
+// canRemoveParens reports whether the parentheses around node are definitely
+// useless and can be safely removed without changing intent.
+func (f *fumpter) canRemoveParens(node *ast.ParenExpr) bool {
+	// Keep parens around expressions where they can help readability
+	// or be required by surrounding syntax. Binary and unary expressions
+	// are kept for readability; composite literals can be required by an
+	// `if` or `for` condition; type expressions can be required by a
+	// conversion such as `(<-chan T)(v)` or `chan (<-chan T)`.
+	switch node.X.(type) {
+	case *ast.BinaryExpr, *ast.UnaryExpr, *ast.StarExpr,
+		*ast.CompositeLit,
+		*ast.ChanType, *ast.ArrayType, *ast.MapType,
+		*ast.FuncType, *ast.InterfaceType, *ast.StructType:
+		return false
+	}
+	// Don't drop parens which contain comments,
+	// as the printer may not place them well without the parens.
+	return len(f.commentsBetween(node.Lparen, node.Rparen)) == 0
 }
 
 func isComposite(node ast.Node) *ast.CompositeLit {

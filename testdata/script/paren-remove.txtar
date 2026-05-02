@@ -1,0 +1,100 @@
+exec gofumpt -w foo.go
+cmp foo.go foo.go.golden
+
+exec gofumpt -d foo.go.golden
+! stdout .
+
+-- foo.go --
+package p
+
+import "fmt"
+
+type T struct{ x int }
+
+type C chan (int)
+
+type C2 chan (<-chan int)
+
+type C3 chan (chan int)
+
+var _ = (*T)(nil)
+
+func f(x int) int { return x }
+
+var a, b bool
+
+func g() {
+	_ = f((3))
+	_ = ((3))
+	_ = (f(3))
+	_ = (fmt.Sprintln(3))
+	_ = (T{}).x
+	_ = ([]int{1, 2})[0]
+	xs := []int{1, 2, 3}
+	_ = (xs[1:2])
+
+	// Keep parens in binary/unary expressions for readability.
+	_ = (1 + 2) * 3
+	_ = -(1 + 2)
+	_ = !(a || b)
+
+	// Keep parens with inner comment.
+	_ = ( /* keep */ 3)
+
+	// Keep parens around composite literals in conditions.
+	if (T{x: 3}) == (T{x: 3}) {
+	}
+
+	// Drop double parens.
+	_ = ((f(3)))
+
+	// Drop parens around call args.
+	_ = f((f(3)))
+}
+-- foo.go.golden --
+package p
+
+import "fmt"
+
+type T struct{ x int }
+
+type C chan int
+
+type C2 chan (<-chan int)
+
+type C3 chan (chan int)
+
+var _ = (*T)(nil)
+
+func f(x int) int { return x }
+
+var a, b bool
+
+func g() {
+	_ = f(3)
+	_ = 3
+	_ = f(3)
+	_ = fmt.Sprintln(3)
+	_ = (T{}).x
+	_ = ([]int{1, 2})[0]
+	xs := []int{1, 2, 3}
+	_ = xs[1:2]
+
+	// Keep parens in binary/unary expressions for readability.
+	_ = (1 + 2) * 3
+	_ = -(1 + 2)
+	_ = !(a || b)
+
+	// Keep parens with inner comment.
+	_ = ( /* keep */ 3)
+
+	// Keep parens around composite literals in conditions.
+	if (T{x: 3}) == (T{x: 3}) {
+	}
+
+	// Drop double parens.
+	_ = f(3)
+
+	// Drop parens around call args.
+	_ = f(f(3))
+}
