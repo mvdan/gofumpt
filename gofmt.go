@@ -111,12 +111,21 @@ const (
 var fdSem = make(chan bool, 200)
 
 // NOTE(gofumpt): upstream gofmt declares `rewrite` here for the -r flag; we
-// dropped that. fileSet is shared across the process so the AddFile trick in
-// gofmtMain (reserving base 1) applies to every parsed file.
-var (
-	fileSet    = token.NewFileSet() // per process FileSet
-	parserMode parser.Mode
-)
+// dropped that.
+var parserMode parser.Mode
+
+// newFileSet returns a fresh token.FileSet for parsing a single file.
+//
+// NOTE(gofumpt): we reserve base 1 with a dummy ten-byte file so that
+// token.NoPos+1 cannot be a valid position in any real file added later.
+// Some of gofumpt's added rules construct positions via token.NoPos+1;
+// without this guard, tests starting from an empty FileSet would silently
+// map NoPos+1 to a valid offset and hide bugs like #166.
+func newFileSet() *token.FileSet {
+	fset := token.NewFileSet()
+	fset.AddFile("gofumpt_base.go", 1, 10)
+	return fset
+}
 
 func usage() {
 	fmt.Fprintf(os.Stderr, `usage: gofumpt [flags] [path ...]
@@ -323,7 +332,7 @@ func processFile(filename string, info fs.FileInfo, in io.Reader, r *reporter, e
 		return err
 	}
 
-	fileSet := token.NewFileSet()
+	fileSet := newFileSet()
 	// If we are formatting stdin, we accept a program fragment in lieu of a
 	// complete source file.
 	fragmentOk := info == nil
@@ -492,13 +501,6 @@ func main() {
 }
 
 func gofmtMain(s *sequencer) {
-	// NOTE(gofumpt): reserve fileSet base 1 so that token.NoPos+1 cannot be a
-	// valid position in any real file; some of gofumpt's added rules use
-	// NoPos+1 as a sentinel, and this guards against accidental collisions.
-	// In other words, ensure our parsed files never start with base 1,
-	// so that using token.NoPos+1 will panic.
-	fileSet.AddFile("gofumpt_base.go", 1, 10)
-
 	flag.Usage = usage
 	flag.Parse()
 
