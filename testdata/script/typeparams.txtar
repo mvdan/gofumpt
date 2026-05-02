@@ -52,6 +52,13 @@ func multilineParams[V any](p1 V,
 	println("body")
 
 }
+
+func issue263[
+	T any,
+](v T) (ok bool) {
+	_ = v
+	return true
+}
 -- foo.go.golden --
 package p
 
@@ -95,4 +102,11 @@ func multilineParams[V any](p1 V,
 	p2 V,
 ) {
 	println("body")
+}
+
+func issue263[
+	T any,
+](v T) (ok bool) {
+	_ = v
+	return true
 }
