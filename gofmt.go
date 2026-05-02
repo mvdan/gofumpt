@@ -7,7 +7,6 @@ package main
 import (
 	"bytes"
 	"context"
-	"errors"
 	"flag"
 	"fmt"
 	"go/ast"
@@ -676,7 +675,10 @@ func loadModule(dir string) *cachedModule {
 		fdSem <- true
 		data, err := os.ReadFile(path)
 		<-fdSem
-		if errors.Is(err, fs.ErrNotExist) {
+		if err != nil {
+			// If the file is missing, or we can't read this directory at all
+			// (e.g. permission denied on a directory listed in `ignore`), keep
+			// walking up to find an enclosing go.mod.
 			parent := filepath.Dir(dir)
 			if parent == "." {
 				panic("loadModule was not given an absolute path?")
@@ -685,9 +687,6 @@ func loadModule(dir string) *cachedModule {
 				return nil // reached the filesystem root
 			}
 			return loadModule(parent) // try the parent directory
-		}
-		if err != nil {
-			return nil // some other file reading error
 		}
 		file, err := modfile.Parse(filepath.Join(dir, "go.mod"), data, nil)
 		if err != nil {

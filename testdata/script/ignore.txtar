@@ -18,6 +18,15 @@ exec gofumpt -l $WORK//vendor ./testdata/./ $WORK/module/ignore//dir/.
 cmpenv stdout explicit-dirs-unclean.stdout
 ! stderr .
 
+# unreadable directories listed in `ignore` are skipped during walks
+# rather than producing a permission denied error (issue #351).
+[windows] skip
+chmod 0 module/ignore/dir
+exec gofumpt -l .
+cmpenv stdout implicit-dot.stdout
+! stderr .
+chmod 755 module/ignore/dir
+
 -- explicit-dirs.stdout --
 vendor${/}bar${/}bar.go
 vendor${/}foo${/}foo.go
