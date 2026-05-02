@@ -627,6 +627,18 @@ well might be proposed for `gofmt` itself.
 The tool is also compatible with `gofmt` and is aimed to be stable, so you can
 rely on it for your code as long as you pin a version of it.
 
+### Updating with `go/format` and `cmd/gofmt`
+
+`internal/govendor` contains frozen copies of `go/format` and its dependencies
+at a specific Go version, so that installing a specific version of `gofumpt`
+results in exactly the same formatting behavior regardless of the Go version.
+
+As this tool is a fork of `cmd/gofmt`, the `gofmt.go`, `internal.go`,
+`format/rewrite.go`, and `format/simplify.go` are inherited from upstream.
+These include some modifications where necessary, and are updated manually.
+Note that two live under the `format` package as we want to expose
+syntax simplification via the Go API.
+
 ### Frequently Asked Questions
 
 > Why attempt to replace `gofmt` instead of building on top of it?
