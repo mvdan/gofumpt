@@ -38,6 +38,15 @@ var (
 	`
 )
 var _ = "ok if either isn't multiline"
+
+var (
+	v1 = []int{
+		1,
+	}
+) // trailing comment
+var v2 = []int{
+	2,
+}
 -- foo.go.golden --
 package p
 
@@ -79,3 +88,11 @@ var (
 	`
 )
 var _ = "ok if either isn't multiline"
+
+var v1 = []int{
+	1,
+} // trailing comment
+
+var v2 = []int{
+	2,
+}

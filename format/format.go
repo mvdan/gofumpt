@@ -514,9 +514,16 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 		var lastEnd token.Pos
 		for _, decl := range node.Decls {
 			pos := decl.Pos()
-			comments := f.commentsBetween(lastEnd, pos)
-			if len(comments) > 0 {
-				pos = comments[0].Pos()
+			// Trailing inline comments on lastEnd's line belong to the
+			// previous decl and extend its effective end.
+			effectiveEnd := lastEnd
+			lastEndLine := f.Line(lastEnd)
+			for _, cg := range f.commentsBetween(lastEnd, pos) {
+				if f.Line(cg.Pos()) != lastEndLine {
+					pos = cg.Pos()
+					break
+				}
+				effectiveEnd = cg.End()
 			}
 
 			// Note that we want End-1, as End is the character after the node.
@@ -529,8 +536,8 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 				f.Offset(fn.End())-f.Offset(fn.Pos()) > 100 {
 				multi = true
 			}
-			if multi && lastMulti && f.Line(lastEnd)+1 == f.Line(pos) {
-				f.addNewline(lastEnd)
+			if multi && lastMulti && f.Line(effectiveEnd)+1 == f.Line(pos) {
+				f.addNewline(effectiveEnd)
 			}
 
 			lastMulti = multi
