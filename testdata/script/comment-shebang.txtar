@@ -1,0 +1,16 @@
+exec gofumpt -d foo.go
+! stdout .
+
+! exec gofumpt -d bar.go
+stdout 'bin/env'
+
+-- foo.go --
+//usr/bin/env go run "$0" "$@"; exit "$?"
+
+package main
+
+func main() {}
+-- bar.go --
+package p
+
+//usr/bin/env go run not on first line

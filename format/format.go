@@ -400,6 +400,9 @@ var rxCommentDirective = regexp.MustCompile(
 		`|sys(?:nb)?\b` +
 		`)`)
 
+// rxShebangComment matches a shebang like `//usr/bin/env go run`.
+var rxShebangComment = regexp.MustCompile(`^//[^ /].*\bbin/`)
+
 // commentGroupLooksLikeCode reports whether the lines of a //-style comment
 // group parse as Go statements with at least one non-trivial statement.
 // A bare identifier path or label is treated as trivial, since prose like
@@ -548,6 +551,10 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 	groupLoop:
 		for _, group := range node.Comments {
 			for _, comment := range group.List {
+				// Leave shebang lines like `//usr/bin/env go run` alone.
+				if f.Line(comment.Slash) == 1 && rxShebangComment.MatchString(comment.Text) {
+					continue groupLoop
+				}
 				if comment.Text == "//gofumpt:diagnose" || strings.HasPrefix(comment.Text, "//gofumpt:diagnose ") {
 					slc := []string{
 						"//gofumpt:diagnose",
