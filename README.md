@@ -31,7 +31,7 @@ and the `-s` flag is hidden as it is always enabled.
 
 ### Added rules
 
-**No empty lines following an assignment operator**
+**No newline after a simple assignment's operator**
 
 <details><summary><i>Example</i></summary>
 

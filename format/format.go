@@ -851,8 +851,15 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 		}
 
 	case *ast.AssignStmt:
-		// Only remove lines between the assignment token and the first right-hand side expression
-		f.removeLines(f.Line(node.TokPos), f.Line(node.Rhs[0].Pos()))
+		// Only remove lines between the assignment token and the right-hand side
+		// for simple single-value assignments. Skip multi-value assignments and
+		// binary expressions like long string concatenations, where a line break
+		// after the assignment token can improve readability.
+		if len(node.Rhs) == 1 {
+			if _, ok := node.Rhs[0].(*ast.BinaryExpr); !ok {
+				f.removeLines(f.Line(node.TokPos), f.Line(node.Rhs[0].Pos()))
+			}
+		}
 
 	case *ast.ReturnStmt:
 		if len(node.Results) > 0 {

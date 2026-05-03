@@ -33,6 +33,18 @@ func f() {
 
 	_ = // inline
 		"foo"
+
+	long :=
+		"foo " +
+			"bar " +
+			"baz"
+	_ = long
+
+	a, b, c :=
+		"foo",
+		"bar",
+		"qux"
+	_, _, _ = a, b, c
 }
 
 -- foo.go.golden --
@@ -43,7 +55,8 @@ func f() {
 
 	foo := "bar"
 
-	_, _ = 0,
+	_, _ =
+		0,
 		1
 
 	_, _ = 0,
@@ -57,4 +70,16 @@ func f() {
 
 	_ = // inline
 	"foo"
+
+	long :=
+		"foo " +
+			"bar " +
+			"baz"
+	_ = long
+
+	a, b, c :=
+		"foo",
+		"bar",
+		"qux"
+	_, _, _ = a, b, c
 }
