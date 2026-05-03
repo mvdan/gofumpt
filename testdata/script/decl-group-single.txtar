@@ -1,8 +1,9 @@
-exec gofumpt -w f1.go f2.go
+exec gofumpt -w f1.go f2.go f3.go
 cmp f1.go f1.go.golden
 cmp f2.go f2.go.golden
+cmp f3.go f3.go.golden
 
-exec gofumpt -d f1.go.golden f2.go.golden
+exec gofumpt -d f1.go.golden f2.go.golden f3.go.golden
 ! stdout .
 
 -- f1.go --
@@ -98,3 +99,23 @@ package p
 func _() {
 	var _ int
 }
+-- f3.go --
+package p
+
+import "strings"
+import "bytes"
+
+var _ = bytes.Buffer{}
+var _ = strings.Builder{}
+-- f3.go.golden --
+package p
+
+import (
+	"bytes"
+	"strings"
+)
+
+var (
+	_ = bytes.Buffer{}
+	_ = strings.Builder{}
+)

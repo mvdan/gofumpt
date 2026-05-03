@@ -461,6 +461,7 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 				continue
 			}
 			lastPos := start.Pos()
+			merged := false
 		contLoop:
 			for i++; i < len(node.Decls); {
 				cont, ok := node.Decls[i].(*ast.GenDecl)
@@ -484,6 +485,7 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 				}
 
 				start.Specs = append(start.Specs, cont.Specs...)
+				merged = true
 				if c := f.inlineComment(cont.End()); c != nil {
 					// don't move an inline comment outside
 					start.Rparen = c.End()
@@ -494,6 +496,12 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 				}
 				lastPos = cont.Pos()
 				i++
+			}
+			// Re-sort imports in the new group so the output is idempotent.
+			// Set Lparen so ast.SortImports doesn't skip the merged decl.
+			if merged && start.Tok == token.IMPORT {
+				start.Lparen = start.TokPos + token.Pos(len("import"))
+				ast.SortImports(f.fset, f.astFile)
 			}
 		}
 		node.Decls = newDecls
