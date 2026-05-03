@@ -48,19 +48,19 @@ package p
 import "fmt"
 
 func f(pwet bool) {
-	// fmt.Println("a")
+	//fmt.Println("a")
 	if pwet {
-		// fmt.Println("b")
+		//fmt.Println("b")
 		return
 	}
 
-	// x := 1
-	// fmt.Println(x)
+	//x := 1
+	//fmt.Println(x)
 
-	// return
+	//return
 }
 
-// foo()
+//foo()
 
 //if x == y {
 //	doSomething()
@@ -73,9 +73,9 @@ func f(pwet bool) {
 //case int:
 //}
 
-// var x = 1
+//var x = 1
 
-// type T struct{}
+//type T struct{}
 
 // Note that we ignore prose with letters.
 

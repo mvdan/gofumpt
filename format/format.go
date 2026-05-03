@@ -400,6 +400,50 @@ var rxCommentDirective = regexp.MustCompile(
 		`|sys(?:nb)?\b` +
 		`)`)
 
+// commentGroupLooksLikeCode reports whether the lines of a //-style comment
+// group parse as Go statements with at least one non-trivial statement.
+// A bare identifier path or label is treated as trivial, since prose like
+// "// foo" or "// TODO: bar" parses but is not commented-out code.
+func commentGroupLooksLikeCode(group *ast.CommentGroup) bool {
+	src := "package p\nfunc _() {\n" + group.Text() + "}\n"
+	file, err := parser.ParseFile(token.NewFileSet(), "", src, parser.SkipObjectResolution)
+	if err != nil {
+		return false
+	}
+	fn, _ := file.Decls[0].(*ast.FuncDecl)
+	if fn == nil || fn.Body == nil {
+		return false
+	}
+	for _, stmt := range fn.Body.List {
+		if !isTrivialStmt(stmt) {
+			return true
+		}
+	}
+	return false
+}
+
+func isTrivialStmt(stmt ast.Stmt) bool {
+	switch s := stmt.(type) {
+	case *ast.ExprStmt:
+		return isIdentPath(s.X)
+	case *ast.LabeledStmt:
+		return isTrivialStmt(s.Stmt)
+	case *ast.EmptyStmt:
+		return true
+	}
+	return false
+}
+
+func isIdentPath(expr ast.Expr) bool {
+	switch e := expr.(type) {
+	case *ast.Ident:
+		return true
+	case *ast.SelectorExpr:
+		return isIdentPath(e.X)
+	}
+	return false
+}
+
 func (f *fumpter) applyPre(c *astutil.Cursor) {
 	f.splitLongLine(c)
 
@@ -509,6 +553,9 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 					// this line could be code like "//{"
 					continue groupLoop
 				}
+			}
+			if commentGroupLooksLikeCode(group) {
+				continue groupLoop
 			}
 			// If none of the comment group's lines look like a
 			// directive or code, add spaces, if needed.
