@@ -1,0 +1,86 @@
+exec gofumpt -w foo.go
+cmp foo.go foo.go.golden
+
+exec gofumpt -d foo.go.golden
+! stdout .
+
+-- foo.go --
+package p
+
+func _() {
+	// already consistent
+	_ = call(a, b, c)
+
+	_ = call(
+		a,
+		b,
+		c,
+	)
+
+	// closing paren at start of line, opening paren not at end of line:
+	// move opening paren so both are consistent.
+	_ = call(a, b,
+		c,
+	)
+
+	// opening paren at end of line, closing paren not at start of line:
+	// move closing paren so both are consistent.
+	_ = call(
+		a,
+		b,
+		c)
+
+	// inline comment after the last argument should still cause the
+	// closing paren to be moved to its own line.
+	_ = call(
+		a,
+		b,
+		c) // trailing
+
+	// nested calls
+	_ = outer(inner(
+		a,
+		b))
+}
+-- foo.go.golden --
+package p
+
+func _() {
+	// already consistent
+	_ = call(a, b, c)
+
+	_ = call(
+		a,
+		b,
+		c,
+	)
+
+	// closing paren at start of line, opening paren not at end of line:
+	// move opening paren so both are consistent.
+	_ = call(
+		a, b,
+		c,
+	)
+
+	// opening paren at end of line, closing paren not at start of line:
+	// move closing paren so both are consistent.
+	_ = call(
+		a,
+		b,
+		c,
+	)
+
+	// inline comment after the last argument should still cause the
+	// closing paren to be moved to its own line.
+	_ = call(
+		a,
+		b,
+		c,
+	) // trailing
+
+	// nested calls
+	_ = outer(inner(
+		a,
+		b,
+	))
+}

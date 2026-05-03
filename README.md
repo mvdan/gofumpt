@@ -182,6 +182,36 @@ var matrix = [][]int{
 
 </details>
 
+**Multi-line function calls should match opening and closing parentheses**
+
+<details><summary><i>Example</i></summary>
+
+```go
+result := compute(a, b,
+	c,
+)
+
+result := compute(
+	a,
+	b,
+	c)
+```
+
+```go
+result := compute(
+	a, b,
+	c,
+)
+
+result := compute(
+	a,
+	b,
+	c,
+)
+```
+
+</details>
+
 **Empty field lists should use a single line**
 
 <details><summary><i>Example</i></summary>
