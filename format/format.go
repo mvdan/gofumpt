@@ -513,6 +513,14 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 
 			// Note that we want End-1, as End is the character after the node.
 			multi := f.Line(pos) < f.Line(decl.End()-1)
+			// A func declaration which fits on a single source line may
+			// still be printed across multiple lines: go/printer's funcBody
+			// breaks the body onto its own lines once header+body exceeds
+			// 100 bytes. Approximate that with the source byte length.
+			if fn, _ := decl.(*ast.FuncDecl); fn != nil && !multi && fn.Body != nil &&
+				f.Offset(fn.End())-f.Offset(fn.Pos()) > 100 {
+				multi = true
+			}
 			if multi && lastMulti && f.Line(lastEnd)+1 == f.Line(pos) {
 				f.addNewline(lastEnd)
 			}

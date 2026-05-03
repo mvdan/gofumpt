@@ -17,6 +17,9 @@ func f4() {
 	println("multiline")
 }
 
+func (v *OffsetForLeaderEpochResponse) Throttle() (int32, bool) { return v.ThrottleMillis, v.Version >= 0 }
+func (v *OffsetForLeaderEpochResponse) RequestKind() Request { return &OffsetForLeaderEpochRequest{Version: v.Version} }
+
 // l1 is a var.
 var l1 = []int{
 	1, 2,
@@ -47,6 +50,14 @@ func f3() {
 
 func f4() {
 	println("multiline")
+}
+
+func (v *OffsetForLeaderEpochResponse) Throttle() (int32, bool) {
+	return v.ThrottleMillis, v.Version >= 0
+}
+
+func (v *OffsetForLeaderEpochResponse) RequestKind() Request {
+	return &OffsetForLeaderEpochRequest{Version: v.Version}
 }
 
 // l1 is a var.
