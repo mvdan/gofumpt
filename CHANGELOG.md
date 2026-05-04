@@ -1,5 +1,28 @@
 # Changelog
 
+## [v0.10.0] - 2026-05-04
+
+This release is based on Go 1.26's gofmt, and requires Go 1.25 or later.
+
+A new rule is introduced to drop unnecessary parentheses around expressions
+where the inner expression is unambiguous on its own, such as `f((3))`.
+Parentheses are kept where they are useful, such as on binary expressions. See #44.
+
+A new rule is introduced to require multi-line function calls to match
+the opening and closing parenthesis in terms of the use of newlines. See #74.
+
+The `-extra` flag now accepts a comma-separated list of rule names to enable
+individual extra rules, rather than enabling all of them at once. See #339.
+
+The following changes are included as well:
+
+* Avoid crashing on `go.mod` files without a `module` directive - #350
+* Avoid failing when an ignored directory cannot be read - #351
+* Avoid prefixing more kinds of commented-out Go code with spaces - #230
+* Avoid prefixing a shebang comment with a space - #237
+* Narrow the newlines on assignments rule to ignore complex cases - #354
+* Fix three bugs which caused a second gofumpt run to make changes - #132, #345
+
 ## [v0.9.1] - 2025-09-07
 
 This is a bugfix release to address a regression in detecting
@@ -187,6 +210,7 @@ those building programs with gofumpt.
 Finally, this release adds the `-version` flag, to print the tool's own version.
 The flag will work for "master" builds too.
 
+[v0.10.0]: https://github.com/mvdan/gofumpt/releases/tag/v0.10.0
 [v0.9.0]: https://github.com/mvdan/gofumpt/releases/tag/v0.9.0
 [v0.8.0]: https://github.com/mvdan/gofumpt/releases/tag/v0.8.0
 [v0.7.0]: https://github.com/mvdan/gofumpt/releases/tag/v0.7.0
