@@ -1,9 +1,10 @@
-exec gofumpt -w f1.go f2.go f3.go
+exec gofumpt -w f1.go f2.go f3.go f4.go
 cmp f1.go f1.go.golden
 cmp f2.go f2.go.golden
 cmp f3.go f3.go.golden
+cmp f4.go f4.go.golden
 
-exec gofumpt -d f1.go.golden f2.go.golden f3.go.golden
+exec gofumpt -d f1.go.golden f2.go.golden f3.go.golden f4.go.golden
 ! stdout .
 
 -- f1.go --
@@ -118,4 +119,28 @@ import (
 var (
 	_ = bytes.Buffer{}
 	_ = strings.Builder{}
+)
+-- f4.go --
+package p
+
+var A = 1
+var (
+	B = 2
+)
+
+var (
+	C = 3
+)
+var D = 4
+-- f4.go.golden --
+package p
+
+var (
+	A = 1
+	B = 2
+)
+
+var (
+	C = 3
+	D = 4
 )

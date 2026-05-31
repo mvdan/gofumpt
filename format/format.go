@@ -321,6 +321,37 @@ func (f *fumpter) removeLinesBetween(from, to token.Pos) {
 	f.removeLines(f.Line(from)+1, f.Line(to))
 }
 
+// removeParens unwraps a single-spec var group like "var (\n\tx = 1\n)" into a
+// lone "var x = 1". It only acts on such groups without a doc comment.
+func (f *fumpter) removeParens(node *ast.GenDecl) {
+	if node.Tok != token.VAR || len(node.Specs) != 1 ||
+		!node.Lparen.IsValid() || node.Doc != nil {
+		return
+	}
+	specPos := node.Specs[0].Pos()
+	specEnd := node.Specs[0].End()
+
+	if len(f.commentsBetween(node.TokPos, specPos)) > 0 {
+		// If the single spec has a comment on the line above,
+		// the comment must go before the entire declaration now.
+		node.TokPos = specPos
+	} else {
+		f.removeLines(f.Line(node.TokPos), f.Line(specPos))
+	}
+	if len(f.commentsBetween(specEnd, node.Rparen)) > 0 {
+		// Leave one newline to not force a comment on the next line to
+		// become an inline comment.
+		f.removeLines(f.Line(specEnd)+1, f.Line(node.Rparen))
+	} else {
+		f.removeLines(f.Line(specEnd), f.Line(node.Rparen))
+	}
+
+	// Remove the parentheses. go/printer will automatically
+	// get rid of the newlines.
+	node.Lparen = token.NoPos
+	node.Rparen = token.NoPos
+}
+
 func (f *fumpter) Position(p token.Pos) token.Position {
 	return f.file.PositionFor(p, false)
 }
@@ -454,6 +485,14 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 
 	switch node := c.Node().(type) {
 	case *ast.File:
+		// Unwrap single-spec var groups before the joining below,
+		// so an adjacent var line and var group merge in one pass.
+		for _, decl := range node.Decls {
+			if decl, ok := decl.(*ast.GenDecl); ok {
+				f.removeParens(decl)
+			}
+		}
+
 		// Join contiguous lone var/const/import lines.
 		// Abort if there are empty lines in between,
 		// including a leading comment if it's a directive.
@@ -630,31 +669,7 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 
 		// Single var declarations shouldn't use parentheses, unless
 		// there's a comment on the grouped declaration.
-		if node.Tok == token.VAR && len(node.Specs) == 1 &&
-			node.Lparen.IsValid() && node.Doc == nil {
-			specPos := node.Specs[0].Pos()
-			specEnd := node.Specs[0].End()
-
-			if len(f.commentsBetween(node.TokPos, specPos)) > 0 {
-				// If the single spec has a comment on the line above,
-				// the comment must go before the entire declaration now.
-				node.TokPos = specPos
-			} else {
-				f.removeLines(f.Line(node.TokPos), f.Line(specPos))
-			}
-			if len(f.commentsBetween(specEnd, node.Rparen)) > 0 {
-				// Leave one newline to not force a comment on the next line to
-				// become an inline comment.
-				f.removeLines(f.Line(specEnd)+1, f.Line(node.Rparen))
-			} else {
-				f.removeLines(f.Line(specEnd), f.Line(node.Rparen))
-			}
-
-			// Remove the parentheses. go/printer will automatically
-			// get rid of the newlines.
-			node.Lparen = token.NoPos
-			node.Rparen = token.NoPos
-		}
+		f.removeParens(node)
 
 	case *ast.InterfaceType:
 		if len(node.Methods.List) > 0 {

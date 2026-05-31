@@ -8,6 +8,9 @@ on its own line when the opening parenthesis ends a line. See #74.
 Avoid crashing when compiled with tinygo for Wasm, which lacks recover support,
 by detecting commented-out code without the parser's bailout panic. See #230.
 
+Produce stable output in a single pass when a lone var declaration is adjacent
+to a single-element var group, which previously required a second run. See #355.
+
 ## [v0.10.0] - 2026-05-04
 
 This release is based on Go 1.26's gofmt, and requires Go 1.25 or later.
