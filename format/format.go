@@ -1313,7 +1313,7 @@ func (f *fumpter) shouldMergeAdjacentFields(f1, f2 *ast.Field) bool {
 	return bytes.Equal(b1.Bytes(), b2.Bytes())
 }
 
-var posType = reflect.TypeOf(token.NoPos)
+var posType = reflect.TypeFor[token.Pos]()
 
 // setPos recursively sets all position fields in the node v to pos.
 func setPos(v reflect.Value, pos token.Pos) {
