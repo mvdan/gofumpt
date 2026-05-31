@@ -18,9 +18,15 @@ func _() {
 	)
 
 	// closing paren at start of line, opening paren not at end of line:
-	// move opening paren so both are consistent.
+	// left alone, as only the opening-paren-at-end-of-line case is enforced.
 	_ = call(a, b,
 		c,
+	)
+
+	// first argument on the same line as the opening paren is left alone.
+	slog.Debug("Message",
+		slog.String("a", "1"),
+		slog.String("b", "2"),
 	)
 
 	// opening paren at end of line, closing paren not at start of line:
@@ -56,10 +62,15 @@ func _() {
 	)
 
 	// closing paren at start of line, opening paren not at end of line:
-	// move opening paren so both are consistent.
-	_ = call(
-		a, b,
+	// left alone, as only the opening-paren-at-end-of-line case is enforced.
+	_ = call(a, b,
 		c,
+	)
+
+	// first argument on the same line as the opening paren is left alone.
+	slog.Debug("Message",
+		slog.String("a", "1"),
+		slog.String("b", "2"),
 	)
 
 	// opening paren at end of line, closing paren not at start of line:

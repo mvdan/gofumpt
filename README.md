@@ -182,15 +182,12 @@ var matrix = [][]int{
 
 </details>
 
-**Multi-line function calls should match opening and closing parentheses**
+**Multi-line function calls with the opening parenthesis at the end of a line
+should place the closing parenthesis at the start of a line**
 
 <details><summary><i>Example</i></summary>
 
 ```go
-result := compute(a, b,
-	c,
-)
-
 result := compute(
 	a,
 	b,
@@ -198,11 +195,6 @@ result := compute(
 ```
 
 ```go
-result := compute(
-	a, b,
-	c,
-)
-
 result := compute(
 	a,
 	b,

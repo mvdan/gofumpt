@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+Narrow the multi-line function call rule to only place the closing parenthesis
+on its own line when the opening parenthesis ends a line. See #74.
+
 ## [v0.10.0] - 2026-05-04
 
 This release is based on Go 1.26's gofmt, and requires Go 1.25 or later.

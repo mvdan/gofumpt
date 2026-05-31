@@ -976,9 +976,9 @@ func (f *fumpter) applyPost(c *astutil.Cursor) {
 			}
 		}
 
-	// In a multi-line call, the opening parenthesis at the end of a line
-	// should be matched by a closing parenthesis at the start of a line,
-	// and vice versa. See https://github.com/mvdan/gofumpt/issues/74.
+	// In a multi-line call, if the opening parenthesis is at the end of a
+	// line, the closing parenthesis should be at the start of a line.
+	// See https://github.com/mvdan/gofumpt/issues/74.
 	case *ast.CallExpr:
 		if len(node.Args) == 0 {
 			break
@@ -998,8 +998,6 @@ func (f *fumpter) applyPost(c *astutil.Cursor) {
 		closeAtBOL := closeLine != lastLine
 		if openAtEOL && !closeAtBOL {
 			f.addNewline(node.Rparen)
-		} else if closeAtBOL && !openAtEOL {
-			f.addNewline(node.Lparen + 1)
 		}
 	}
 }
