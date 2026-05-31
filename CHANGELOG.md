@@ -5,6 +5,9 @@
 Narrow the multi-line function call rule to only place the closing parenthesis
 on its own line when the opening parenthesis ends a line. See #74.
 
+Avoid crashing when compiled with tinygo for Wasm, which lacks recover support,
+by detecting commented-out code without the parser's bailout panic. See #230.
+
 ## [v0.10.0] - 2026-05-04
 
 This release is based on Go 1.26's gofmt, and requires Go 1.25 or later.

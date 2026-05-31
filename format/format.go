@@ -409,7 +409,9 @@ var rxShebangComment = regexp.MustCompile(`^//[^ /].*\bbin/`)
 // "// foo" or "// TODO: bar" parses but is not commented-out code.
 func commentGroupLooksLikeCode(group *ast.CommentGroup) bool {
 	src := "package p\nfunc _() {\n" + group.Text() + "}\n"
-	file, err := parser.ParseFile(token.NewFileSet(), "", src, parser.SkipObjectResolution)
+	// AllErrors avoids the parser's panic/recover bailout on too many errors,
+	// which crashes under tinygo's Wasm target as it lacks recover support.
+	file, err := parser.ParseFile(token.NewFileSet(), "", src, parser.SkipObjectResolution|parser.AllErrors)
 	if err != nil {
 		return false
 	}
