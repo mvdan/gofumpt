@@ -5,15 +5,8 @@ cmp f3.go f3.go.golden
 cmp f4.go f4.go.golden
 cmp f5.go f5.go.golden
 
-exec gofumpt -d f1.go.golden f2.go.golden f3.go.golden f4.go.golden
+exec gofumpt -d f1.go.golden f2.go.golden f3.go.golden f4.go.golden f5.go.golden
 ! stdout .
-
-# Issue 357: merging adjacent lone var decls into a group is not yet
-# idempotent; the blank line separating the merged group from the following
-# multi-line var only shows up on a second pass.
-# TODO: f5.go.golden should be idempotent (exec + ! stdout .) once fixed.
-! exec gofumpt -d f5.go.golden
-stdout .
 
 -- f1.go --
 package p
@@ -171,6 +164,7 @@ var (
 		(*int)(nil),
 	}
 )
+
 var depIdxs = []int32{
 	6,
 }

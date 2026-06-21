@@ -530,14 +530,15 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 
 				start.Specs = append(start.Specs, cont.Specs...)
 				merged = true
+				end := cont.End()
 				if c := f.inlineComment(cont.End()); c != nil {
 					// don't move an inline comment outside
-					start.Rparen = c.End()
-				} else {
-					// so the code below treats the joined
-					// decl group as multi-line
-					start.Rparen = cont.End()
+					end = c.End()
 				}
+				// Point Rparen at the last content character, like a real
+				// ')', so start.End() stays on the content's final line and
+				// the empty-line separator below is idempotent in one pass.
+				start.Rparen = end - 1
 				lastPos = cont.Pos()
 				i++
 			}
