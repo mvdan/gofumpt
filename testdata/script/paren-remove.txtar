@@ -118,15 +118,15 @@ func g() {
 	}
 
 	// Keep parens when the expression begins with a composite literal.
-	if 1 == T{}.Foo() {
+	if 1 == (T{}.Foo()) {
 	}
-	for T{}.Foo() == 1 {
+	for (T{}.Foo()) == 1 {
 	}
-	switch T{}.x {
+	switch (T{}.x) {
 	}
-	if []int{1}[0] == 0 {
+	if ([]int{1}[0]) == 0 {
 	}
-	_ = []int{1, 2, 3}[1:2]
+	_ = ([]int{1, 2, 3}[1:2])
 
 	// Drop parens when the composite literal is enclosed in parens or brackets.
 	if (T{}).Foo() == 0 {

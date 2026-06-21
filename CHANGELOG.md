@@ -11,6 +11,10 @@ by detecting commented-out code without the parser's bailout panic. See #230.
 Produce stable output in a single pass when a lone var declaration is adjacent
 to a single-element var group, which previously required a second run. See #355.
 
+Keep the parentheses around an expression which begins with a composite literal
+of the form `T{...}`, such as `(s{}.Foo())`, as they are required when the
+expression starts an `if`, `for`, or `switch` clause. See #356.
+
 ## [v0.10.0] - 2026-05-04
 
 This release is based on Go 1.26's gofmt, and requires Go 1.25 or later.

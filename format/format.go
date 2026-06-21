@@ -1105,21 +1105,41 @@ func (f *fumpter) splitLongLine(c *astutil.Cursor) {
 // canRemoveParens reports whether the parentheses around node are definitely
 // useless and can be safely removed without changing intent.
 func (f *fumpter) canRemoveParens(node *ast.ParenExpr) bool {
-	// Keep parens around expressions where they can help readability
-	// or be required by surrounding syntax. Binary and unary expressions
-	// are kept for readability; composite literals can be required by an
-	// `if` or `for` condition; type expressions can be required by a
-	// conversion such as `(<-chan T)(v)` or `chan (<-chan T)`.
-	switch node.X.(type) {
-	case *ast.BinaryExpr, *ast.UnaryExpr, *ast.StarExpr,
-		*ast.CompositeLit,
-		*ast.ChanType, *ast.ArrayType, *ast.MapType,
-		*ast.FuncType, *ast.InterfaceType, *ast.StructType:
-		return false
-	}
 	// Don't drop parens which contain comments,
 	// as the printer may not place them well without the parens.
-	return len(f.commentsBetween(node.Lparen, node.Rparen)) == 0
+	if len(f.commentsBetween(node.Lparen, node.Rparen)) > 0 {
+		return false
+	}
+	return !keepParens(node.X, true)
+}
+
+// keepParens reports whether the parentheses directly around expr should be
+// kept: around binary, unary, and type expressions for readability and for
+// conversions like `(<-chan T)(v)`, but only when outermost; and around an
+// expression whose leftmost operand is a composite literal, whose brace would
+// otherwise open an if, for, or switch body.
+func keepParens(expr ast.Expr, outermost bool) bool {
+	switch expr := expr.(type) {
+	case *ast.CompositeLit:
+		return true
+	case *ast.CallExpr:
+		return keepParens(expr.Fun, false)
+	case *ast.SelectorExpr:
+		return keepParens(expr.X, false)
+	case *ast.IndexExpr:
+		return keepParens(expr.X, false)
+	case *ast.IndexListExpr:
+		return keepParens(expr.X, false)
+	case *ast.SliceExpr:
+		return keepParens(expr.X, false)
+	case *ast.TypeAssertExpr:
+		return keepParens(expr.X, false)
+	case *ast.BinaryExpr, *ast.UnaryExpr, *ast.StarExpr,
+		*ast.ChanType, *ast.ArrayType, *ast.MapType,
+		*ast.FuncType, *ast.InterfaceType, *ast.StructType:
+		return outermost
+	}
+	return false
 }
 
 func isComposite(node ast.Node) *ast.CompositeLit {
