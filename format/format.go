@@ -1394,8 +1394,8 @@ func setPos(v reflect.Value, pos token.Pos) {
 		v.Set(reflect.ValueOf(pos))
 	}
 	if v.Kind() == reflect.Struct {
-		for i := range v.NumField() {
-			setPos(v.Field(i), pos)
+		for _, field := range v.Fields() {
+			setPos(field, pos)
 		}
 	}
 }

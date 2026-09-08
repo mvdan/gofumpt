@@ -218,7 +218,7 @@ func (p *printer) writeIndent() {
 	// use "hard" htabs - indentation columns
 	// must not be discarded by the tabwriter
 	n := p.Config.Indent + p.indent // include base indentation
-	for i := 0; i < n; i++ {
+	for range n {
 		p.output = append(p.output, '\t')
 	}
 
@@ -250,7 +250,7 @@ func (p *printer) writeByte(ch byte, n int) {
 		p.writeIndent()
 	}
 
-	for i := 0; i < n; i++ {
+	for range n {
 		p.output = append(p.output, ch)
 	}
 
@@ -440,10 +440,7 @@ func (p *printer) writeCommentPrefix(pos, next token.Position, prev *ast.Comment
 		// determine number of linebreaks before the comment
 		n := 0
 		if pos.IsValid() && p.last.IsValid() {
-			n = pos.Line - p.last.Line
-			if n < 0 { // should never happen
-				n = 0
-			}
+			n = max(pos.Line-p.last.Line, 0)
 		}
 
 		// at the package scope level only (p.indent == 0),

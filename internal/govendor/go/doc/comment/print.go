@@ -167,7 +167,7 @@ func (p *Printer) Comment(d *Doc) []byte {
 	// This makes it easy to clean up the unused ones: gofmt and
 	// delete the final block. And it's a nice visual signal without
 	// affecting the way the comment formats for users.
-	for i := 0; i < 2; i++ {
+	for i := range 2 {
 		used := i == 0
 		first := true
 		for _, def := range d.Links {

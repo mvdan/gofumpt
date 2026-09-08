@@ -679,8 +679,8 @@ func parseLink(line string) (*LinkDef, bool) {
 
 	text := line[1:i]
 	url := strings.TrimSpace(line[i+3:])
-	j := strings.Index(url, "://")
-	if j < 0 || !isScheme(url[:j]) {
+	before, _, ok := strings.Cut(url, "://")
+	if !ok || !isScheme(before) {
 		return nil, false
 	}
 
