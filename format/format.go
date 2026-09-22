@@ -1093,7 +1093,8 @@ func (f *fumpter) applyPost(c *astutil.Cursor) {
 		}
 		firstLine := f.Line(node.Args[0].Pos())
 		lastEnd := node.Args[len(node.Args)-1].End()
-		if comment := f.inlineComment(lastEnd); comment != nil {
+		// An inline comment after the closing parenthesis is not an argument's.
+		if comment := f.inlineComment(lastEnd); comment != nil && comment.Pos() < node.Rparen {
 			lastEnd = comment.End()
 		}
 		lastLine := f.Line(lastEnd)

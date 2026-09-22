@@ -14,14 +14,11 @@ cmp spaced.go spaced.go.golden
 exec gofumpt -extra=balance_calls -d spaced.go.golden
 ! stdout .
 
-# TODO: separating multi-line top-level declarations adds an empty line at the
-# end of a declaration's last line, which moves an inline comment's end onto
-# the new line, so a call ending in one is only balanced on a second run.
 exec gofumpt -extra=balance_calls -w separated.go
 cmp separated.go separated.go.golden
 
-! exec gofumpt -extra=balance_calls -d separated.go.golden
-stdout .
+exec gofumpt -extra=balance_calls -d separated.go.golden
+! stdout .
 
 -- foo.go --
 package p
@@ -142,7 +139,8 @@ var b = call(
 package p
 
 var a = call(
-	a) // trailing
+	a,
+) // trailing
 
 var b = call(
 	b,
