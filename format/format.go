@@ -743,10 +743,20 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 				tok = token.DEFINE
 			}
 		}
+		// go/printer only indents a value on a later line than the token
+		// if the token has a position; the "=" shares the last name's line.
+		// Join a value which no comment separates from it, as go/printer
+		// did without a position.
+		tokPos := spec.Names[len(spec.Names)-1].End()
+		valuePos := spec.Values[0].Pos()
+		if len(f.commentsBetween(tokPos, valuePos)) == 0 {
+			f.removeLines(f.Line(tokPos), f.Line(valuePos))
+		}
 		c.Replace(&ast.AssignStmt{
-			Lhs: names,
-			Tok: tok,
-			Rhs: spec.Values,
+			Lhs:    names,
+			TokPos: tokPos,
+			Tok:    tok,
+			Rhs:    spec.Values,
 		})
 
 	case *ast.GenDecl:

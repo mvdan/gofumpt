@@ -4,14 +4,11 @@ cmp foo.go foo.go.golden
 exec gofumpt -d foo.go.golden
 ! stdout .
 
-# TODO: the rewrite from "var name = value" builds an assignment with no
-# position for its token, so go/printer does not indent a value which
-# a comment pushes onto the next line, and gofmt would indent it.
 exec gofumpt -w comment.go
 cmp comment.go comment.go.golden
 
-! exec gofumpt -d comment.go.golden
-stdout .
+exec gofumpt -d comment.go.golden
+! stdout .
 
 -- foo.go --
 package p
@@ -79,11 +76,11 @@ package p
 
 func f() {
 	comment := // comment
-	x
+		x
 	comment2, comment3 := // comment
-	x, y
+		x, y
 	commentBefore := /* comment */
-	x
+		x
 
 	nextLine := x
 	nextLine2, nextLine3 := x, y
