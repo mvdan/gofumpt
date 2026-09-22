@@ -6,16 +6,8 @@ cmp f4.go f4.go.golden
 cmp f5.go f5.go.golden
 cmp f6.go f6.go.golden
 
-exec gofumpt -d f1.go.golden f2.go.golden f3.go.golden f4.go.golden f5.go.golden
+exec gofumpt -d f1.go.golden f2.go.golden f3.go.golden f4.go.golden f5.go.golden f6.go.golden
 ! stdout .
-
-# TODO: joining lone imports sorts them, and go/printer places comments by
-# position, so an import which moves leaves its comment behind, ending up after
-# the closing parenthesis of the group. The golden file below is not stable
-# either, as the second run separates the std imports which the first should
-# have. Such imports should not be joined at all.
-! exec gofumpt -d f6.go.golden
-stdout .
 
 -- f1.go --
 package p
@@ -197,27 +189,19 @@ import _ "errors" // a comment on the last import counts as well
 -- f6.go.golden --
 package p
 
-import (
-	"github.com/x/y"
-	"os"
-) // this comment documents the import of "os"
+import "os" // this comment documents the import of "os"
+import "github.com/x/y"
 
 import (
 	"bytes" // sorted already, so joining moves no import
 	"context"
 )
 
-import (
-	"sort"
-	"strings"
-) // a raw quoted path sorts by its unquoted value
+import "strings" // a raw quoted path sorts by its unquoted value
+import "sort"
 
-import (
-	aa "path"
-	zz "path"
-) // imports of the same path are not joined
+import zz "path" // imports of the same path are not joined
+import aa "path"
 
-import (
-	_ "errors"
-	_ "io" // a comment on the last import counts as well
-)
+import _ "io"
+import _ "errors" // a comment on the last import counts as well

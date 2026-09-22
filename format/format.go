@@ -560,9 +560,20 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 				if !ok || cont.Tok != start.Tok || cont.Lparen != token.NoPos || isCgoImport(cont) {
 					break
 				}
+				// Where cont ends, including an inline comment of its own.
+				end := cont.End()
+				if c := f.inlineComment(end); c != nil {
+					end = c.End()
+				}
 				// Appending a const spec to a group changes the value of any
 				// iota it mentions, as iota counts the specs before it.
 				if start.Tok == token.CONST && containsIota(cont) {
+					break
+				}
+				// Joining imports sorts them, and go/printer places comments
+				// by position, so an import which moves leaves its comments
+				// behind, ending up outside of the group.
+				if start.Tok == token.IMPORT && !f.joinKeepsImportComments(start, cont, end) {
 					break
 				}
 				// Are there things between these two declarations? e.g. empty lines, comments, directives
@@ -583,14 +594,11 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 
 				start.Specs = append(start.Specs, cont.Specs...)
 				merged = true
-				end := cont.End()
-				if c := f.inlineComment(cont.End()); c != nil {
-					// don't move an inline comment outside
-					end = c.End()
-				}
 				// Point Rparen at the last content character, like a real
 				// ')', so start.End() stays on the content's final line and
 				// the empty-line separator below is idempotent in one pass.
+				// The inline comment counts as content, so that it is not
+				// left outside the group.
 				start.Rparen = end - 1
 				lastPos = cont.Pos()
 				i++
@@ -1435,6 +1443,28 @@ func setPos(v reflect.Value, pos token.Pos) {
 			setPos(v.Field(i), pos)
 		}
 	}
+}
+
+// joinKeepsImportComments reports whether joining the import declaration cont,
+// ending at end, into start would keep every comment where it belongs.
+// ast.SortImports may reorder the joined specs, and go/printer places comments
+// by position, so an import which moves leaves its comments behind.
+func (f *fumpter) joinKeepsImportComments(start, cont *ast.GenDecl, end token.Pos) bool {
+	if len(f.commentsBetween(start.Pos(), end)) == 0 {
+		return true
+	}
+	// ast.SortImports sorts by import path, so imports whose paths already
+	// ascend are left where they are. Equal paths are ordered by details we do
+	// not want to reimplement here, so they do not count as sorted.
+	prev := ""
+	for _, spec := range slices.Concat(start.Specs, cont.Specs) {
+		path, err := strconv.Unquote(spec.(*ast.ImportSpec).Path.Value)
+		if err != nil || path <= prev {
+			return false
+		}
+		prev = path
+	}
+	return true
 }
 
 // containsIota reports whether the declaration mentions the predeclared iota.
