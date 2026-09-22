@@ -1,12 +1,17 @@
-exec gofumpt -w f1.go f2.go f3.go f4.go f5.go f6.go
+# TODO: joining lone imports puts the group's closing parenthesis on the line of
+# the last import, as there is no line of its own for it. Moving a std import up
+# then drops that line, which pulls a comment on the line below into the group's
+# line, as the golden file for f7.go shows. The comment should stay put.
+exec gofumpt -w f1.go f2.go f3.go f4.go f5.go f6.go f7.go
 cmp f1.go f1.go.golden
 cmp f2.go f2.go.golden
 cmp f3.go f3.go.golden
 cmp f4.go f4.go.golden
 cmp f5.go f5.go.golden
 cmp f6.go f6.go.golden
+cmp f7.go f7.go.golden
 
-exec gofumpt -d f1.go.golden f2.go.golden f3.go.golden f4.go.golden f5.go.golden f6.go.golden
+exec gofumpt -d f1.go.golden f2.go.golden f3.go.golden f4.go.golden f5.go.golden f6.go.golden f7.go.golden
 ! stdout .
 
 -- f1.go --
@@ -205,3 +210,17 @@ import aa "path"
 
 import _ "io"
 import _ "errors" // a comment on the last import counts as well
+-- f7.go --
+package p
+
+import "os"
+import "github.com/x/y"
+// this comment stands on its own line after the imports
+-- f7.go.golden --
+package p
+
+import (
+	"os"
+
+	"github.com/x/y"
+) // this comment stands on its own line after the imports
