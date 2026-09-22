@@ -10,6 +10,16 @@ cmp f7.go f7.go.golden
 exec gofumpt -d f1.go.golden f2.go.golden f3.go.golden f4.go.golden f5.go.golden f6.go.golden f7.go.golden
 ! stdout .
 
+# TODO: unwrapping a var group whose spec has an inline comment leaves the line
+# of the closing parenthesis behind, which is printed as an empty line.
+# It separates the var from the next one at the top level, and in a function it
+# survives the first run as an empty line before the closing brace.
+exec gofumpt -w f8.go
+cmp f8.go f8.go.golden
+
+! exec gofumpt -d f8.go.golden
+stdout .
+
 -- f1.go --
 package p
 
@@ -222,3 +232,28 @@ import (
 )
 
 // this comment stands on its own line after the imports
+-- f8.go --
+package p
+
+var (
+	inline = 1 // an inline comment stays on the spec's line
+)
+var afterInline = 2
+
+func _() {
+	var (
+		inline = 1 // an inline comment stays on the spec's line
+	)
+
+}
+-- f8.go.golden --
+package p
+
+var inline = 1 // an inline comment stays on the spec's line
+
+var afterInline = 2
+
+func _() {
+	inline := 1 // an inline comment stays on the spec's line
+
+}
