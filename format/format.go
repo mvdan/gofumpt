@@ -522,6 +522,11 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 				if !ok || cont.Tok != start.Tok || cont.Lparen != token.NoPos || isCgoImport(cont) {
 					break
 				}
+				// Appending a const spec to a group changes the value of any
+				// iota it mentions, as iota counts the specs before it.
+				if start.Tok == token.CONST && containsIota(cont) {
+					break
+				}
 				// Are there things between these two declarations? e.g. empty lines, comments, directives
 				// If so, break the chain on empty lines and directives, continue below for comments.
 				if f.Line(lastPos) < f.Line(cont.Pos())-1 {
@@ -1398,6 +1403,18 @@ func setPos(v reflect.Value, pos token.Pos) {
 			setPos(v.Field(i), pos)
 		}
 	}
+}
+
+// containsIota reports whether the declaration mentions the predeclared iota.
+func containsIota(decl *ast.GenDecl) bool {
+	found := false
+	ast.Inspect(decl, func(node ast.Node) bool {
+		if ident, ok := node.(*ast.Ident); ok && ident.Name == "iota" {
+			found = true
+		}
+		return !found
+	})
+	return found
 }
 
 func containsAnyDirective(group *ast.CommentGroup) bool {

@@ -1,7 +1,3 @@
-# TODO: joining lone const declarations into a group changes the value of iota,
-# as it counts the specs before it within the group; iotaSecond in the golden
-# file below is 1 rather than the 0 it is in the input. Such a declaration
-# should not be appended to the group.
 exec gofumpt -w foo.go
 cmp foo.go foo.go.golden
 
@@ -108,10 +104,8 @@ const (
 	inline3 = "s3" // c3
 )
 
-const (
-	iotaFirst  = iota
-	iotaSecond = iota
-)
+const iotaFirst = iota
+const iotaSecond = iota
 
 const (
 	iotaStart = iota
