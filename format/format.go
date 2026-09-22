@@ -366,7 +366,9 @@ func (f *fumpter) removeParens(node *ast.GenDecl) {
 	} else {
 		f.removeLines(f.Line(node.TokPos), f.Line(specPos))
 	}
-	if len(f.commentsBetween(specEnd, node.Rparen)) > 0 {
+	// An inline comment on the spec's line stays there either way.
+	if comments := f.commentsBetween(specEnd, node.Rparen); len(comments) > 0 &&
+		f.Line(comments[len(comments)-1].End()) > f.Line(specEnd) {
 		// Leave one newline to not force a comment on the next line to
 		// become an inline comment.
 		f.removeLines(f.Line(specEnd)+1, f.Line(node.Rparen))
