@@ -4,6 +4,15 @@ cmp foo.go foo.go.golden
 exec gofumpt -d foo.go.golden
 ! stdout .
 
+# TODO: go/printer never prints the braces of a struct or interface type
+# holding a comment on one line, so a signature which is on one line in the
+# source gets its closing parenthesis on a line of its own only on a second run.
+exec gofumpt -w commented-types.go
+cmp commented-types.go commented-types.go.golden
+
+! exec gofumpt -d commented-types.go.golden
+stdout .
+
 -- foo.go --
 package p
 
@@ -500,4 +509,45 @@ func f(p1 string,
 /* baz */) {
 	println("body")
 	return 0, ""
+}
+-- commented-types.go --
+package p
+
+func emptyStruct(a struct { /* comment */ }, b int) {
+	println("body")
+}
+
+func emptyInterface(a interface { /* comment */ }) {
+	println("body")
+}
+
+func structWithField(a struct{ x int /* comment */ }, b int) {
+	println("body")
+}
+
+func results() (struct { /* comment */ }, int) {
+	panic("body")
+}
+-- commented-types.go.golden --
+package p
+
+func emptyStruct(a struct { /* comment */
+}, b int) {
+	println("body")
+}
+
+func emptyInterface(a interface { /* comment */
+}) {
+	println("body")
+}
+
+func structWithField(a struct {
+	x int /* comment */
+}, b int) {
+	println("body")
+}
+
+func results() (struct { /* comment */
+}, int) {
+	panic("body")
 }
