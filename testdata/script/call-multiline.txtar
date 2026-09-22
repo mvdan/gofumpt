@@ -8,6 +8,15 @@ cmp foo.go foo.go.golden
 exec gofumpt -extra=balance_calls -d foo.go.golden
 ! stdout .
 
+# TODO: spacing a comment makes its text longer without moving it, so its end
+# spills onto the next line, and a call ending in such an inline comment is only
+# balanced on a second run.
+exec gofumpt -extra=balance_calls -w spaced.go
+cmp spaced.go spaced.go.golden
+
+! exec gofumpt -extra=balance_calls -d spaced.go.golden
+stdout .
+
 -- foo.go --
 package p
 
@@ -98,4 +107,20 @@ func _() {
 		a,
 		b,
 	))
+}
+-- spaced.go --
+package p
+
+func _() {
+	_ = call(
+		a) //trailing comment which needs spacing
+	_ = call(a)
+}
+-- spaced.go.golden --
+package p
+
+func _() {
+	_ = call(
+		a) // trailing comment which needs spacing
+	_ = call(a)
 }
