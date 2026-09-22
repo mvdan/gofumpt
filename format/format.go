@@ -382,15 +382,23 @@ func (f *fumpter) removeParens(node *ast.GenDecl) {
 	node.Rparen = token.NoPos
 }
 
-// collapseEmptyBraces joins the lines of any empty pair of braces or
-// parentheses within node, such as "struct {\n}" or "f(\n)".
-// Empty field lists are not meant to hold a newline, and go/printer prints an
-// empty literal or argument list on one line anyway, so the rules which measure
-// a node by the lines it spans then agree with the output.
-func (f *fumpter) collapseEmptyBraces(node ast.Node) {
+// matchBraceLines sets the lines of any pair of braces or parentheses within
+// node to the ones go/printer will print, so that the rules which measure a
+// node by the lines it spans agree with the output.
+//
+// An empty pair, such as "struct {\n}" or "f(\n)", is joined onto one line:
+// empty field lists are not meant to hold a newline, and go/printer prints an
+// empty literal or argument list on one line anyway.
+// A struct or interface type holding a comment, such as "struct { /* c */ }",
+// is split instead, as go/printer never prints its braces on one line.
+func (f *fumpter) matchBraceLines(node ast.Node) {
 	ast.Inspect(node, func(node ast.Node) bool {
 		var opening, closing token.Pos
 		switch node := node.(type) {
+		case *ast.StructType:
+			f.splitCommentedBraces(node.Fields)
+		case *ast.InterfaceType:
+			f.splitCommentedBraces(node.Methods)
 		case *ast.FieldList:
 			if len(node.List) == 0 {
 				opening, closing = node.Pos(), node.End()
@@ -414,6 +422,15 @@ func (f *fumpter) collapseEmptyBraces(node ast.Node) {
 		}
 		return true
 	})
+}
+
+// splitCommentedBraces adds a newline before the closing brace of a one-line
+// field list holding a comment.
+func (f *fumpter) splitCommentedBraces(fields *ast.FieldList) {
+	if f.Line(fields.Opening) == f.Line(fields.Closing) &&
+		len(f.commentsBetween(fields.Opening, fields.Closing)) > 0 {
+		f.addNewline(fields.Closing)
+	}
 }
 
 func (f *fumpter) Position(p token.Pos) token.Position {
@@ -549,9 +566,8 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 
 	switch node := c.Node().(type) {
 	case *ast.File:
-		// Collapse empty braces before the joining below, so that the line
-		// spans it compares are the ones which will be printed.
-		f.collapseEmptyBraces(node)
+		// Do this before the joining below, which compares line spans.
+		f.matchBraceLines(node)
 
 		// Unwrap single-spec var groups before the joining below,
 		// so an adjacent var line and var group merge in one pass.
@@ -909,7 +925,7 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 		numFields := node.NumFields()
 		comments := f.commentsBetween(node.Pos(), node.End())
 
-		// An empty field list holds no newline; collapseEmptyBraces saw to that.
+		// An empty field list holds no newline; matchBraceLines saw to that.
 		if numFields > 0 || len(comments) > 0 {
 			// Remove lines before first comment/field and lines after last
 			// comment/field
