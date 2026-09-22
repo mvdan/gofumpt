@@ -362,6 +362,40 @@ func (f *fumpter) removeParens(node *ast.GenDecl) {
 	node.Rparen = token.NoPos
 }
 
+// collapseEmptyBraces joins the lines of any empty pair of braces or
+// parentheses within node, such as "struct {\n}" or "f(\n)".
+// Empty field lists are not meant to hold a newline, and go/printer prints an
+// empty literal or argument list on one line anyway, so the rules which measure
+// a node by the lines it spans then agree with the output.
+func (f *fumpter) collapseEmptyBraces(node ast.Node) {
+	ast.Inspect(node, func(node ast.Node) bool {
+		var opening, closing token.Pos
+		switch node := node.(type) {
+		case *ast.FieldList:
+			if len(node.List) == 0 {
+				opening, closing = node.Pos(), node.End()
+			}
+		case *ast.CompositeLit:
+			if len(node.Elts) == 0 {
+				opening, closing = node.Lbrace, node.Rbrace
+			}
+		case *ast.CallExpr:
+			if len(node.Args) == 0 {
+				opening, closing = node.Lparen, node.Rparen
+			}
+		}
+		if !opening.IsValid() {
+			return true // not an empty pair of braces
+		}
+		openLine, closeLine := f.Line(opening), f.Line(closing)
+		// A comment in between keeps the lines apart.
+		if openLine != closeLine && len(f.commentsBetween(opening, closing)) == 0 {
+			f.removeLines(openLine, closeLine)
+		}
+		return true
+	})
+}
+
 func (f *fumpter) Position(p token.Pos) token.Position {
 	return f.file.PositionFor(p, false)
 }
@@ -495,6 +529,10 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 
 	switch node := c.Node().(type) {
 	case *ast.File:
+		// Collapse empty braces before the joining below, so that the line
+		// spans it compares are the ones which will be printed.
+		f.collapseEmptyBraces(node)
+
 		// Unwrap single-spec var groups before the joining below,
 		// so an adjacent var line and var group merge in one pass.
 		for _, decl := range node.Decls {
@@ -831,14 +869,8 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 		numFields := node.NumFields()
 		comments := f.commentsBetween(node.Pos(), node.End())
 
-		if numFields == 0 && len(comments) == 0 {
-			// Empty field lists should not contain a newline.
-			// Do not join the two lines if the first has an inline
-			// comment, as that can result in broken formatting.
-			openLine := f.Line(node.Pos())
-			closeLine := f.Line(node.End())
-			f.removeLines(openLine, closeLine)
-		} else {
+		// An empty field list holds no newline; collapseEmptyBraces saw to that.
+		if numFields > 0 || len(comments) > 0 {
 			// Remove lines before first comment/field and lines after last
 			// comment/field
 			var bodyPos, bodyEnd token.Pos
