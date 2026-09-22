@@ -180,6 +180,7 @@ func File(fset *token.FileSet, file *ast.File, opts Options) {
 		Options: opts,
 
 		minSplitFactor: 0.4,
+		commentTexts:   make(map[*ast.Comment]string),
 	}
 	var topFuncType *ast.FuncType
 	pre := func(c *astutil.Cursor) bool {
@@ -237,6 +238,10 @@ func File(fset *token.FileSet, file *ast.File, opts Options) {
 		return true
 	}
 	astutil.Apply(file, pre, post)
+
+	for comment, text := range f.commentTexts {
+		comment.Text = text
+	}
 }
 
 // Multiline nodes which could easily fit on a single line under this many bytes
@@ -267,6 +272,19 @@ type fumpter struct {
 	// parentFuncTypes is a stack of parent function types,
 	// used to determine return type information when clothing naked returns.
 	parentFuncTypes []*ast.FuncType
+
+	// commentTexts holds the rewritten text of comments, applied once the walk
+	// is done, as a longer text would move a comment's end onto the next line
+	// while the rules still consult positions.
+	commentTexts map[*ast.Comment]string
+}
+
+// commentText returns the text a comment will have once formatted.
+func (f *fumpter) commentText(comment *ast.Comment) string {
+	if text, ok := f.commentTexts[comment]; ok {
+		return text
+	}
+	return comment.Text
 }
 
 func (f *fumpter) commentsBetween(p1, p2 token.Pos) []*ast.CommentGroup {
@@ -423,7 +441,7 @@ func (f *fumpter) printLength(node ast.Node) int {
 
 	// Add the space taken by an inline comment.
 	if c := f.inlineComment(node.End()); c != nil {
-		fmt.Fprintf(&count, " %s", c.Text)
+		fmt.Fprintf(&count, " %s", f.commentText(c))
 	}
 
 	// Add an approximation of the indentation level. We can't know the
@@ -661,7 +679,8 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 				if f.Line(comment.Slash) == 1 && rxShebangComment.MatchString(comment.Text) {
 					continue groupLoop
 				}
-				if comment.Text == "//gofumpt:diagnose" || strings.HasPrefix(comment.Text, "//gofumpt:diagnose ") {
+				text := comment.Text
+				if text == "//gofumpt:diagnose" || strings.HasPrefix(text, "//gofumpt:diagnose ") {
 					slc := []string{
 						"//gofumpt:diagnose",
 						"version:",
@@ -673,10 +692,11 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 					if s := f.Extra.String(); s != "" {
 						slc = append(slc, "-extra="+s)
 					}
-					comment.Text = strings.Join(slc, " ")
+					text = strings.Join(slc, " ")
+					f.commentTexts[comment] = text
 				}
-				body := strings.TrimPrefix(comment.Text, "//")
-				if body == comment.Text {
+				body := strings.TrimPrefix(text, "//")
+				if body == text {
 					// /*-style comment
 					continue groupLoop
 				}
@@ -699,7 +719,7 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 				body := strings.TrimPrefix(comment.Text, "//")
 				r, _ := utf8.DecodeRuneInString(body)
 				if !unicode.IsSpace(r) {
-					comment.Text = "// " + body
+					f.commentTexts[comment] = "// " + body
 				}
 			}
 		}
