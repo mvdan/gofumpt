@@ -1,7 +1,3 @@
-# TODO: joining lone imports puts the group's closing parenthesis on the line of
-# the last import, as there is no line of its own for it. Moving a std import up
-# then drops that line, which pulls a comment on the line below into the group's
-# line, as the golden file for f7.go shows. The comment should stay put.
 exec gofumpt -w f1.go f2.go f3.go f4.go f5.go f6.go f7.go
 cmp f1.go f1.go.golden
 cmp f2.go f2.go.golden
@@ -223,4 +219,6 @@ import (
 	"os"
 
 	"github.com/x/y"
-) // this comment stands on its own line after the imports
+)
+
+// this comment stands on its own line after the imports

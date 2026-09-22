@@ -1345,8 +1345,11 @@ func (f *fumpter) joinStdImports(d *ast.GenDecl) {
 	// Moving a std import up leaves its line behind with nothing on it,
 	// which go/printer would then print as an empty line,
 	// so drop those lines from the file's line table.
+	// Never drop the line holding the closing parenthesis, as that would pull
+	// whatever follows the declaration onto it; the parenthesis shares a line
+	// with the last import when the group was joined from lone imports.
 	for _, pos := range movedFrom {
-		if line := f.Line(pos); line < f.file.LineCount() {
+		if line := f.Line(pos); line < f.Line(d.Rparen) {
 			f.file.MergeLine(line)
 		}
 	}
