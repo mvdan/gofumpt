@@ -899,27 +899,6 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 
 	case *ast.CaseClause:
 		f.stmts(node.Body)
-		openLine := f.Line(node.Case)
-		closeLine := f.Line(node.Colon)
-		if openLine == closeLine {
-			// nothing to do
-			break
-		}
-		if len(f.commentsBetween(node.Case, node.Colon)) > 0 {
-			// don't move comments
-			break
-		}
-		// check the length excluding the body
-		nodeWithoutBody := &ast.CaseClause{
-			Case:  node.Case,
-			List:  node.List,
-			Colon: node.Colon,
-		}
-		if f.printLength(nodeWithoutBody) > shortLineLimit {
-			// too long to collapse
-			break
-		}
-		f.removeLines(openLine, closeLine)
 
 	case *ast.CommClause:
 		f.stmts(node.Body)
@@ -947,17 +926,6 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 			}
 			f.removeLinesBetween(node.Pos(), bodyPos)
 			f.removeLinesBetween(bodyEnd, node.End())
-		}
-
-		if !f.Extra.GroupParams {
-			break
-		}
-		switch c.Parent().(type) {
-		case *ast.FuncDecl, *ast.FuncType, *ast.InterfaceType:
-			node.List = f.mergeAdjacentFields(node.List)
-			c.Replace(node)
-		case *ast.StructType:
-			// Do not merge adjacent fields in structs.
 		}
 
 	case *ast.ParenExpr:
@@ -1027,6 +995,43 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 
 func (f *fumpter) applyPost(c *astutil.Cursor) {
 	switch node := c.Node().(type) {
+	// Measuring and comparing nodes happens as a "post" step, so that
+	// rewrites of their children, such as removed parentheses, are counted.
+	case *ast.CaseClause:
+		openLine := f.Line(node.Case)
+		closeLine := f.Line(node.Colon)
+		if openLine == closeLine {
+			// nothing to do
+			break
+		}
+		if len(f.commentsBetween(node.Case, node.Colon)) > 0 {
+			// don't move comments
+			break
+		}
+		// check the length excluding the body
+		nodeWithoutBody := &ast.CaseClause{
+			Case:  node.Case,
+			List:  node.List,
+			Colon: node.Colon,
+		}
+		if f.printLength(nodeWithoutBody) > shortLineLimit {
+			// too long to collapse
+			break
+		}
+		f.removeLines(openLine, closeLine)
+
+	case *ast.FieldList:
+		if !f.Extra.GroupParams {
+			break
+		}
+		switch c.Parent().(type) {
+		case *ast.FuncDecl, *ast.FuncType, *ast.InterfaceType:
+			node.List = f.mergeAdjacentFields(node.List)
+			c.Replace(node)
+		case *ast.StructType:
+			// Do not merge adjacent fields in structs.
+		}
+
 	// Adding newlines to composite literals happens as a "post" step, so
 	// that we can take into account whether "pre" steps added any newlines
 	// that would affect us here.
