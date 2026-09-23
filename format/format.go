@@ -281,10 +281,13 @@ type fumpter struct {
 
 // commentText returns the text a comment will have once formatted.
 func (f *fumpter) commentText(comment *ast.Comment) string {
-	if text, ok := f.commentTexts[comment]; ok {
-		return text
+	text, ok := f.commentTexts[comment]
+	if !ok {
+		text = comment.Text
 	}
-	return comment.Text
+	// go/printer drops the trailing whitespace of a line comment,
+	// and a general comment has none, as it ends with "*/".
+	return strings.TrimRightFunc(text, unicode.IsSpace)
 }
 
 func (f *fumpter) commentsBetween(p1, p2 token.Pos) []*ast.CommentGroup {
