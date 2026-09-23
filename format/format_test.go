@@ -36,3 +36,31 @@ func f() {
 	qt.Assert(t, qt.IsNil(err))
 	qt.Assert(t, qt.Equals(string(got), string(want)))
 }
+
+func TestSourceSortsImportsFirst(t *testing.T) {
+	t.Parallel()
+
+	// The rules never move a commented import, so the std import is only at
+	// the top if the imports are sorted before the rules, as the CLI does.
+	in := []byte(`
+package p
+
+import (
+	"zz.dev/q"
+	"go/ast" // c
+)
+`[1:])
+	// TODO: the imports are only sorted when printing, after the rules ran,
+	// so the std import is only separated from the other on a second run.
+	want := []byte(`
+package p
+
+import (
+	"go/ast" // c
+	"zz.dev/q"
+)
+`[1:])
+	got, err := format.Source(in, format.Options{})
+	qt.Assert(t, qt.IsNil(err))
+	qt.Assert(t, qt.Equals(string(got), string(want)))
+}
