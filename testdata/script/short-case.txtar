@@ -10,6 +10,14 @@ cmp trailing-spaces.go trailing-spaces.go.golden
 exec gofumpt -d trailing-spaces.go.golden
 ! stdout .
 
+# TODO: a case list is measured before its redundant parentheses are removed,
+# so it only fits on one line on a second run.
+exec gofumpt -w parens.go
+cmp parens.go parens.go.golden
+
+! exec gofumpt -d parens.go.golden
+stdout .
+
 -- foo.go --
 package p
 
@@ -177,6 +185,26 @@ package p
 func f(x int) {
 	switch x {
 	case yyyyyyyyyyyyyyyyyyyyyyyyyyyy, z: // c
+		g()
+	}
+}
+-- parens.go --
+package p
+
+func f(x int) {
+	switch x {
+	case (yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy),
+		z:
+		g()
+	}
+}
+-- parens.go.golden --
+package p
+
+func f(x int) {
+	switch x {
+	case yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy,
+		z:
 		g()
 	}
 }

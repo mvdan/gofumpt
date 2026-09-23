@@ -9,6 +9,14 @@ exec gofumpt -d foo.go.golden
 exec gofumpt -extra=group_params -d foo.go.golden
 ! stdout .
 
+# TODO: parameter types are compared before their redundant parentheses are
+# removed, so they are only grouped on a second run.
+exec gofumpt -extra=group_params -w parens.go
+cmp parens.go parens.go.golden
+
+! exec gofumpt -extra=group_params -d parens.go.golden
+stdout .
+
 -- foo.go --
 package p
 
@@ -117,3 +125,15 @@ func mergeIgnoresPositions(a, b func(x int),
 type xint int
 
 func dontMergeDistinguishedTypes(a func(x int), b func(xint)) {}
+-- parens.go --
+package p
+
+func mergeParens(x (int), y int) {}
+
+func mergeNestedParens(x []((int)), y []int) {}
+-- parens.go.golden --
+package p
+
+func mergeParens(x int, y int) {}
+
+func mergeNestedParens(x []int, y []int) {}
