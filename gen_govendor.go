@@ -29,6 +29,19 @@ var toVendor = []string{
 	"internal/diff",
 }
 
+// Files added to the vendored packages, to export what gofumpt uses.
+var toAdd = map[string]string{
+	"go/printer/export_gofumpt.go": `package printer
+
+import "go/ast"
+
+// FormatDocComment is formatDocComment, exported for gofumpt.
+func FormatDocComment(list []*ast.Comment) []*ast.Comment {
+	return formatDocComment(list)
+}
+`,
+}
+
 func main() {
 	catch(os.RemoveAll(vendorDir))
 
@@ -79,6 +92,10 @@ func main() {
 			dst := filepath.Join(dstDir, goFile)
 			catch(os.WriteFile(dst, []byte(src), 0o666))
 		}
+	}
+	for name, src := range toAdd {
+		dst := filepath.Join(vendorDir, filepath.FromSlash(name))
+		catch(os.WriteFile(dst, []byte(src), 0o666))
 	}
 }
 
