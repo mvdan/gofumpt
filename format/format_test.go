@@ -50,13 +50,12 @@ import (
 	"go/ast" // c
 )
 `[1:])
-	// TODO: the imports are only sorted when printing, after the rules ran,
-	// so the std import is only separated from the other on a second run.
 	want := []byte(`
 package p
 
 import (
 	"go/ast" // c
+
 	"zz.dev/q"
 )
 `[1:])

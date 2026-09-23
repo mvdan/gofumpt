@@ -158,6 +158,9 @@ func Source(src []byte, opts Options) ([]byte, error) {
 // changes might include manipulating adding or removing newlines in fset,
 // modifying the position of nodes, or modifying literal values.
 func File(fset *token.FileSet, file *ast.File, opts Options) {
+	// Sort imports first, as gofmt does; the rules expect them sorted,
+	// and go/format would only sort them when printing.
+	ast.SortImports(fset, file)
 	simplify(file)
 
 	if opts.ExtraRules {
