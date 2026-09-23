@@ -701,47 +701,6 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 		}
 		node.Decls = newDecls
 
-		// Multiline top-level declarations should be separated by an
-		// empty line.
-		// Do this after the joining of lone declarations above,
-		// as joining single-line declarations makes then multi-line.
-		var lastMulti bool
-		// Anchor the first iteration at the package clause, so that the
-		// comments before it, such as a copyright header or package doc,
-		// are not mistaken for the first declaration's own comments.
-		lastEnd := node.Name.End()
-		for _, decl := range node.Decls {
-			pos := decl.Pos()
-			// Trailing inline comments on lastEnd's line belong to the
-			// previous decl and extend its effective end.
-			effectiveEnd := lastEnd
-			lastEndLine := f.Line(lastEnd)
-			for _, cg := range f.commentsBetween(lastEnd, pos) {
-				if f.Line(cg.Pos()) != lastEndLine {
-					pos = cg.Pos()
-					break
-				}
-				effectiveEnd = cg.End()
-			}
-
-			// Note that we want End-1, as End is the character after the node.
-			multi := f.Line(pos) < f.Line(decl.End()-1)
-			// A func declaration which fits on a single source line may
-			// still be printed across multiple lines: go/printer's funcBody
-			// breaks the body onto its own lines once header+body exceeds
-			// 100 bytes. Approximate that with the source byte length.
-			if fn, _ := decl.(*ast.FuncDecl); fn != nil && !multi && fn.Body != nil &&
-				f.Offset(fn.End())-f.Offset(fn.Pos()) > 100 {
-				multi = true
-			}
-			if multi && lastMulti && f.Line(effectiveEnd)+1 == f.Line(pos) {
-				f.addNewline(effectiveEnd)
-			}
-
-			lastMulti = multi
-			lastEnd = decl.End()
-		}
-
 		// Comments aren't nodes, so they're not walked by default.
 	groupLoop:
 		for _, group := range node.Comments {
@@ -1186,6 +1145,49 @@ func (f *fumpter) applyPost(c *astutil.Cursor) {
 		closeAtBOL := closeLine != lastLine
 		if openAtEOL && !closeAtBOL {
 			f.addNewline(node.Rparen)
+		}
+
+	case *ast.File:
+		// Multiline top-level declarations should be separated by an
+		// empty line.
+		// Do this after the other rules, which can make declarations
+		// multi-line and would otherwise see a declaration's end move
+		// onto the next line.
+		var lastMulti bool
+		// Anchor the first iteration at the package clause, so that the
+		// comments before it, such as a copyright header or package doc,
+		// are not mistaken for the first declaration's own comments.
+		lastEnd := node.Name.End()
+		for _, decl := range node.Decls {
+			pos := decl.Pos()
+			// Trailing inline comments on lastEnd's line belong to the
+			// previous decl and extend its effective end.
+			effectiveEnd := lastEnd
+			lastEndLine := f.Line(lastEnd)
+			for _, cg := range f.commentsBetween(lastEnd, pos) {
+				if f.Line(cg.Pos()) != lastEndLine {
+					pos = cg.Pos()
+					break
+				}
+				effectiveEnd = cg.End()
+			}
+
+			// Note that we want End-1, as End is the character after the node.
+			multi := f.Line(pos) < f.Line(decl.End()-1)
+			// A func declaration which fits on a single source line may
+			// still be printed across multiple lines: go/printer's funcBody
+			// breaks the body onto its own lines once header+body exceeds
+			// 100 bytes. Approximate that with the source byte length.
+			if fn, _ := decl.(*ast.FuncDecl); fn != nil && !multi && fn.Body != nil &&
+				f.Offset(fn.End())-f.Offset(fn.Pos()) > 100 {
+				multi = true
+			}
+			if multi && lastMulti && f.Line(effectiveEnd)+1 == f.Line(pos) {
+				f.addNewline(effectiveEnd)
+			}
+
+			lastMulti = multi
+			lastEnd = decl.End()
 		}
 	}
 }
