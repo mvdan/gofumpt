@@ -4,14 +4,11 @@ cmp foo.go foo.go.golden
 exec gofumpt -d foo.go.golden
 ! stdout .
 
-# TODO: a comment after an empty line joins the imports around it into one
-# group, so moving the std import before the empty line changes the groups,
-# and the std import after the comment is only separated on a second run.
 exec gofumpt -w comments.go
 cmp comments.go comments.go.golden
 
-! exec gofumpt -d comments.go.golden
-stdout .
+exec gofumpt -d comments.go.golden
+! stdout .
 
 -- go.mod --
 module nodomainmod/mod1
@@ -261,8 +258,8 @@ import (
 
 import (
 	"os"
+	"sort"
 
 	// comment
 	"fmt"
-	"sort"
 )

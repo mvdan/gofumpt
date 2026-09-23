@@ -1353,10 +1353,14 @@ func (f *fumpter) joinStdImports(d *ast.GenDecl) {
 
 	for i, spec := range d.Specs {
 		spec := spec.(*ast.ImportSpec)
-		if coms := f.commentsBetween(lastEnd, spec.Pos()); len(coms) > 0 {
-			lastEnd = coms[len(coms)-1].End()
+		// An empty line before or after a comment in between ends the group.
+		emptyLine := false
+		for _, cg := range f.commentsBetween(lastEnd, spec.Pos()) {
+			emptyLine = emptyLine || f.Line(cg.Pos()) > f.Line(lastEnd)+1
+			lastEnd = cg.End()
 		}
-		if i > 0 && firstGroup && f.Line(spec.Pos()) > f.Line(lastEnd)+1 {
+		emptyLine = emptyLine || f.Line(spec.Pos()) > f.Line(lastEnd)+1
+		if i > 0 && firstGroup && emptyLine {
 			firstGroup = false
 		} else {
 			// We're still in the first group, update lastEnd.
