@@ -4,6 +4,14 @@ cmp foo.go foo.go.golden
 exec gofumpt -d foo.go.golden
 ! stdout .
 
+# TODO: a case list is measured with the trailing spaces of its comment,
+# which go/printer drops, so it only fits on one line on a second run.
+exec gofumpt -w trailing-spaces.go
+cmp trailing-spaces.go trailing-spaces.go.golden
+
+! exec gofumpt -d trailing-spaces.go.golden
+stdout .
+
 -- foo.go --
 package p
 
@@ -153,5 +161,25 @@ func s(x int) {
 	default:
 		// Another comment.
 		fmt.Println(x * 2)
+	}
+}
+-- trailing-spaces.go --
+package p
+
+func f(x int) {
+	switch x {
+	case yyyyyyyyyyyyyyyyyyyyyyyyyyyy,
+		z: // c  
+		g()
+	}
+}
+-- trailing-spaces.go.golden --
+package p
+
+func f(x int) {
+	switch x {
+	case yyyyyyyyyyyyyyyyyyyyyyyyyyyy,
+		z: // c
+		g()
 	}
 }
