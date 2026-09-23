@@ -10,15 +10,11 @@ cmp commented-types.go commented-types.go.golden
 exec gofumpt -d commented-types.go.golden
 ! stdout .
 
-# TODO: go/printer only keeps a one-line struct or interface type on one line
-# if it has a single small field without a tag, so a signature which is on one
-# line in the source gets its closing parenthesis on a line of its own only on
-# a second run.
 exec gofumpt -w one-line-types.go
 cmp one-line-types.go one-line-types.go.golden
 
-! exec gofumpt -d one-line-types.go.golden
-stdout .
+exec gofumpt -d one-line-types.go.golden
+! stdout .
 
 -- foo.go --
 package p
@@ -594,26 +590,30 @@ package p
 func twoFields(a struct {
 	x int
 	y int
-}, b int) {
+}, b int,
+) {
 	println("body")
 }
 
 func taggedField(a struct {
 	x int `json:"x"`
-}, b int) {
+}, b int,
+) {
 	println("body")
 }
 
 func longField(a struct {
 	x map[string]map[string]map[string]int
-}, b int) {
+}, b int,
+) {
 	println("body")
 }
 
 func twoMethods(a interface {
 	M()
 	N()
-}) {
+},
+) {
 	println("body")
 }
 
@@ -622,7 +622,8 @@ func nestedTwoFields(a struct {
 		y int
 		z int
 	}
-}, b int) {
+}, b int,
+) {
 	println("body")
 }
 

@@ -442,16 +442,22 @@ func (f *fumpter) removeParens(node *ast.GenDecl) {
 // An empty pair, such as "struct {\n}" or "f(\n)", is joined onto one line:
 // empty field lists are not meant to hold a newline, and go/printer prints an
 // empty literal or argument list on one line anyway.
-// A struct or interface type holding a comment, such as "struct { /* c */ }",
-// is split instead, as go/printer never prints its braces on one line.
+// A one-line struct or interface type which go/printer does not keep on one
+// line, such as "struct { /* c */ }" or "struct{ x, y int; z int }",
+// is split instead.
 func (f *fumpter) matchBraceLines(node ast.Node) {
+	type typeFields struct {
+		typ    ast.Expr
+		fields *ast.FieldList
+	}
+	var types []typeFields
 	ast.Inspect(node, func(node ast.Node) bool {
 		var opening, closing token.Pos
 		switch node := node.(type) {
 		case *ast.StructType:
-			f.splitCommentedBraces(node.Fields)
+			types = append(types, typeFields{node, node.Fields})
 		case *ast.InterfaceType:
-			f.splitCommentedBraces(node.Methods)
+			types = append(types, typeFields{node, node.Methods})
 		case *ast.FieldList:
 			if len(node.List) == 0 {
 				opening, closing = node.Pos(), node.End()
@@ -475,15 +481,27 @@ func (f *fumpter) matchBraceLines(node ast.Node) {
 		}
 		return true
 	})
+	// Done once empty pairs are joined, which can put a type on one line.
+	for _, t := range types {
+		opening, closing := t.fields.Opening, t.fields.Closing
+		if f.Line(opening) != f.Line(closing) {
+			continue
+		}
+		// Printing a type alone leaves out its comments.
+		if len(f.commentsBetween(opening, closing)) > 0 ||
+			len(t.fields.List) > 0 && !f.printsOnOneLine(t.typ) {
+			f.addNewline(closing)
+		}
+	}
 }
 
-// splitCommentedBraces adds a newline before the closing brace of a one-line
-// field list holding a comment.
-func (f *fumpter) splitCommentedBraces(fields *ast.FieldList) {
-	if f.Line(fields.Opening) == f.Line(fields.Closing) &&
-		len(f.commentsBetween(fields.Opening, fields.Closing)) > 0 {
-		f.addNewline(fields.Closing)
+// printsOnOneLine reports whether go/printer prints node on a single line.
+func (f *fumpter) printsOnOneLine(node ast.Node) bool {
+	var buf bytes.Buffer
+	if err := format.Node(&buf, f.fset, node); err != nil {
+		panic(fmt.Sprintf("unexpected print error: %v", err))
 	}
+	return !bytes.Contains(buf.Bytes(), []byte("\n"))
 }
 
 func (f *fumpter) Position(p token.Pos) token.Position {
