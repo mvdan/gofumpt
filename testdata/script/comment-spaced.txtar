@@ -4,14 +4,11 @@ cmp foo.go foo.go.golden
 exec gofumpt -d foo.go.golden
 ! stdout .
 
-# TODO: go/printer only formats a doc comment which starts in the first column
-# and ends right before its declaration, so one which is indented, or which gets
-# a space added to one of its lines, is only formatted on a second run.
 exec gofumpt -w doc.go
 cmp doc.go doc.go.golden
 
-! exec gofumpt -d doc.go.golden
-stdout .
+exec gofumpt -d doc.go.golden
+! stdout .
 
 -- foo.go --
 //go:build tag
@@ -206,12 +203,13 @@ func f() {}
 func emptyDoc() {}
 -- doc.go.golden --
 //	indented
+//
 // package doc
 package p
 
 //	indented
+//
 // func doc
 func f() {}
 
-//
 func emptyDoc() {}

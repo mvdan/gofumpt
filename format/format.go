@@ -26,6 +26,7 @@ import (
 	"golang.org/x/tools/go/ast/astutil"
 
 	"mvdan.cc/gofumpt/internal/govendor/go/format"
+	"mvdan.cc/gofumpt/internal/govendor/go/printer"
 	"mvdan.cc/gofumpt/internal/version"
 )
 
@@ -245,6 +246,48 @@ func File(fset *token.FileSet, file *ast.File, opts Options) {
 	for comment, text := range f.commentTexts {
 		comment.Text = text
 	}
+
+	f.formatDocComment(file.Doc, file.Package)
+	for _, decl := range file.Decls {
+		switch decl := decl.(type) {
+		case *ast.GenDecl:
+			// go/printer never formats an import's doc comment,
+			// which may be a cgo preamble.
+			if decl.Tok != token.IMPORT {
+				f.formatDocComment(decl.Doc, decl.Pos())
+			}
+		case *ast.FuncDecl:
+			f.formatDocComment(decl.Doc, decl.Pos())
+		}
+	}
+}
+
+// formatDocComment formats a doc comment which go/printer skips, as it only
+// formats a group in the first column ending right before the next token,
+// and the rules may have moved or lengthened the comment.
+func (f *fumpter) formatDocComment(group *ast.CommentGroup, next token.Pos) {
+	if group == nil {
+		return
+	}
+	first, last := group.List[0], group.List[len(group.List)-1]
+	if f.Position(first.Pos()).Column == 1 && last.End()+1 == next {
+		return // go/printer formats it
+	}
+	if strings.HasPrefix(first.Text, "/*") {
+		return // its formatted text may need more lines
+	}
+	formatted := printer.FormatDocComment(group.List)
+	if len(formatted) == 0 {
+		// Like go/printer, drop a doc comment without any text.
+		f.astFile.Comments = slices.DeleteFunc(f.astFile.Comments, func(g *ast.CommentGroup) bool {
+			return g == group
+		})
+		return
+	}
+	// Like go/printer, place all formatted comments at the first one,
+	// joining their lines so that no empty lines are printed after them.
+	f.removeLines(f.Line(first.Pos()), f.Line(last.Pos()))
+	group.List = formatted
 }
 
 // Multiline nodes which could easily fit on a single line under this many bytes
@@ -365,10 +408,14 @@ func (f *fumpter) removeParens(node *ast.GenDecl) {
 	specPos := node.Specs[0].Pos()
 	specEnd := node.Specs[0].End()
 
-	if len(f.commentsBetween(node.TokPos, specPos)) > 0 {
+	if comments := f.commentsBetween(node.TokPos, specPos); len(comments) > 0 {
 		// If the single spec has a comment on the line above,
-		// the comment must go before the entire declaration now.
+		// the comment must go before the entire declaration now,
+		// and it becomes its doc comment.
 		node.TokPos = specPos
+		if last := comments[len(comments)-1]; f.Line(last.End())+1 == f.Line(specPos) {
+			node.Doc = last
+		}
 	} else {
 		f.removeLines(f.Line(node.TokPos), f.Line(specPos))
 	}
