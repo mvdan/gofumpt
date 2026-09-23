@@ -16,6 +16,15 @@ cmp f8.go f8.go.golden
 exec gofumpt -d f8.go.golden
 ! stdout .
 
+# TODO: go/printer only formats a doc comment which starts a line and ends
+# right before its declaration, so a comment which becomes a doc comment when
+# unwrapping a group is only formatted on a second run.
+exec gofumpt -w doc.go
+cmp doc.go doc.go.golden
+
+! exec gofumpt -d doc.go.golden
+stdout .
+
 -- f1.go --
 package p
 
@@ -253,3 +262,21 @@ var (
 func _() {
 	inline := 1 // an inline comment stays on the spec's line
 }
+-- doc.go --
+package p
+
+var ( //  line comment
+	x = 1
+)
+
+var ( //
+	z = 1
+)
+-- doc.go.golden --
+package p
+
+//  line comment
+var x = 1
+
+//
+var z = 1
