@@ -10,6 +10,15 @@ cmp header.go header.go.golden
 exec gofumpt -d header.go.golden
 ! stdout .
 
+# TODO: multi-line type declarations are separated by an empty line,
+# but the rule removing empty lines before a struct's closing brace
+# undoes the separation, or leaves it to a second run after a join.
+exec gofumpt -w types.go
+cmp types.go types.go.golden
+
+! exec gofumpt -d types.go.golden
+stdout .
+
 -- foo.go --
 package p
 
@@ -122,3 +131,39 @@ func h1() { println("single line") }
 func h2() {
 	println("multiline")
 }
+-- types.go --
+package p
+
+type A struct {
+	x int
+}
+type B interface {
+	M()
+}
+
+type C int
+type D struct {
+	x int
+}
+type E int
+type F int
+-- types.go.golden --
+package p
+
+type A struct {
+	x int
+}
+type B interface {
+	M()
+}
+
+type (
+	C int
+	D struct {
+		x int
+	}
+)
+type (
+	E int
+	F int
+)
