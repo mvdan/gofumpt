@@ -1611,6 +1611,9 @@ func (f *fumpter) joinStdImports(d *ast.GenDecl) {
 		// empty lines will be printed as one by go/printer, anyway.
 		f.addNewline(other[0].Pos() - 1)
 		f.addNewline(other[0].Pos())
+		// go/printer resumes at EndPos after a spec, as set by ast.SortImports,
+		// which the first newline above may move onto the empty line.
+		std[len(std)-1].(*ast.ImportSpec).EndPos = token.NoPos
 	}
 	// Finally, join the imports, keeping std at the top.
 	d.Specs = append(std, other...)

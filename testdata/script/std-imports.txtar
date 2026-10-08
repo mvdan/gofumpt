@@ -119,6 +119,12 @@ import (
 	// why we need path
 	"path"
 )
+
+// Separate the groups of unindented imports too.
+import (
+"bytes"
+"foo.local/bar"
+)
 -- foo.go.golden --
 package p
 
@@ -224,6 +230,13 @@ import (
 
 	// why we need path
 	"path"
+)
+
+// Separate the groups of unindented imports too.
+import (
+	"bytes"
+
+	"foo.local/bar"
 )
 -- comments.go --
 package p
