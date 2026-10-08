@@ -269,6 +269,16 @@ var ( //  line comment
 var ( //
 	z = 1
 )
+
+var ( // paren comment
+	// spec comment
+	y = 1
+)
+
+var ( //
+//
+w = 1
+)
 -- doc.go.golden --
 package p
 
@@ -276,3 +286,9 @@ package p
 var x = 1
 
 var z = 1
+
+// paren comment
+// spec comment
+var y = 1
+
+var w = 1

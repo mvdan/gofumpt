@@ -526,12 +526,23 @@ func (f *fumpter) removeParens(node *ast.GenDecl) {
 	specEnd := node.Specs[0].End()
 
 	if comments := f.commentsBetween(node.TokPos, specPos); len(comments) > 0 {
-		// If the single spec has a comment on the line above,
-		// the comment must go before the entire declaration now,
-		// and it becomes its doc comment.
+		// The comments on the lines right above the spec, such as one
+		// after the opening paren, go before the entire declaration now,
+		// joined into its doc comment.
 		node.TokPos = specPos
-		if last := comments[len(comments)-1]; f.Line(last.End())+1 == f.Line(specPos) {
-			node.Doc = last
+		first, next := len(comments), specPos
+		for first > 0 && f.Line(comments[first-1].End())+1 == f.Line(next) {
+			first--
+			next = comments[first].Pos()
+		}
+		if first < len(comments) {
+			doc := &ast.CommentGroup{}
+			for _, group := range comments[first:] {
+				doc.List = append(doc.List, group.List...)
+			}
+			i := slices.Index(f.astFile.Comments, comments[first])
+			f.astFile.Comments = slices.Replace(f.astFile.Comments, i, i+len(comments)-first, doc)
+			node.Doc = doc
 			// Like the parser does for a lone spec.
 			node.Specs[0].(*ast.ValueSpec).Doc = nil
 		}
