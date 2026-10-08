@@ -28,6 +28,12 @@ cmp build-plus.go build-plus.go.golden
 exec gofumpt -d build-plus.go.golden
 ! stdout .
 
+exec gofumpt -w build-between.go
+cmp build-between.go build-between.go.golden
+
+exec gofumpt -d build-between.go.golden
+! stdout .
+
 -- foo.go --
 //go:build tag
 // +build tag
@@ -262,3 +268,36 @@ package p
 // +build linux
 
 package p
+-- build-between.go --
+//
+// +build linux
+// Package p does things.
+package p
+
+// F
+// +build amd64
+// does things.
+
+// G does things.
+func G() {}
+
+/* H */
+// +build arm64
+// does things.
+func H() {}
+-- build-between.go.golden --
+//go:build linux && amd64 && arm64
+// +build linux,amd64,arm64
+
+// Package p does things.
+package p
+
+// F
+// does things.
+
+// G does things.
+func G() {}
+
+/* H */
+// does things.
+func H() {}

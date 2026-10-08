@@ -346,13 +346,15 @@ func (f *fumpter) dropEmptyComments() {
 // build constraint lines to the top of the file, but when formatting a doc
 // comment, it first separates its directives such as //go:build from the
 // other lines, // +build included, with an empty "//" line, which is then
-// left behind. The original group keeps its last run of other lines,
-// or its first run if there are none, so that it stays the doc comment
-// of the same node.
+// left behind. The runs of other lines are joined at the last one, as they
+// are printed together once the build lines are moved, and the original group
+// keeps them, or its first run if there are none, so that it stays the doc
+// comment of the same node.
 func (f *fumpter) splitBuildConstraints() {
 	kind := func(c *ast.Comment) [2]bool {
 		return [2]bool{constraint.IsGoBuild(c.Text), constraint.IsPlusBuild(c.Text)}
 	}
+	general := func(c *ast.Comment) bool { return strings.HasPrefix(c.Text, "/*") }
 	var comments []*ast.CommentGroup
 	for _, group := range f.astFile.Comments {
 		list, keep := group.List, -1
@@ -361,10 +363,21 @@ func (f *fumpter) splitBuildConstraints() {
 			for n < len(list) && kind(list[n]) == kind(list[0]) {
 				n++
 			}
-			if keep < 0 || kind(list[0]) == [2]bool{} {
+			run := list[:n]
+			other := kind(run[0]) == [2]bool{}
+			// A general comment would share its line with the next one.
+			if other && keep >= 0 && kind(comments[keep].List[0]) == [2]bool{} &&
+				!slices.ContainsFunc(comments[keep].List, general) {
+				for _, c := range comments[keep].List {
+					c.Slash = run[0].Slash
+				}
+				run = slices.Concat(comments[keep].List, run)
+				comments = slices.Delete(comments, keep, keep+1)
+			}
+			if keep < 0 || other {
 				keep = len(comments)
 			}
-			comments = append(comments, &ast.CommentGroup{List: list[:n]})
+			comments = append(comments, &ast.CommentGroup{List: run})
 			list = list[n:]
 		}
 		group.List = comments[keep].List

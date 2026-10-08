@@ -1,0 +1,4 @@
+go test fuzz v1
+string("//\n//+build\n//0\npackage A")
+int8(54)
+bool(false)
