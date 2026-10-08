@@ -1,4 +1,0 @@
-go test fuzz v1
-string("package A\nimport(\"0\"\n\"0.\")")
-int8(28)
-bool(true)
