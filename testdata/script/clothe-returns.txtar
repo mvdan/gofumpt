@@ -39,6 +39,8 @@ func qux() (file string, b int, err error) {
 	return
 }
 
+func unnamed() int { return }
+
 // quux does quuxy things
 func quux() {}
 -- foo.go.golden --
@@ -72,6 +74,8 @@ func qux() (file string, b int, err error) {
 	// A comment
 	return file, b, err
 }
+
+func unnamed() int { return }
 
 // quux does quuxy things
 func quux() {}

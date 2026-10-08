@@ -1124,23 +1124,22 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 		}
 
 		// The function has return values; let's clothe the return.
-		node.Results = make([]ast.Expr, 0, results.NumFields())
-	nameLoop:
+		var names []ast.Expr
 		for _, result := range results.List {
 			for _, ident := range result.Names {
 				name := ident.Name
 				if name == "_" { // we can't handle blank names just yet
-					node.Results = nil
-					break nameLoop
+					return
 				}
-				node.Results = append(node.Results, &ast.Ident{
+				names = append(names, &ast.Ident{
 					// Use the Pos of the return statement, to not interfere with comment placement.
 					NamePos: node.Pos(),
 					Name:    name,
 				})
 			}
 		}
-		if len(node.Results) > 0 {
+		if len(names) > 0 {
+			node.Results = names
 			c.Replace(node)
 		}
 	}
