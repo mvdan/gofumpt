@@ -163,7 +163,6 @@ func File(fset *token.FileSet, file *ast.File, opts Options) {
 	// Sort imports first, as gofmt does; the rules expect them sorted,
 	// and go/format would only sort them when printing.
 	ast.SortImports(fset, file)
-	simplify(file)
 
 	if opts.ExtraRules {
 		opts.Extra.Set("true") // enable all the extra rules
@@ -187,7 +186,10 @@ func File(fset *token.FileSet, file *ast.File, opts Options) {
 		minSplitFactor: 0.4,
 		commentTexts:   make(map[*ast.Comment]string),
 	}
+	f.dropEmptyComments()
 	f.splitBuildConstraints()
+	// After dropping comments, as a declaration group may be left empty.
+	simplify(file)
 
 	var topFuncType *ast.FuncType
 	pre := func(c *astutil.Cursor) bool {
@@ -263,6 +265,56 @@ func File(fset *token.FileSet, file *ast.File, opts Options) {
 			f.formatDocComment(decl.Doc, decl.Pos())
 		}
 	}
+}
+
+// dropEmptyComments removes the comment groups without any text which
+// go/printer drops, so that the rules don't account for them.
+// go/printer formats an unindented comment right before the next token as a
+// doc comment, unless the token is an identifier, and drops it if empty.
+// Only closing tokens are covered here, such as braces and parens,
+// as other tokens rarely start an unindented line.
+func (f *fumpter) dropEmptyComments() {
+	isEmpty := func(group *ast.CommentGroup) bool {
+		for _, c := range group.List {
+			text, ok := strings.CutPrefix(c.Text, "//")
+			if !ok || strings.TrimSpace(text) != "" {
+				return false
+			}
+		}
+		return f.Position(group.Pos()).Column == 1
+	}
+	if !slices.ContainsFunc(f.astFile.Comments, isEmpty) {
+		return
+	}
+	closing := make(map[token.Pos]bool)
+	ast.Inspect(f.astFile, func(node ast.Node) bool {
+		switch node := node.(type) {
+		case *ast.FieldList:
+			closing[node.Closing] = true
+		case *ast.BlockStmt:
+			closing[node.Rbrace] = true
+		case *ast.CompositeLit:
+			closing[node.Rbrace] = true
+		case *ast.GenDecl:
+			closing[node.Rparen] = true
+		case *ast.CallExpr:
+			closing[node.Rparen] = true
+		case *ast.ParenExpr:
+			closing[node.Rparen] = true
+		case *ast.TypeAssertExpr:
+			closing[node.Rparen] = true
+		case *ast.IndexExpr:
+			closing[node.Rbrack] = true
+		case *ast.IndexListExpr:
+			closing[node.Rbrack] = true
+		case *ast.SliceExpr:
+			closing[node.Rbrack] = true
+		}
+		return true
+	})
+	f.astFile.Comments = slices.DeleteFunc(f.astFile.Comments, func(group *ast.CommentGroup) bool {
+		return isEmpty(group) && closing[group.End()+1]
+	})
 }
 
 // splitBuildConstraints splits a comment group mixing //go:build lines,

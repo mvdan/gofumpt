@@ -4,6 +4,12 @@ cmp foo.go foo.go.golden
 exec gofumpt -d foo.go.golden
 ! stdout .
 
+exec gofumpt -w empty-comments.go
+cmp empty-comments.go empty-comments.go.golden
+
+exec gofumpt -d empty-comments.go.golden
+! stdout .
+
 -- foo.go --
 package p
 
@@ -82,4 +88,36 @@ type SOut struct {
 
 type IOut interface {
 	// lone comment
+}
+-- empty-comments.go --
+package p
+
+const (
+//
+)
+
+var _ = struct {
+//
+}{}
+
+var _ = []int{
+//
+}
+
+func f() {
+	g(
+//
+	)
+}
+-- empty-comments.go.golden --
+package p
+
+var _ = struct{}{}
+
+var _ = []int{}
+
+func f() {
+	g(
+	//
+	)
 }
