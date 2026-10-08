@@ -1,0 +1,4 @@
+go test fuzz v1
+string("package A\nfunc A(){if({0}){}}")
+int8(81)
+bool(false)
