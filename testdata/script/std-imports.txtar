@@ -257,6 +257,15 @@ import (
 	"fmt"
 	"sort"
 )
+
+import ("os" // sorted onto the closing parenthesis
+	b "bb.dev/q")
+
+import (
+	// documents the import sorted below it
+	"os"
+	b "bb.dev/q"
+)
 -- comments.go.golden --
 package p
 
@@ -275,4 +284,16 @@ import (
 
 	// comment
 	"fmt"
+)
+
+import (
+	"os"
+
+	b "bb.dev/q"
+) // sorted onto the closing parenthesis
+
+import (
+	"os"
+	// documents the import sorted below it
+	b "bb.dev/q"
 )

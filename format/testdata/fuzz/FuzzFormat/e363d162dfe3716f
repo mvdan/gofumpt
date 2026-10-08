@@ -1,0 +1,4 @@
+go test fuzz v1
+string("package A\nimport(\n//\n \"0\"\n\"\")")
+int8(-26)
+bool(true)

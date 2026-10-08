@@ -1572,8 +1572,17 @@ func (f *fumpter) joinStdImports(d *ast.GenDecl) {
 		modulePrefix = f.ModulePath
 	}
 
+	prevEnd := d.Lparen
 	for i, spec := range d.Specs {
 		spec := spec.(*ast.ImportSpec)
+		// ast.SortImports leaves doc comments in place, so spec.Doc may be
+		// stale; find the comments right above the import like go/parser.
+		hasDoc := false
+		if groups := f.commentsBetween(prevEnd, spec.Pos()); len(groups) > 0 {
+			doc := groups[len(groups)-1]
+			hasDoc = f.Line(doc.End())+1 == f.Line(spec.Pos()) && f.Line(doc.Pos()) > f.Line(prevEnd)
+		}
+		prevEnd = spec.End()
 		// An empty line before or after a comment in between ends the group.
 		emptyLine := false
 		for _, cg := range f.commentsBetween(lastEnd, spec.Pos()) {
@@ -1614,7 +1623,9 @@ func (f *fumpter) joinStdImports(d *ast.GenDecl) {
 
 			// Moving an import leaves its comments behind, as go/printer
 			// places them by position, so never move a commented import.
-			(!firstGroup || len(other) > 0) && (spec.Doc != nil || spec.Comment != nil):
+			// ast.SortImports may move a comment onto the closing parenthesis,
+			// which go/printer then prints after it, away from the import.
+			(!firstGroup || len(other) > 0) && (hasDoc || spec.Comment != nil && spec.Comment.Pos() < d.Rparen):
 			other = append(other, spec)
 			continue
 		}
