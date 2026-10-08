@@ -286,6 +286,10 @@ func f(p1 string,
 	println("body")
 	return 0, ""
 }
+
+func multiLineComment(a int,
+ /*
+ baz */) { println("body") }
 -- foo.go.golden --
 package p
 
@@ -512,6 +516,13 @@ func f(p1 string,
 /* baz */) {
 	println("body")
 	return 0, ""
+}
+
+func multiLineComment(a int,
+
+/*
+ baz */) {
+	println("body")
 }
 -- commented-types.go --
 package p

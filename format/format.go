@@ -1051,6 +1051,11 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 					var isLastCommentGrpOnFieldClosingLine, isLastCommentGrpOnSigClosingLine bool
 					if comments := f.commentsBetween(lastFieldEnd, fl.Closing); len(comments) > 0 {
 						lastCommentGrp := comments[len(comments)-1]
+						if strings.Contains(lastCommentGrp.List[len(lastCommentGrp.List)-1].Text, "\n") {
+							// go/printer reformats a multi-line block comment at column 1
+							// as a doc comment if the closing token starts the next line.
+							return
+						}
 						lastCommentGrpLine := f.Line(lastCommentGrp.End())
 
 						isLastCommentGrpOnFieldClosingLine = lastCommentGrpLine == fieldClosingLine
