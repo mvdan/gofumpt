@@ -60,6 +60,10 @@ var _ = map[string]string{
 	"foo": "bar",
 }
 
+var _ = []int{
+
+	1, 2}
+
 -- foo.go.golden --
 package p
 
@@ -106,4 +110,8 @@ var _ = map[string]string{
 		joint comment
 	*/
 	"foo": "bar",
+}
+
+var _ = []int{
+	1, 2,
 }

@@ -1156,8 +1156,7 @@ func (f *fumpter) applyPost(c *astutil.Cursor) {
 			break
 		}
 		openLine := f.Line(node.Lbrace)
-		closeLine := f.Line(node.Rbrace)
-		if openLine == closeLine {
+		if openLine == f.Line(node.Rbrace) {
 			// all in a single line
 			break
 		}
@@ -1185,7 +1184,7 @@ func (f *fumpter) applyPost(c *astutil.Cursor) {
 			lastEnd = elem.End()
 			lastLine = f.Line(lastEnd)
 		}
-		if closeLine > lastLine {
+		if f.Line(node.Rbrace) > lastLine {
 			newlineAroundElems = true
 		}
 
@@ -1194,10 +1193,9 @@ func (f *fumpter) applyPost(c *astutil.Cursor) {
 			if openLine == f.Line(first.Pos()) {
 				// We want the newline right after the brace.
 				f.addNewline(node.Lbrace + 1)
-				closeLine = f.Line(node.Rbrace)
 			}
 			last := node.Elts[len(node.Elts)-1]
-			if closeLine == f.Line(last.End()) {
+			if f.Line(node.Rbrace) == f.Line(last.End()) {
 				// We want the newline right before the brace.
 				f.addNewline(node.Rbrace)
 			}
