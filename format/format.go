@@ -1083,6 +1083,9 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 		// since astutil.Apply does not walk replacement nodes.
 		node.X = ast.Unparen(node.X)
 		if f.canRemoveParens(node) {
+			// Keep the expression starting where the parens did,
+			// which is what other rules like joining assignments saw.
+			f.removeLines(f.Line(node.Lparen), f.Line(node.X.Pos()))
 			c.Replace(node.X)
 		}
 

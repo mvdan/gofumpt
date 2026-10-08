@@ -71,6 +71,10 @@ func g() {
 
 	// Drop parens around call args.
 	_ = f((f(3)))
+
+	// Drop the parens along with the line break after them.
+	_ = (
+		f(3))
 }
 -- foo.go.golden --
 package p
@@ -139,4 +143,7 @@ func g() {
 
 	// Drop parens around call args.
 	_ = f(f(3))
+
+	// Drop the parens along with the line break after them.
+	_ = f(3)
 }
