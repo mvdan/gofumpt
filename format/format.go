@@ -270,7 +270,8 @@ func File(fset *token.FileSet, file *ast.File, opts Options) {
 // dropEmptyComments removes the comment groups without any text which
 // go/printer drops, so that the rules don't account for them.
 // go/printer formats an unindented comment right before the next token as a
-// doc comment, unless the token is an identifier, and drops it if empty.
+// doc comment, unless the token is an identifier or "import", and drops it
+// if empty.
 // Only the tokens starting a node or closing one are covered here,
 // as other tokens rarely start a line.
 func (f *fumpter) dropEmptyComments() {
@@ -312,6 +313,7 @@ func (f *fumpter) dropEmptyComments() {
 			tokens[node.Rbrace] = true
 		case *ast.GenDecl:
 			docs[node.Doc] = &node.Doc
+			tokens[node.TokPos] = node.Tok != token.IMPORT
 			tokens[node.Rparen] = true
 		case *ast.CallExpr:
 			tokens[node.Rparen] = true

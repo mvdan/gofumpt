@@ -187,6 +187,9 @@ var _ = []int{
 package p
 
 //
+import "os"
+
+//
 var (
 	lone = 1
 )
@@ -197,6 +200,9 @@ type embedsPointer struct {
 }
 -- empty-docs.go.golden --
 package p
+
+//
+import "os"
 
 var lone = 1
 
