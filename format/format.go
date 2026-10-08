@@ -503,10 +503,16 @@ func (f *fumpter) removeLines(fromLine, toLine int) {
 	}
 }
 
-// removeLinesBetween is like removeLines, but it leaves one newline between the
-// two positions.
+// removeLinesBetween removes the empty lines between two positions,
+// including those around any comments in between. It merges each empty line
+// into the line above, keeping the columns which go/printer uses to indent
+// block comments.
 func (f *fumpter) removeLinesBetween(from, to token.Pos) {
-	f.removeLines(f.Line(from)+1, f.Line(to))
+	for _, group := range f.commentsBetween(from, to) {
+		f.removeLines(f.Line(from), f.Line(group.Pos())-1)
+		from = group.End()
+	}
+	f.removeLines(f.Line(from), f.Line(to)-1)
 }
 
 // removeParens unwraps a single-spec var group like "var (\n\tx = 1\n)" into a
@@ -945,7 +951,7 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 				removeToPos = comments[0].Pos()
 			}
 			// remove leading lines if they exist
-			f.removeLines(f.Line(node.Interface)+1, f.Line(removeToPos))
+			f.removeLinesBetween(node.Interface, removeToPos)
 		}
 
 	case *ast.BlockStmt:
@@ -1213,7 +1219,7 @@ func (f *fumpter) applyPost(c *astutil.Cursor) {
 					newlineAroundElems = true
 
 					// remove leading lines if they exist
-					f.removeLines(openLine+1, curLine)
+					f.removeLinesBetween(node.Lbrace, pos)
 				} else {
 					newlineBetweenElems = true
 				}

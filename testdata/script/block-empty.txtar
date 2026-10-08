@@ -65,6 +65,13 @@ type IOut interface {
 
 
 }
+
+func g() {
+
+/* unindented
+comment */
+	println()
+}
 -- foo.go.golden --
 package p
 
@@ -94,6 +101,12 @@ type SOut struct {
 
 type IOut interface {
 	// lone comment
+}
+
+func g() {
+	/* unindented
+	   comment */
+	println()
 }
 -- empty-comments.go --
 package p
