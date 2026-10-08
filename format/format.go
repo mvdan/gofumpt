@@ -856,7 +856,7 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 					continue groupLoop
 				}
 				text := comment.Text
-				if text == "//gofumpt:diagnose" || strings.HasPrefix(text, "//gofumpt:diagnose ") {
+				if t := f.commentText(comment); t == "//gofumpt:diagnose" || strings.HasPrefix(t, "//gofumpt:diagnose ") {
 					slc := []string{
 						"//gofumpt:diagnose",
 						"version:",

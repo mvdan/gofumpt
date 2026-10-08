@@ -8,6 +8,10 @@ cmp stdout foo.go.golden
 exec gofumpt outdated.go
 cmp stdout foo.go.golden
 
+# Trailing whitespace, which go/printer drops, is ignored.
+exec gofumpt trailing.go
+cmp stdout foo.go.golden
+
 exec gofumpt -extra foo.go
 cmp stdout foo.go.golden-extra
 
@@ -69,6 +73,10 @@ package p
 package p
 
 //gofumpt:diagnose v0.1.0
+-- trailing.go --
+package p
+
+//gofumpt:diagnose	
 -- nochange.go --
 package p
 
