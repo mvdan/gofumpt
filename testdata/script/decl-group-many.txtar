@@ -61,6 +61,30 @@ var afterEmptyLiteral = 'z'
 var emptyCall = f(
 )
 var afterEmptyCall = 'z'
+
+var
+specOnNextLine = 'y'
+var afterSpecOnNextLine = 'z'
+
+var valueOnNextLine =
+	'y'
+var afterValueOnNextLine = 'z'
+
+type aliasOnNextLine =
+	int
+type afterAliasOnNextLine int
+
+// doc
+var
+docSpecOnNextLine = 'y'
+var afterDocSpecOnNextLine = 'z'
+
+var (
+	// lifted doc
+	liftedDoc =
+		'y'
+)
+var afterLiftedDoc = 'z'
 -- foo.go.golden --
 package p
 
@@ -137,4 +161,31 @@ var (
 var (
 	emptyCall      = f()
 	afterEmptyCall = 'z'
+)
+
+var (
+	specOnNextLine      = 'y'
+	afterSpecOnNextLine = 'z'
+)
+
+var (
+	valueOnNextLine      = 'y'
+	afterValueOnNextLine = 'z'
+)
+
+type (
+	aliasOnNextLine      = int
+	afterAliasOnNextLine int
+)
+
+// doc
+var (
+	docSpecOnNextLine      = 'y'
+	afterDocSpecOnNextLine = 'z'
+)
+
+// lifted doc
+var (
+	liftedDoc      = 'y'
+	afterLiftedDoc = 'z'
 )

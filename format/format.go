@@ -502,6 +502,8 @@ func (f *fumpter) removeParens(node *ast.GenDecl) {
 		node.TokPos = specPos
 		if last := comments[len(comments)-1]; f.Line(last.End())+1 == f.Line(specPos) {
 			node.Doc = last
+			// Like the parser does for a lone spec.
+			node.Specs[0].(*ast.ValueSpec).Doc = nil
 		}
 	} else {
 		f.removeLines(f.Line(node.TokPos), f.Line(specPos))
@@ -728,11 +730,19 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 		// Do this before the joining below, which compares line spans.
 		f.matchBraceLines(node)
 
-		// Unwrap single-spec var groups before the joining below,
-		// so an adjacent var line and var group merge in one pass.
+		// Prepare for the joining below, which compares line spans.
 		for _, decl := range node.Decls {
 			if decl, ok := decl.(*ast.GenDecl); ok {
+				// Unwrap single-spec var groups, so an adjacent var line
+				// and var group merge in one pass.
 				f.removeParens(decl)
+				// go/printer prints some lone declarations spanning multiple
+				// source lines on one line, such as "var\nx =\n\t1".
+				// Print the spec alone, as the decl's doc would add lines.
+				if !decl.Lparen.IsValid() && f.Line(decl.Pos()) != f.Line(decl.End()) &&
+					f.printsOnOneLine(decl.Specs[0]) {
+					f.removeLines(f.Line(decl.Pos()), f.Line(decl.End()))
+				}
 			}
 		}
 
