@@ -125,6 +125,10 @@ type T struct {
 	A int //comment ending a field list
 
 }
+
+//detached from the declaration below
+
+var detached int
 -- foo.go.golden --
 //go:build tag
 // +build tag
@@ -214,6 +218,10 @@ func f() {
 type T struct {
 	A int // comment ending a field list
 }
+
+// detached from the declaration below
+
+var detached int
 -- doc.go --
 //	indented
 //package doc
@@ -225,6 +233,11 @@ func f() {}
 
  //
 func emptyDoc() {}
+
+var (
+//	indented
+//before the closing paren
+)
 -- doc.go.golden --
 //	indented
 //
@@ -237,6 +250,12 @@ package p
 func f() {}
 
 func emptyDoc() {}
+
+var (
+//	indented
+//
+// before the closing paren
+)
 -- build-doc.go --
 //go:build linux
 // Package p does things.

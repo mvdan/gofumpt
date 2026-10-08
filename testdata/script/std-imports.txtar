@@ -241,6 +241,12 @@ import (
 -- comments.go --
 package p
 
+//moving "os" up keeps this comment spaced
+import (
+	"aa.dev/q"
+	"os"
+)
+
 import (
 	"os"
 
@@ -268,6 +274,13 @@ import (
 )
 -- comments.go.golden --
 package p
+
+// moving "os" up keeps this comment spaced
+import (
+	"os"
+
+	"aa.dev/q"
+)
 
 import (
 	"fmt"

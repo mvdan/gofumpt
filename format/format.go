@@ -248,6 +248,29 @@ func File(fset *token.FileSet, file *ast.File, opts Options) {
 	}
 	astutil.Apply(file, pre, post)
 
+	// go/printer formats an unindented group ending right before most tokens
+	// as a doc comment, adding the spaces itself, so the end of its last
+	// comment must stay put. Other groups must not reach a token as their last
+	// comment gets longer, so pad it with spaces, which go/printer drops.
+	var tokens map[token.Pos]bool
+	for _, group := range f.astFile.Comments {
+		last := group.List[len(group.List)-1]
+		text, ok := f.commentTexts[last]
+		if !ok || f.Position(group.Pos()).Column != 1 {
+			continue
+		}
+		if tokens == nil {
+			tokens = f.docTokens(nil)
+		}
+		if tokens[last.End()+1] && text == "// "+last.Text[2:] {
+			delete(f.commentTexts, last)
+			continue
+		}
+		for tokens[last.Pos()+token.Pos(len(text))+1] {
+			text += " "
+		}
+		f.commentTexts[last] = text
+	}
 	for comment, text := range f.commentTexts {
 		comment.Text = text
 	}
@@ -267,44 +290,36 @@ func File(fset *token.FileSet, file *ast.File, opts Options) {
 	}
 }
 
-// dropEmptyComments removes the comment groups without any text which
-// go/printer drops, so that the rules don't account for them.
-// go/printer formats an unindented comment right before the next token as a
-// doc comment, unless the token is an identifier or "import", and drops it
-// if empty.
-// Only the tokens starting a node or closing one are covered here,
-// as other tokens rarely start a line.
-func (f *fumpter) dropEmptyComments() {
-	isEmpty := func(group *ast.CommentGroup) bool {
-		for _, c := range group.List {
-			text, ok := strings.CutPrefix(c.Text, "//")
-			if !ok || strings.TrimSpace(text) != "" {
-				return false
-			}
-		}
-		return f.Position(group.Pos()).Column == 1
-	}
-	if !slices.ContainsFunc(f.astFile.Comments, isEmpty) {
-		return
-	}
+// docTokens returns the positions of the tokens before which go/printer
+// formats an unindented comment as a doc comment, which is any token but an
+// identifier or "import". Only the tokens starting a node or closing one are
+// covered here, as other tokens rarely start a line.
+// If docs is not nil, it is filled with the doc fields holding comment groups.
+func (f *fumpter) docTokens(docs map[*ast.CommentGroup]**ast.CommentGroup) map[token.Pos]bool {
 	tokens := make(map[token.Pos]bool)
-	// The doc fields to clear, as rules such as removeParens check them.
-	docs := make(map[*ast.CommentGroup]**ast.CommentGroup)
+	addDoc := func(doc **ast.CommentGroup) {
+		if docs != nil {
+			docs[*doc] = doc
+		}
+	}
 	ast.Inspect(f.astFile, func(node ast.Node) bool {
 		if node != nil {
-			// An identifier is the last node visited at its position.
+			// An identifier is the last node visited at its position,
+			// and joinStdImports may move imports onto the "import" keyword.
 			_, ident := node.(*ast.Ident)
-			tokens[node.Pos()] = !ident
+			if _, ok := tokens[node.Pos()]; !ok || ident {
+				tokens[node.Pos()] = !ident
+			}
 		}
 		switch node := node.(type) {
 		case *ast.File:
-			docs[node.Doc] = &node.Doc
+			addDoc(&node.Doc)
 		case *ast.FuncDecl:
-			docs[node.Doc] = &node.Doc
+			addDoc(&node.Doc)
 		case *ast.ImportSpec:
-			docs[node.Doc] = &node.Doc
+			addDoc(&node.Doc)
 		case *ast.Field:
-			docs[node.Doc] = &node.Doc
+			addDoc(&node.Doc)
 		case *ast.FieldList:
 			tokens[node.Closing] = true
 		case *ast.BlockStmt:
@@ -312,7 +327,7 @@ func (f *fumpter) dropEmptyComments() {
 		case *ast.CompositeLit:
 			tokens[node.Rbrace] = true
 		case *ast.GenDecl:
-			docs[node.Doc] = &node.Doc
+			addDoc(&node.Doc)
 			tokens[node.TokPos] = node.Tok != token.IMPORT
 			tokens[node.Rparen] = true
 		case *ast.CallExpr:
@@ -330,6 +345,27 @@ func (f *fumpter) dropEmptyComments() {
 		}
 		return true
 	})
+	return tokens
+}
+
+// dropEmptyComments removes the comment groups without any text which
+// go/printer drops as empty doc comments, so that the rules don't account
+// for them.
+func (f *fumpter) dropEmptyComments() {
+	isEmpty := func(group *ast.CommentGroup) bool {
+		for _, c := range group.List {
+			text, ok := strings.CutPrefix(c.Text, "//")
+			if !ok || strings.TrimSpace(text) != "" {
+				return false
+			}
+		}
+		return f.Position(group.Pos()).Column == 1
+	}
+	if !slices.ContainsFunc(f.astFile.Comments, isEmpty) {
+		return
+	}
+	docs := make(map[*ast.CommentGroup]**ast.CommentGroup)
+	tokens := f.docTokens(docs)
 	f.astFile.Comments = slices.DeleteFunc(f.astFile.Comments, func(group *ast.CommentGroup) bool {
 		if !isEmpty(group) || !tokens[group.End()+1] {
 			return false
