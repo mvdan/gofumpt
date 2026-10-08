@@ -10,6 +10,12 @@ cmp empty-comments.go empty-comments.go.golden
 exec gofumpt -d empty-comments.go.golden
 ! stdout .
 
+exec gofumpt -w empty-docs.go
+cmp empty-docs.go empty-docs.go.golden
+
+exec gofumpt -d empty-docs.go.golden
+! stdout .
+
 -- foo.go --
 package p
 
@@ -109,6 +115,29 @@ func f() {
 //
 	)
 }
+
+func h() string {
+	s :=
+//
+"value"
+	return s
+}
+
+func
+//
+beforeIdent() {}
+
+func i() int {
+	println()
+//
+return 1
+}
+
+var _ = []int{
+	1,
+//
+2,
+}
 -- empty-comments.go.golden --
 package p
 
@@ -120,4 +149,44 @@ func f() {
 	g(
 	//
 	)
+}
+
+func h() string {
+	s := "value"
+	return s
+}
+
+func
+//
+beforeIdent() {
+}
+
+func i() int {
+	println()
+	return 1
+}
+
+var _ = []int{
+	1,
+	2,
+}
+-- empty-docs.go --
+package p
+
+//
+var (
+	lone = 1
+)
+
+type embedsPointer struct {
+//
+*int
+}
+-- empty-docs.go.golden --
+package p
+
+var lone = 1
+
+type embedsPointer struct {
+	*int
 }

@@ -271,8 +271,8 @@ func File(fset *token.FileSet, file *ast.File, opts Options) {
 // go/printer drops, so that the rules don't account for them.
 // go/printer formats an unindented comment right before the next token as a
 // doc comment, unless the token is an identifier, and drops it if empty.
-// Only closing tokens are covered here, such as braces and parens,
-// as other tokens rarely start an unindented line.
+// Only the tokens starting a node or closing one are covered here,
+// as other tokens rarely start a line.
 func (f *fumpter) dropEmptyComments() {
 	isEmpty := func(group *ast.CommentGroup) bool {
 		for _, c := range group.List {
@@ -286,34 +286,58 @@ func (f *fumpter) dropEmptyComments() {
 	if !slices.ContainsFunc(f.astFile.Comments, isEmpty) {
 		return
 	}
-	closing := make(map[token.Pos]bool)
+	tokens := make(map[token.Pos]bool)
+	// The doc fields to clear, as rules such as removeParens check them.
+	docs := make(map[*ast.CommentGroup]**ast.CommentGroup)
 	ast.Inspect(f.astFile, func(node ast.Node) bool {
+		if node != nil {
+			// An identifier is the last node visited at its position.
+			_, ident := node.(*ast.Ident)
+			tokens[node.Pos()] = !ident
+		}
 		switch node := node.(type) {
+		case *ast.File:
+			docs[node.Doc] = &node.Doc
+		case *ast.FuncDecl:
+			docs[node.Doc] = &node.Doc
+		case *ast.ImportSpec:
+			docs[node.Doc] = &node.Doc
+		case *ast.Field:
+			docs[node.Doc] = &node.Doc
 		case *ast.FieldList:
-			closing[node.Closing] = true
+			tokens[node.Closing] = true
 		case *ast.BlockStmt:
-			closing[node.Rbrace] = true
+			tokens[node.Rbrace] = true
 		case *ast.CompositeLit:
-			closing[node.Rbrace] = true
+			tokens[node.Rbrace] = true
 		case *ast.GenDecl:
-			closing[node.Rparen] = true
+			docs[node.Doc] = &node.Doc
+			tokens[node.Rparen] = true
 		case *ast.CallExpr:
-			closing[node.Rparen] = true
+			tokens[node.Rparen] = true
 		case *ast.ParenExpr:
-			closing[node.Rparen] = true
+			tokens[node.Rparen] = true
 		case *ast.TypeAssertExpr:
-			closing[node.Rparen] = true
+			tokens[node.Rparen] = true
 		case *ast.IndexExpr:
-			closing[node.Rbrack] = true
+			tokens[node.Rbrack] = true
 		case *ast.IndexListExpr:
-			closing[node.Rbrack] = true
+			tokens[node.Rbrack] = true
 		case *ast.SliceExpr:
-			closing[node.Rbrack] = true
+			tokens[node.Rbrack] = true
 		}
 		return true
 	})
 	f.astFile.Comments = slices.DeleteFunc(f.astFile.Comments, func(group *ast.CommentGroup) bool {
-		return isEmpty(group) && closing[group.End()+1]
+		if !isEmpty(group) || !tokens[group.End()+1] {
+			return false
+		}
+		// Like go/printer, only keep the whitespace before the comment.
+		f.removeLines(max(f.Line(group.Pos())-1, 1), f.Line(group.End()))
+		if doc := docs[group]; doc != nil {
+			*doc = nil
+		}
+		return true
 	})
 }
 
