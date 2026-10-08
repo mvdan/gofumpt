@@ -10,6 +10,24 @@ cmp doc.go doc.go.golden
 exec gofumpt -d doc.go.golden
 ! stdout .
 
+exec gofumpt -w build-doc.go
+cmp build-doc.go build-doc.go.golden
+
+exec gofumpt -d build-doc.go.golden
+! stdout .
+
+exec gofumpt -w build-func.go
+cmp build-func.go build-func.go.golden
+
+exec gofumpt -d build-func.go.golden
+! stdout .
+
+exec gofumpt -w build-plus.go
+cmp build-plus.go build-plus.go.golden
+
+exec gofumpt -d build-plus.go.golden
+! stdout .
+
 -- foo.go --
 //go:build tag
 // +build tag
@@ -213,3 +231,34 @@ package p
 func f() {}
 
 func emptyDoc() {}
+-- build-doc.go --
+//go:build linux
+// Package p does things.
+package p
+-- build-doc.go.golden --
+//go:build linux
+
+// Package p does things.
+package p
+-- build-func.go --
+package p
+
+// F does things.
+//go:build linux
+func F() {}
+-- build-func.go.golden --
+//go:build linux
+
+package p
+
+// F does things.
+func F() {}
+-- build-plus.go --
+//go:build linux
+// +build linux
+package p
+-- build-plus.go.golden --
+//go:build linux
+// +build linux
+
+package p

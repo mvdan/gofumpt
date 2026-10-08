@@ -10,6 +10,7 @@ import (
 	"bytes"
 	"fmt"
 	"go/ast"
+	"go/build/constraint"
 	"go/parser"
 	"go/token"
 	goversion "go/version"
@@ -186,6 +187,8 @@ func File(fset *token.FileSet, file *ast.File, opts Options) {
 		minSplitFactor: 0.4,
 		commentTexts:   make(map[*ast.Comment]string),
 	}
+	f.splitBuildConstraints()
+
 	var topFuncType *ast.FuncType
 	pre := func(c *astutil.Cursor) bool {
 		f.applyPre(c)
@@ -260,6 +263,38 @@ func File(fset *token.FileSet, file *ast.File, opts Options) {
 			f.formatDocComment(decl.Doc, decl.Pos())
 		}
 	}
+}
+
+// splitBuildConstraints splits a comment group mixing //go:build lines,
+// // +build lines, and other lines into runs of each kind. go/printer moves
+// build constraint lines to the top of the file, but when formatting a doc
+// comment, it first separates its directives such as //go:build from the
+// other lines, // +build included, with an empty "//" line, which is then
+// left behind. The original group keeps its last run of other lines,
+// or its first run if there are none, so that it stays the doc comment
+// of the same node.
+func (f *fumpter) splitBuildConstraints() {
+	kind := func(c *ast.Comment) [2]bool {
+		return [2]bool{constraint.IsGoBuild(c.Text), constraint.IsPlusBuild(c.Text)}
+	}
+	var comments []*ast.CommentGroup
+	for _, group := range f.astFile.Comments {
+		list, keep := group.List, -1
+		for len(list) > 0 {
+			n := 1
+			for n < len(list) && kind(list[n]) == kind(list[0]) {
+				n++
+			}
+			if keep < 0 || kind(list[0]) == [2]bool{} {
+				keep = len(comments)
+			}
+			comments = append(comments, &ast.CommentGroup{List: list[:n]})
+			list = list[n:]
+		}
+		group.List = comments[keep].List
+		comments[keep] = group
+	}
+	f.astFile.Comments = comments
 }
 
 // formatDocComment formats a doc comment which go/printer skips, as it only

@@ -1,0 +1,4 @@
+go test fuzz v1
+string("//go:build \n// 00000\n package A")
+int8(-50)
+bool(true)
