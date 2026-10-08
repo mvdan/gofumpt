@@ -64,6 +64,13 @@ func f() {
 		// documented single statement
 		println()
 	}
+
+	// The condition is printed on one line.
+	if !
+	true {
+
+		println()
+	}
 }
 -- foo.go.golden --
 package p
@@ -113,6 +120,11 @@ func f() {
 		true {
 
 		// documented single statement
+		println()
+	}
+
+	// The condition is printed on one line.
+	if !true {
 		println()
 	}
 }

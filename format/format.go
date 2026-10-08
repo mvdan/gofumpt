@@ -957,7 +957,8 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 
 		f.removeLinesBetween(bodyEnd, node.Rbrace)
 
-		if cond != nil && f.Line(cond.Pos()) != f.Line(cond.End()) {
+		// go/printer may join a condition's lines, such as in "!\nx".
+		if cond != nil && f.Line(cond.Pos()) != f.Line(cond.End()) && !f.printsOnOneLine(cond) {
 			// The body is preceded by a multi-line condition, so an
 			// empty line can help readability.
 			return
