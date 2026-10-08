@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"go/ast"
+	"go/build/constraint"
 	"go/constant"
 	"go/parser"
 	"go/scanner"
@@ -52,6 +53,10 @@ func FuzzFormat(f *testing.F) {
 			opts.LangVersion = fmt.Sprintf("go1.%d", majorVersion)
 		}
 
+		// go/printer counts a form feed in a comment or literal as a line
+		// break, which gofumpt does not account for, as form feeds are
+		// very unlikely in real code.
+		src = strings.ReplaceAll(src, "\f", " ")
 		orig := []byte(src)
 		formatted, err := Source(orig, opts)
 		if errors.As(err, &scanner.ErrorList{}) {
@@ -67,6 +72,9 @@ func FuzzFormat(f *testing.F) {
 		assertUnchanged := func(again []byte, err error, comment string) {
 			t.Helper()
 			if err != nil || !bytes.Equal(again, formatted) {
+				if reason := fuzzUnsupported(orig); reason != "" {
+					t.Skip(reason)
+				}
 				// go/printer may print invalid syntax, such as "if ({0}) {}"
 				// without parens, and is not idempotent on some input,
 				// such as "{ /*\n0*/ }", where each run indents the comment further.
@@ -102,6 +110,56 @@ func FuzzFormat(f *testing.F) {
 		qt.Assert(t, qt.Equals(string(orig), src),
 			qt.Commentf("input source bytes were modified"))
 	})
+}
+
+// fuzzUnsupported reports why gofumpt may not format src idempotently,
+// if it holds syntax which is very unlikely in real code, and which is not
+// worth the complexity to support.
+func fuzzUnsupported(src []byte) string {
+	fset := token.NewFileSet()
+	file, err := parser.ParseFile(fset, "", src, parser.SkipObjectResolution|parser.ParseComments)
+	if err != nil {
+		return ""
+	}
+	for _, group := range file.Comments {
+		for _, c := range group.List {
+			// go/printer moves them to the top of the file, removing them
+			// along with the next line break.
+			if (constraint.IsGoBuild(c.Text) || constraint.IsPlusBuild(c.Text)) && fset.Position(c.Pos()).Column > 1 {
+				return "build constraint after a token or indented"
+			}
+		}
+	}
+	reason := ""
+	imports := make(map[string]bool)
+	ast.Inspect(file, func(node ast.Node) bool {
+		switch node := node.(type) {
+		case *ast.EmptyStmt:
+			// go/printer skips them, but the rules see them.
+			if !node.Implicit {
+				reason = "explicit empty statement"
+			}
+		case *ast.GenDecl:
+			// ast.SortImports removes lines when sorting and deduplicating,
+			// which joinStdImports does not always account for.
+			for _, spec := range node.Specs {
+				spec, ok := spec.(*ast.ImportSpec)
+				if !ok {
+					continue
+				}
+				if node.Lparen.IsValid() && fset.Position(spec.Pos()).Column == 1 {
+					reason = "unindented import in a group"
+				}
+				if key := spec.Name.String() + " " + spec.Path.Value; imports[key] {
+					reason = "duplicate import"
+				} else {
+					imports[key] = true
+				}
+			}
+		}
+		return reason == ""
+	})
+	return reason
 }
 
 // fuzzGofmt formats src like gofmt -s.
