@@ -16,6 +16,18 @@ cmp types.go types.go.golden
 exec gofumpt -d types.go.golden
 ! stdout .
 
+exec gofumpt -w parens.go
+cmp parens.go parens.go.golden
+
+exec gofumpt -d parens.go.golden
+! stdout .
+
+exec gofumpt -w bodies.go
+cmp bodies.go bodies.go.golden
+
+exec gofumpt -d bodies.go.golden
+! stdout .
+
 -- foo.go --
 package p
 
@@ -166,3 +178,106 @@ type (
 	E int
 	F int
 )
+-- parens.go --
+package p
+
+import ("fmt")
+import ("os")
+
+const (A = 1)
+const (B = 2)
+
+type (C int)
+type (D int)
+-- parens.go.golden --
+package p
+
+import (
+	"fmt"
+)
+
+import (
+	"os"
+)
+
+const (
+	A = 1
+)
+
+const (
+	B = 2
+)
+
+type (
+	C int
+)
+
+type (
+	D int
+)
+-- bodies.go --
+package p
+
+func switch1() { switch {} }
+func switch2() { switch {} }
+
+func if1() { if true {} }
+func if2() { if true {} }
+
+func short()                         { println("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa") }
+func longerNameAlignedWithShort()    { println("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa") }
+func evenLongerNameAlignedWithShort() { println("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa") }
+
+func multi1() {
+	println()
+}
+func longComment() { /* cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc */ }
+func multi2() {
+	println()
+}
+var lineComment = 1 // c
+func multi3() {
+	println()
+}
+-- bodies.go.golden --
+package p
+
+func switch1() {
+	switch {
+	}
+}
+
+func switch2() {
+	switch {
+	}
+}
+
+func if1() {
+	if true {
+	}
+}
+
+func if2() {
+	if true {
+	}
+}
+
+func short()                          { println("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa") }
+func longerNameAlignedWithShort()     { println("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa") }
+func evenLongerNameAlignedWithShort() { println("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa") }
+
+func multi1() {
+	println()
+}
+
+func longComment() { /* cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc */
+}
+
+func multi2() {
+	println()
+}
+
+var lineComment = 1 // c
+func multi3() {
+	println()
+}

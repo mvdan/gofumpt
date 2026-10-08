@@ -483,25 +483,26 @@ func (f *fumpter) matchBraceLines(node ast.Node) {
 	})
 	// Done once empty pairs are joined, which can put a type on one line.
 	for _, t := range types {
-		opening, closing := t.fields.Opening, t.fields.Closing
-		if f.Line(opening) != f.Line(closing) {
-			continue
-		}
-		// Printing a type alone leaves out its comments.
-		if len(f.commentsBetween(opening, closing)) > 0 ||
-			len(t.fields.List) > 0 && !f.printsOnOneLine(t.typ) {
-			f.addNewline(closing)
+		if f.Line(t.fields.Opening) == f.Line(t.fields.Closing) && !f.printsOnOneLine(t.typ) {
+			f.addNewline(t.fields.Closing)
 		}
 	}
 }
 
-// printsOnOneLine reports whether go/printer prints node on a single line.
+// printsOnOneLine reports whether go/printer prints node on a single line,
+// including the comments within it, which can make the printer split it.
+// Without any, the printer prints the node's own doc and line comments.
 func (f *fumpter) printsOnOneLine(node ast.Node) bool {
 	var buf bytes.Buffer
-	if err := format.Node(&buf, f.fset, node); err != nil {
+	commented := &printer.CommentedNode{
+		Node:     node,
+		Comments: f.commentsBetween(node.Pos(), node.End()),
+	}
+	if err := format.Node(&buf, f.fset, commented); err != nil {
 		panic(fmt.Sprintf("unexpected print error: %v", err))
 	}
-	return !bytes.Contains(buf.Bytes(), []byte("\n"))
+	// A trailing line comment, such as a spec's, ends with a newline.
+	return !bytes.Contains(bytes.TrimSuffix(buf.Bytes(), []byte("\n")), []byte("\n"))
 }
 
 func (f *fumpter) Position(p token.Pos) token.Position {
@@ -1191,15 +1192,11 @@ func (f *fumpter) applyPost(c *astutil.Cursor) {
 			}
 
 			// Note that we want End-1, as End is the character after the node.
-			multi := f.Line(pos) < f.Line(decl.End()-1)
-			// A func declaration which fits on a single source line may
-			// still be printed across multiple lines: go/printer's funcBody
-			// breaks the body onto its own lines once header+body exceeds
-			// 100 bytes. Approximate that with the source byte length.
-			if fn, _ := decl.(*ast.FuncDecl); fn != nil && !multi && fn.Body != nil &&
-				f.Offset(fn.End())-f.Offset(fn.Pos()) > 100 {
-				multi = true
-			}
+			//
+			// go/printer may print a declaration on one source line over
+			// multiple lines, such as a parenthesized declaration,
+			// or a func whose body is too long or holds a switch.
+			multi := f.Line(pos) < f.Line(decl.End()-1) || !f.printsOnOneLine(decl)
 			if multi && lastMulti && f.Line(effectiveEnd)+1 == f.Line(pos) {
 				f.addNewline(effectiveEnd)
 			}

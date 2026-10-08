@@ -1,0 +1,4 @@
+go test fuzz v1
+string("package A\nfunc A(){switch{}}\nfunc A(){switch{}}")
+int8(-72)
+bool(true)
