@@ -65,6 +65,28 @@ string-based `Set` so adding or removing one doesn't break Go API users.
 - A new or changed rule needs a testscript and a README entry under "Added rules" (or
   "Extra rules behind `-extra`") in the same commit.
 
+## Fuzz failures
+
+`FuzzFormat` checks that gofumpt is idempotent, that gofmt does not change its output, and that
+no identifiers, literals or comment words are added or removed. To find and resolve one failure:
+
+1. Run `go test -run='^$' -fuzz=FuzzFormat -fuzztime=10m -timeout=12m ./format`.
+   Keep `-timeout` above `-fuzztime`, or the test binary is killed mid-run.
+   It stops at the first failure, writing the input to `format/testdata/fuzz/FuzzFormat/<hash>`;
+   re-run it alone with `go test -run=FuzzFormat/<hash> ./format`.
+2. Reduce it to a small file and reproduce it with a built gofumpt: format it, then run
+   `gofumpt -d` or `gofmt -d` on the result. Find which rule's line or comment handling
+   disagrees with what go/printer does on the next run.
+3. If real code could plausibly hit it, fix it in one commit with a minimal case in the testscript
+   for that rule, such as `0f62a1d`. Unlike other bug fixes, it is not split into a test commit:
+   `FuzzFormat` seeds its corpus from the testscripts, so an unstable case fails until the fix.
+4. If the input is very unlikely in real code, or the bug is in `internal/govendor`, skip it
+   instead: add a check to `fuzzUnsupported` in `format/fuzz_test.go`, with a comment on why,
+   plus a TODO naming when to remove it if a vendored Go update fixes it. One commit, such as
+   `format: skip runs of backticks in comments when fuzzing`.
+5. Do not commit the crasher file: the corpus is seeded from the testscripts, which cover a fix,
+   and a skipped input would only be skipped again.
+
 ## Commit practices
 
 Drawn from the last 200 commits.
@@ -80,6 +102,7 @@ Drawn from the last 200 commits.
   testscript, whose golden file records the *current, wrong* output plus a `# TODO:` header
   comment describing the intended behavior — it passes on the unfixed code. Then the fix
   commit, which flips the golden file and drops the TODO. See `360940c` / `05e0adf`.
+  Formatting that is not stable is the exception; see "Fuzz failures" above.
 - A `format/format.go` change nearly always touches a `testdata/script/*.txtar` in the same
   commit; prefer extending the existing script for that rule over adding a new one.
 - CHANGELOG entries are written at release time under a new `## [vX.Y.Z] - DATE` heading,
