@@ -511,7 +511,9 @@ func (f *fumpter) commentsBetween(p1, p2 token.Pos) []*ast.CommentGroup {
 	return comments
 }
 
-func (f *fumpter) inlineComment(pos token.Pos) *ast.Comment {
+// inlineComment returns the first comment after pos on its line,
+// as long as it comes before limit, if valid.
+func (f *fumpter) inlineComment(pos, limit token.Pos) *ast.Comment {
 	comments := f.astFile.Comments
 	i := sort.Search(len(comments), func(i int) bool {
 		return comments[i].Pos() >= pos
@@ -521,7 +523,7 @@ func (f *fumpter) inlineComment(pos token.Pos) *ast.Comment {
 	}
 	line := f.Line(pos)
 	for _, comment := range comments[i].List {
-		if f.Line(comment.Pos()) == line {
+		if f.Line(comment.Pos()) == line && (!limit.IsValid() || comment.Pos() < limit) {
 			return comment
 		}
 	}
@@ -718,7 +720,7 @@ func (f *fumpter) printLength(node ast.Node, next token.Pos) int {
 	}
 
 	// Add the space taken by an inline comment.
-	if c := f.inlineComment(node.End()); c != nil && (!next.IsValid() || c.Pos() < next) {
+	if c := f.inlineComment(node.End(), next); c != nil {
 		fmt.Fprintf(&count, " %s", f.commentText(c))
 	}
 
@@ -865,9 +867,14 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 				if !ok || cont.Tok != start.Tok || cont.Lparen != token.NoPos || isCgoImport(cont) {
 					break
 				}
-				// Where cont ends, including an inline comment of its own.
+				// Where cont ends, including an inline comment of its own,
+				// which comes before any declaration after it on the same line.
 				end := cont.End()
-				if c := f.inlineComment(end); c != nil {
+				var next token.Pos
+				if i+1 < len(node.Decls) {
+					next = node.Decls[i+1].Pos()
+				}
+				if c := f.inlineComment(end, next); c != nil {
 					end = c.End()
 				}
 				// Appending a const spec to a group changes the value of any
@@ -1365,7 +1372,7 @@ func (f *fumpter) applyPost(c *astutil.Cursor) {
 		firstLine := f.Line(node.Args[0].Pos())
 		lastEnd := node.Args[len(node.Args)-1].End()
 		// An inline comment after the closing parenthesis is not an argument's.
-		if comment := f.inlineComment(lastEnd); comment != nil && comment.Pos() < node.Rparen {
+		if comment := f.inlineComment(lastEnd, node.Rparen); comment != nil {
 			lastEnd = comment.End()
 		}
 		lastLine := f.Line(lastEnd)

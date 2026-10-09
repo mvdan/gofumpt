@@ -10,7 +10,6 @@ cmp keyword-comment.go keyword-comment.go.golden
 exec gofumpt -d keyword-comment.go.golden
 ! stdout .
 
-# TODO: the comments belong to c and f, and should stay with them.
 exec gofumpt -w next-comment.go
 cmp next-comment.go next-comment.go.golden
 
@@ -240,14 +239,14 @@ package p
 
 var (
 	a = 0
-	b = 1 // c
+	b = 1
 )
 
-const c = 2
+const c = 2 // c
 
 var (
 	d = 0
-	e = 1 // f
+	e = 1
 )
 
-func f() {}
+func f() {} // f
