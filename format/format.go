@@ -834,7 +834,9 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 				// go/printer prints some lone declarations spanning multiple
 				// source lines on one line, such as "var\nx =\n\t1".
 				// Print the spec alone, as the decl's doc would add lines.
+				// A comment after the keyword may keep the spec on another line.
 				if !decl.Lparen.IsValid() && f.Line(decl.Pos()) != f.Line(decl.End()) &&
+					!slices.ContainsFunc(f.commentsBetween(decl.Pos(), decl.Specs[0].Pos()), breaksLine) &&
 					f.printsOnOneLine(decl.Specs[0]) {
 					f.removeLines(f.Line(decl.Pos()), f.Line(decl.End()))
 				}
@@ -1820,6 +1822,14 @@ func containsIota(decl *ast.GenDecl) bool {
 		return !found
 	})
 	return found
+}
+
+// breaksLine reports whether group holds a line comment or a multi-line
+// block comment, either of which go/printer cannot print on a single line.
+func breaksLine(group *ast.CommentGroup) bool {
+	return slices.ContainsFunc(group.List, func(c *ast.Comment) bool {
+		return strings.HasPrefix(c.Text, "//") || strings.Contains(c.Text, "\n")
+	})
 }
 
 func containsAnyDirective(group *ast.CommentGroup) bool {

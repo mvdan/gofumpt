@@ -4,6 +4,12 @@ cmp foo.go foo.go.golden
 exec gofumpt -d foo.go.golden
 ! stdout .
 
+exec gofumpt -w keyword-comment.go
+cmp keyword-comment.go keyword-comment.go.golden
+
+exec gofumpt -d keyword-comment.go.golden
+! stdout .
+
 -- foo.go --
 package p
 
@@ -189,3 +195,28 @@ var (
 	liftedDoc      = 'y'
 	afterLiftedDoc = 'z'
 )
+-- keyword-comment.go --
+package p
+
+var // comment
+lineAfterKeyword = 'y' // inline
+
+var /* comment */
+blockAfterKeyword =
+	'y'
+
+var /* multi-line
+comment */
+multiLineAfterKeyword =
+	'y'
+-- keyword-comment.go.golden --
+package p
+
+var                    // comment
+lineAfterKeyword = 'y' // inline
+
+var /* comment */ blockAfterKeyword = 'y'
+
+var /* multi-line
+comment */
+multiLineAfterKeyword = 'y'
