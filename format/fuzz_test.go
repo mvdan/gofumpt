@@ -128,6 +128,13 @@ func fuzzUnsupported(src []byte) string {
 			if (constraint.IsGoBuild(c.Text) || constraint.IsPlusBuild(c.Text)) && fset.Position(c.Pos()).Column > 1 {
 				return "build constraint after a token or indented"
 			}
+			// go/doc/comment skips a run of backticks by the wrong offset,
+			// turning its pairs into smart quotes a few at a time.
+			// TODO: remove once internal/govendor is from Go 1.28,
+			// which no longer rewrites smart quotes.
+			if strings.Contains(c.Text, "```") {
+				return "run of backticks in a comment"
+			}
 		}
 	}
 	reason := ""
