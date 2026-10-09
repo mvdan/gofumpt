@@ -604,8 +604,11 @@ func (f *fumpter) removeParens(node *ast.GenDecl) {
 	if comments := f.commentsBetween(specEnd, node.Rparen); len(comments) > 0 &&
 		f.Line(comments[len(comments)-1].End()) > f.Line(specEnd) {
 		// Leave one newline to not force a comment on the next line to
-		// become an inline comment.
-		f.removeLines(f.Line(specEnd)+1, f.Line(node.Rparen))
+		// become an inline comment, and keep the closing paren on a line
+		// of its own, so that the comments do not become the next
+		// declaration's doc.
+		f.addNewline(node.Rparen)
+		f.removeLines(f.Line(specEnd)+1, f.Line(node.Rparen)-1)
 	} else {
 		f.removeLines(f.Line(specEnd), f.Line(node.Rparen))
 	}

@@ -22,6 +22,12 @@ cmp doc.go doc.go.golden
 exec gofumpt -d doc.go.golden
 ! stdout .
 
+exec gofumpt -w trailing.go
+cmp trailing.go trailing.go.golden
+
+exec gofumpt -d trailing.go.golden
+! stdout .
+
 -- f1.go --
 package p
 
@@ -292,3 +298,30 @@ var z = 1
 var y = 1
 
 var w = 1
+-- trailing.go --
+package p
+
+var (
+	x = 1
+	//y = 2
+)
+var z = 3
+
+var (
+	a = 1
+	/* b */)
+var c = 3
+-- trailing.go.golden --
+package p
+
+var x = 1
+
+//y = 2
+
+var z = 3
+
+var a = 1
+
+/* b */
+
+var c = 3
