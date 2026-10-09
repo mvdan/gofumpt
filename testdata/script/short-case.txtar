@@ -16,6 +16,12 @@ cmp parens.go parens.go.golden
 exec gofumpt -d parens.go.golden
 ! stdout .
 
+exec gofumpt -w body-comment.go
+cmp body-comment.go body-comment.go.golden
+
+exec gofumpt -d body-comment.go.golden
+! stdout .
+
 -- foo.go --
 package p
 
@@ -203,5 +209,23 @@ func f(x int) {
 	switch x {
 	case yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy, z:
 		g()
+	}
+}
+-- body-comment.go --
+package p
+
+func f(x int) {
+	switch x {
+	case aaaaaaaaaaaaaaaa,
+		bbbbbbbbbbbbbbbb: g() // comment
+	}
+}
+-- body-comment.go.golden --
+package p
+
+func f(x int) {
+	switch x {
+	case aaaaaaaaaaaaaaaa, bbbbbbbbbbbbbbbb:
+		g() // comment
 	}
 }

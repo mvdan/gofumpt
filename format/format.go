@@ -708,14 +708,17 @@ func (b *byteCounter) Write(p []byte) (n int, err error) {
 	return len(p), nil
 }
 
-func (f *fumpter) printLength(node ast.Node) int {
+// printLength estimates the bytes go/printer takes to print node on one line.
+// If next is valid, it is where the next node starts, and an inline comment
+// after it is not node's.
+func (f *fumpter) printLength(node ast.Node, next token.Pos) int {
 	var count byteCounter
 	if err := format.Node(&count, f.fset, node); err != nil {
 		panic(fmt.Sprintf("unexpected print error: %v", err))
 	}
 
 	// Add the space taken by an inline comment.
-	if c := f.inlineComment(node.End()); c != nil {
+	if c := f.inlineComment(node.End()); c != nil && (!next.IsValid() || c.Pos() < next) {
 		fmt.Fprintf(&count, " %s", f.commentText(c))
 	}
 
@@ -1244,7 +1247,13 @@ func (f *fumpter) applyPost(c *astutil.Cursor) {
 			List:  node.List,
 			Colon: node.Colon,
 		}
-		if f.printLength(nodeWithoutBody) > shortLineLimit {
+		// go/printer moves a body on the colon's line onto the next,
+		// along with any comment after it.
+		var next token.Pos
+		if len(node.Body) > 0 {
+			next = node.Body[0].Pos()
+		}
+		if f.printLength(nodeWithoutBody, next) > shortLineLimit {
 			// too long to collapse
 			break
 		}
