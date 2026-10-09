@@ -34,6 +34,12 @@ cmp build-between.go build-between.go.golden
 exec gofumpt -d build-between.go.golden
 ! stdout .
 
+exec gofumpt -w directive-space.go
+cmp directive-space.go directive-space.go.golden
+
+exec gofumpt -d directive-space.go.golden
+! stdout .
+
 -- foo.go --
 //go:build tag
 // +build tag
@@ -320,3 +326,33 @@ func G() {}
 /* H */
 // does things.
 func H() {}
+-- directive-space.go --
+package p
+
+var x = 1 //line 
+
+var a = 1
+//line 
+var b = 2
+
+func f() {
+	//foo
+	//  
+	//bar
+}
+-- directive-space.go.golden --
+package p
+
+var x = 1 // line
+
+var (
+	a = 1
+	// line
+	b = 2
+)
+
+func f() {
+	// foo
+	//
+	// bar
+}

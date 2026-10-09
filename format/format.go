@@ -882,7 +882,7 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 					}
 					// break on directive
 					for i, comment := range cont.Doc.List {
-						if f.Line(comment.Slash) != f.Line(lastPos)+1+i || rxCommentDirective.MatchString(strings.TrimPrefix(comment.Text, "//")) {
+						if f.Line(comment.Slash) != f.Line(lastPos)+1+i || isDirective(comment.Text) {
 							break contLoop
 						}
 					}
@@ -938,7 +938,7 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 					// /*-style comment
 					continue groupLoop
 				}
-				if rxCommentDirective.MatchString(body) {
+				if isDirective(text) {
 					// this line is a directive
 					continue groupLoop
 				}
@@ -1824,10 +1824,17 @@ func containsAnyDirective(group *ast.CommentGroup) bool {
 		return false
 	}
 	for _, comment := range group.List {
-		body := strings.TrimPrefix(comment.Text, "//")
-		if rxCommentDirective.MatchString(body) {
+		if isDirective(comment.Text) {
 			return true
 		}
 	}
 	return false
+}
+
+// isDirective reports whether a comment's text is a directive like "//go:embed".
+// go/printer drops trailing whitespace, such as from "//line ",
+// so it must not make a directive.
+func isDirective(text string) bool {
+	body := strings.TrimPrefix(text, "//")
+	return rxCommentDirective.MatchString(strings.TrimRightFunc(body, unicode.IsSpace))
 }
