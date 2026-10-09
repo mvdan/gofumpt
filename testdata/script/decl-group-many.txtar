@@ -10,6 +10,13 @@ cmp keyword-comment.go keyword-comment.go.golden
 exec gofumpt -d keyword-comment.go.golden
 ! stdout .
 
+# TODO: the comments belong to c and f, and should stay with them.
+exec gofumpt -w next-comment.go
+cmp next-comment.go next-comment.go.golden
+
+exec gofumpt -d next-comment.go.golden
+! stdout .
+
 -- foo.go --
 package p
 
@@ -220,3 +227,27 @@ var /* comment */ blockAfterKeyword = 'y'
 var /* multi-line
 comment */
 multiLineAfterKeyword = 'y'
+-- next-comment.go --
+package p
+
+var a = 0
+var b = 1; const c = 2 // c
+
+var d = 0
+var e = 1; func f() {} // f
+-- next-comment.go.golden --
+package p
+
+var (
+	a = 0
+	b = 1 // c
+)
+
+const c = 2
+
+var (
+	d = 0
+	e = 1 // f
+)
+
+func f() {}
