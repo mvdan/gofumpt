@@ -933,7 +933,7 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 					continue groupLoop
 				}
 				text := comment.Text
-				if t := f.commentText(comment); t == "//gofumpt:diagnose" || strings.HasPrefix(t, "//gofumpt:diagnose ") {
+				if d, ok := ast.ParseDirective(comment.Slash, f.commentText(comment)); ok && d.Tool == "gofumpt" && d.Name == "diagnose" {
 					slc := []string{
 						"//gofumpt:diagnose",
 						"version:",
