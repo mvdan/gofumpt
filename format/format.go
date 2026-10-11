@@ -861,6 +861,7 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 			}
 			lastPos := start.Pos()
 			merged := false
+			var lastInline *ast.Comment
 		contLoop:
 			for i++; i < len(node.Decls); {
 				cont, ok := node.Decls[i].(*ast.GenDecl)
@@ -874,8 +875,10 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 				if i+1 < len(node.Decls) {
 					next = node.Decls[i+1].Pos()
 				}
+				var contInline *ast.Comment
 				if c := f.inlineComment(end, next); c != nil {
 					end = c.End()
+					contInline = c
 				}
 				// Appending a const spec to a group changes the value of any
 				// iota it mentions, as iota counts the specs before it.
@@ -912,9 +915,21 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 				// The inline comment counts as content, so that it is not
 				// left outside the group.
 				start.Rparen = end - 1
+				lastInline = contInline
 				lastPos = cont.Pos()
 				i++
 			}
+			// go/printer separates an inline comment from the closing paren
+			// with a blank rather than a tab when both share a line, which stops
+			// the comment column from aligning. Move the closing paren onto the
+			// next line, so the comment is followed by a line break instead. Do it
+			// here rather than in the loop above, as inserting a line would shift
+			// the lines of the declarations that follow and break the joining.
+			if lastInline != nil {
+				start.Rparen++
+				f.addNewline(start.Rparen)
+			}
+
 			// Re-sort imports in the new group so the output is idempotent.
 			// Set Lparen so ast.SortImports doesn't skip the merged decl.
 			if merged && start.Tok == token.IMPORT {

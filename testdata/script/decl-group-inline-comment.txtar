@@ -1,0 +1,56 @@
+exec gofumpt -w foo.go
+cmp foo.go foo.go.golden
+
+exec gofumpt -d foo.go.golden
+! stdout .
+
+exec gofumpt -w runtime.go
+cmp runtime.go runtime.go.golden
+
+exec gofumpt -d runtime.go.golden
+! stdout .
+
+-- foo.go --
+package p
+
+type Tintptr *int // a
+type Tint int // b
+
+var Aaaaaa = 1 // a
+var Bbb = 2 // b
+
+const Aaaaaa = 1 // a
+const Bbb = 2 // b
+-- foo.go.golden --
+package p
+
+type (
+	Tintptr *int // a
+	Tint    int  // b
+)
+
+var (
+	Aaaaaa = 1 // a
+	Bbb    = 2 // b
+)
+
+const (
+	Aaaaaa = 1 // a
+	Bbb    = 2 // b
+)
+-- runtime.go --
+package runtime_test
+
+type Tintptr *int // assignable to *int
+type Tint int     // *Tint implements Tinter, interface{}
+
+func (t *Tint) m() {}
+-- runtime.go.golden --
+package runtime_test
+
+type (
+	Tintptr *int // assignable to *int
+	Tint    int  // *Tint implements Tinter, interface{}
+)
+
+func (t *Tint) m() {}
