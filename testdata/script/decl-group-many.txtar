@@ -19,6 +19,9 @@ exec gofumpt -d next-comment.go.golden
 -- foo.go --
 package p
 
+import "os" // c1
+import "strings" // c2
+
 var single = "foo"
 var another = "bar"
 
@@ -55,6 +58,9 @@ var v3 = 'd'
 const inline1 = "s1" // c1
 const inline2 = "s2" // c2
 const inline3 = "s3" // c3
+
+type inlineType int // c1
+type inlineLongerType string // c2
 
 const iotaFirst = iota
 const iotaSecond = iota
@@ -99,6 +105,11 @@ var (
 var afterLiftedDoc = 'z'
 -- foo.go.golden --
 package p
+
+import (
+	"os"      // c1
+	"strings" // c2
+)
 
 var (
 	single  = "foo"
@@ -150,6 +161,11 @@ const (
 	inline1 = "s1" // c1
 	inline2 = "s2" // c2
 	inline3 = "s3" // c3
+)
+
+type (
+	inlineType       int    // c1
+	inlineLongerType string // c2
 )
 
 const iotaFirst = iota

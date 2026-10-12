@@ -861,6 +861,7 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 			}
 			lastPos := start.Pos()
 			merged := false
+			endsInComment := false
 		contLoop:
 			for i++; i < len(node.Decls); {
 				cont, ok := node.Decls[i].(*ast.GenDecl)
@@ -912,8 +913,17 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 				// The inline comment counts as content, so that it is not
 				// left outside the group.
 				start.Rparen = end - 1
+				endsInComment = end != cont.End()
 				lastPos = cont.Pos()
 				i++
+			}
+			// go/printer separates a comment from a token on its line with
+			// a space rather than a tab, breaking the alignment of comments.
+			// Start a line at Rparen, splitting the comment only in the line
+			// table, as go/printer prints its text verbatim.
+			// Not done in the loop above, as it compares lines.
+			if endsInComment {
+				f.addNewline(start.Rparen)
 			}
 			// Re-sort imports in the new group so the output is idempotent.
 			// Set Lparen so ast.SortImports doesn't skip the merged decl.
@@ -1701,8 +1711,8 @@ func (f *fumpter) joinStdImports(d *ast.GenDecl) {
 	// which go/printer would then print as an empty line,
 	// so drop those lines from the file's line table.
 	// Never drop the line holding the closing parenthesis, as that would pull
-	// whatever follows the declaration onto it; the parenthesis shares a line
-	// with the last import when the group was joined from lone imports.
+	// whatever follows the declaration onto it; the parenthesis may share a
+	// line with the last import when the group was joined from lone imports.
 	for _, pos := range movedFrom {
 		if line := f.Line(pos); line < f.Line(d.Rparen) {
 			f.file.MergeLine(line)
