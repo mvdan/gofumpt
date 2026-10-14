@@ -41,5 +41,6 @@ func f() {
 package foo
 
 func f() {
+
 	println("body")
 }

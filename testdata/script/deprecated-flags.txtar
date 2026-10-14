@@ -22,5 +22,6 @@ func f() {
 package p
 
 func f() {
+
 	println("foo")
 }

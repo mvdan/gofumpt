@@ -8,7 +8,7 @@ import (
 
 	"github.com/go-quicktest/qt"
 
-	"mvdan.cc/gofumpt/format"
+	"github.com/ethanbitar/gofumptish/format"
 )
 
 func TestSourceIncludesSimplify(t *testing.T) {

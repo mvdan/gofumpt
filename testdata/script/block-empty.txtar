@@ -83,6 +83,7 @@ func f() {
 	}
 
 	{
+
 		// lone comment
 	}
 
@@ -104,6 +105,7 @@ type IOut interface {
 }
 
 func g() {
+
 	/* unindented
 	   comment */
 	println()

@@ -1,4 +1,4 @@
-module mvdan.cc/gofumpt
+module github.com/ethanbitar/gofumptish
 
 go 1.26.0
 

@@ -101,6 +101,7 @@ func Issue235[K interface {
 func multilineParams[V any](p1 V,
 	p2 V,
 ) {
+
 	println("body")
 }
 

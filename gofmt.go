@@ -34,10 +34,10 @@ import (
 	// simplification as a public Go API. diff and go/printer are vendored
 	// copies frozen at a specific Go version, so gofumpt's output is
 	// reproducible regardless of the user's Go toolchain.
-	gformat "mvdan.cc/gofumpt/format"
-	"mvdan.cc/gofumpt/internal/govendor/diff"
-	"mvdan.cc/gofumpt/internal/govendor/go/printer"
-	gversion "mvdan.cc/gofumpt/internal/version"
+	gformat "github.com/ethanbitar/gofumptish/format"
+	"github.com/ethanbitar/gofumptish/internal/govendor/diff"
+	"github.com/ethanbitar/gofumptish/internal/govendor/go/printer"
+	gversion "github.com/ethanbitar/gofumptish/internal/version"
 )
 
 // NOTE(gofumpt): regenerate the vendored Go source under internal/govendor,

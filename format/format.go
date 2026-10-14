@@ -26,9 +26,9 @@ import (
 
 	"golang.org/x/tools/go/ast/astutil"
 
-	"mvdan.cc/gofumpt/internal/govendor/go/format"
-	"mvdan.cc/gofumpt/internal/govendor/go/printer"
-	"mvdan.cc/gofumpt/internal/version"
+	"github.com/ethanbitar/gofumptish/internal/govendor/go/format"
+	"github.com/ethanbitar/gofumptish/internal/govendor/go/printer"
+	"github.com/ethanbitar/gofumptish/internal/version"
 )
 
 // Options is the set of formatting options which affect gofumpt.
@@ -771,7 +771,8 @@ var rxCommentDirective = regexp.MustCompile(
 		`|#nosec\b` +
 		`|NOSONAR\b` +
 		`|sys(?:nb)?\b` +
-		`)`)
+		`)`,
+)
 
 // rxShebangComment matches a shebang like `//usr/bin/env go run`.
 var rxShebangComment = regexp.MustCompile(`^//[^ /].*\bbin/`)
@@ -1142,8 +1143,6 @@ func (f *fumpter) applyPre(c *astutil.Cursor) {
 				}
 			}
 		}
-
-		f.removeLinesBetween(node.Lbrace, bodyPos)
 
 	case *ast.CaseClause:
 		f.stmts(node.Body)

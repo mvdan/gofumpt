@@ -22,7 +22,7 @@ import (
 	"github.com/go-quicktest/qt"
 	"golang.org/x/tools/txtar"
 
-	"mvdan.cc/gofumpt/internal/govendor/go/format"
+	"github.com/ethanbitar/gofumptish/internal/govendor/go/format"
 )
 
 func FuzzFormat(f *testing.F) {
