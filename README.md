@@ -1,18 +1,18 @@
-# gofumpt
+# gofumptish
 
-[![Go Reference](https://pkg.go.dev/badge/mvdan.cc/gofumpt/format.svg)](https://pkg.go.dev/mvdan.cc/gofumpt/format)
+[![Go Reference](https://pkg.go.dev/badge/github.com/ethanbitar/gofumptish/format.svg)](https://pkg.go.dev/github.com/ethanbitar/gofumptish/format)
 
-	go install mvdan.cc/gofumpt@latest
+	go install github.com/ethanbitar/gofumptish@latest
 
 Enforce a stricter format than `gofmt`, while being backwards compatible.
-That is, `gofumpt` is happy with a subset of the formats that `gofmt` is happy with.
+That is, `gofumptish` is happy with a subset of the formats that `gofmt` is happy with.
 
 The tool is a fork of `gofmt` as of Go 1.27.0, and requires Go 1.26 or later.
 It can be used as a drop-in replacement to format your Go code,
-and running `gofmt` after `gofumpt` should produce no changes.
+and running `gofmt` after `gofumptish` should produce no changes.
 For example:
 
-	gofumpt -l -w .
+	gofumptish -l -w .
 
 Some of the Go source files in this repository belong to the Go project.
 The project includes copies of `go/printer` and `go/doc/comment` as of Go 1.27.0
@@ -32,7 +32,7 @@ and the `-s` flag is hidden as it is always enabled.
 ### Sponsoring
 
 If this project saves you or your company time, consider
-[sponsoring me on GitHub](https://github.com/sponsors/mvdan).
+[sponsoring mvdan on GitHub](https://github.com/sponsors/mvdan).
 Monthly tiers include benefits like your logo on a README,
 prioritized issues, or direct support in your company's chat app.
 One-time tiers offer a call about one of my projects
@@ -526,32 +526,32 @@ result := compute(
 
 ### Installation
 
-`gofumpt` is a replacement for `gofmt`, so you can simply `go install` it as
+`gofumptish` is a replacement for `gofmt`, so you can simply `go install` it as
 described at the top of this README and use it.
 
 When using an IDE or editor with Go integration based on `gopls`,
-it's best to configure the editor to use the `gofumpt` support built into `gopls`.
+it's best to configure the editor to use the `gofumptish` support built into `gopls`.
 
-The instructions below show how to set up `gofumpt` for some of the
+The instructions below show how to set up `gofumptish` for some of the
 major editors out there.
 
 #### Visual Studio Code
 
 Enable the language server following [the official docs](https://github.com/golang/vscode-go#readme),
-and then enable gopls's `gofumpt` option. Note that VS Code will complain about
+and then enable gopls's `gofumptish` option. Note that VS Code will complain about
 the `gopls` settings, but they will still work.
 
 ```json
 "go.useLanguageServer": true,
 "gopls": {
-	"formatting.gofumpt": true,
+	"formatting.gofumptish": true,
 },
 ```
 
 #### GoLand
 
-GoLand doesn't use `gopls` so it should be configured to use `gofumpt` directly.
-Once `gofumpt` is installed, follow the steps below:
+GoLand doesn't use `gopls` so it should be configured to use `gofumptish` directly.
+Once `gofumptish` is installed, follow the steps below:
 
 - Open **Settings** (File > Settings)
 - Open the **Tools** section
@@ -563,7 +563,7 @@ When a window asks for settings, you can enter the following:
 
 * File Types: Select all .go files
 * Scope: Project Files
-* Program: Select your `gofumpt` executable
+* Program: Select your `gofumptish` executable
 * Arguments: `-w $FilePath$`
 * Output path to refresh: `$FilePath$`
 * Working directory: `$ProjectFileDir$`
@@ -578,7 +578,7 @@ or [govim](https://github.com/govim/govim).
 
 ##### vim-go
 
-To configure `gopls` to use `gofumpt`:
+To configure `gopls` to use `gofumptish`:
 
 ```vim
 let g:go_fmt_command="gopls"
@@ -587,21 +587,21 @@ let g:go_gopls_gofumpt=1
 
 ##### govim
 
-To configure `gopls` to use `gofumpt`:
+To configure `gopls` to use `gofumptish`:
 
 ```vim
-call govim#config#Set("Gofumpt", 1)
+call govim#config#Set("gofumptish", 1)
 ```
 
 #### Neovim
 
-When using [`lspconfig`](https://github.com/neovim/nvim-lspconfig), pass the `gofumpt` setting to `gopls`:
+When using [`lspconfig`](https://github.com/neovim/nvim-lspconfig), pass the `gofumptish` setting to `gopls`:
 
 ```lua
 require('lspconfig').gopls.setup({
     settings = {
         gopls = {
-            gofumpt = true
+            gofumptish = true
         }
     }
 })
@@ -612,21 +612,21 @@ require('lspconfig').gopls.setup({
 For [lsp-mode](https://emacs-lsp.github.io/lsp-mode/) users on version 8.0.0 or higher:
 
 ```elisp
-(setq lsp-go-use-gofumpt t)
+(setq lsp-go-use-gofumptish t)
 ```
 
 For users of `lsp-mode` before `8.0.0`:
 
 ```elisp
 (lsp-register-custom-settings
- '(("gopls.gofumpt" t)))
+ '(("gopls.gofumptish" t)))
 ```
 
 For [eglot](https://github.com/joaotavora/eglot) users:
 
 ```elisp
 (setq-default eglot-workspace-configuration
- '((:gopls . ((gofumpt . t)))))
+ '((:gopls . ((gofumptish . t)))))
 ```
 
 #### Helix
@@ -635,13 +635,13 @@ When using the `gopls` language server, modify the Go settings in `~/.config/hel
 
 ```toml
 [language-server.gopls.config]
-"formatting.gofumpt" = true
+"formatting.gofumptish" = true
 ```
 
 #### Sublime Text
 
 With ST4, install the Sublime Text LSP extension according to [the documentation](https://github.com/sublimelsp/LSP),
-and enable `gopls`'s `gofumpt` option in the LSP package settings,
+and enable `gopls`'s `gofumptish` option in the LSP package settings,
 including setting `lsp_format_on_save` to `true`.
 
 ```json
@@ -652,20 +652,20 @@ including setting `lsp_format_on_save` to `true`.
 	{
 		"enabled": true,
 		"initializationOptions": {
-			"gofumpt": true,
+			"gofumptish": true,
 		}
 	}
 }
 ```
 
 ### Zed
-For `gofumpt` to be used in Zed, you need to set the `gofumpt` option in the LSP settings. This is done by providing the `"gofumpt": true` in `initialization_options`.
+For `gofumptish` to be used in Zed, you need to set the `gofumptish` option in the LSP settings. This is done by providing the `"gofumptish": true` in `initialization_options`.
 
 ```json
 "lsp": {
   "gopls": {
     "initialization_options": {
-      "gofumpt": true
+      "gofumptish": true
     }
   }
 }
@@ -682,7 +682,7 @@ rely on it for your code as long as you pin a version of it.
 ### Updating with `go/format` and `cmd/gofmt`
 
 `internal/govendor` contains frozen copies of `go/format` and its dependencies
-at a specific Go version, so that installing a specific version of `gofumpt`
+at a specific Go version, so that installing a specific version of `gofumptish`
 results in exactly the same formatting behavior regardless of the Go version.
 
 As this tool is a fork of `cmd/gofmt`, the `gofmt.go`, `internal.go`,
@@ -709,11 +709,11 @@ Third party modules should either start with a domain name,
 even a local one like `foo.local`, or use [a reserved path prefix](https://github.com/golang/go/issues/37641).
 
 For backwards compatibility with modules set up before these rules were clear,
-`gofumpt` will treat any import path sharing a prefix with the current module
+`gofumptish` will treat any import path sharing a prefix with the current module
 path as third party. For example, if the current module is `mycorp/mod1`, then
 all import paths in `mycorp/...` will be considered third party.
 
-> How can I use `gofumpt` if I already use `goimports` to replace `gofmt`?
+> How can I use `gofumptish` if I already use `goimports` to replace `gofmt`?
 
 Most editors have replaced the `goimports` program with the same functionality
 provided by a language server like `gopls`. This mechanism is significantly
@@ -723,21 +723,21 @@ kept up to date, necessary to add missing imports.
 As such, the general recommendation is to let your editor fix your imports -
 either via `gopls`, such as VSCode or vim-go, or via their own custom
 implementation, such as GoLand. Then follow the install instructions above to
-enable the use of `gofumpt` instead of `gofmt`.
+enable the use of `gofumptish` instead of `gofmt`.
 
 If you want to avoid integrating with `gopls`, and are OK with the overhead of
 calling `goimports` from scratch on each save, you should be able to call both
-tools; for example, `goimports file.go && gofumpt file.go`.
+tools; for example, `goimports file.go && gofumptish file.go`.
 
 ### Contributing
 
 Issues and pull requests are welcome! Please open an issue to discuss a feature
 before sending a pull request.
 
-We also use the `#gofumpt` channel over at the
+We also use the `#gofumptish` channel over at the
 [Gophers Slack](https://invite.slack.golangbridge.org/) to chat.
 
-When reporting a formatting bug, insert a `//gofumpt:diagnose` comment.
+When reporting a formatting bug, insert a `//gofumptish:diagnose` comment.
 The comment will be rewritten to include useful debugging information.
 For instance:
 
@@ -745,11 +745,11 @@ For instance:
 $ cat f.go
 package p
 
-//gofumpt:diagnose
-$ gofumpt f.go
+//gofumptish:diagnose
+$ gofumptish f.go
 package p
 
-//gofumpt:diagnose version: v0.11.0 (go1.27.0) flags: -lang=go1 -modpath=
+//gofumptish:diagnose version: v0.11.0 (go1.27.0) flags: -lang=go1 -modpath=
 ```
 
 ### License
@@ -758,5 +758,5 @@ Note that much of the code is copied from Go's `gofmt` command. You can tell
 which files originate from the Go repository from their copyright headers. Their
 license file is `LICENSE.google`.
 
-`gofumpt`'s original source files are also under the 3-clause BSD license, with
+`gofumptish`'s original source files are also under the 3-clause BSD license, with
 the separate file `LICENSE`.
